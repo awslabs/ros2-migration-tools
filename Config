@@ -1,0 +1,73 @@
+# -*-perl-*-
+
+package.B9ROSMigrationTools = {
+    interfaces = (1.0);
+
+    deploy = {
+        generic = true;
+    };
+
+    build-environment = {
+        chroot = basic;
+        network-access = blocked;
+    };
+
+    # See https://w.amazon.com/?BrazilPython3
+    build-system = brazilpython;
+    build-tools = {
+        1.0 = {
+            BrazilPython = 3.0;
+        };
+    };
+
+    dependencies = {
+        1.0 = {
+            # Deploy the default python interpreter for your versionset. This
+            # guarantees `$ENVROOT/bin/python` will exist in your deployment.
+            #
+            # This is commented out in the template because it enables packages
+            # built with this template to be compatible with legacy interpreter
+            # deployments. It's more of a play-nice than a need-to-have.
+            #
+            # Python = default;
+
+            # Uncomment if you want working auto-created bin wrapper scripts.
+            # See setup.py
+            #
+            # BrazilPython-setuptools = default;
+        };
+    };
+
+    test-dependencies = {
+        1.0 = {
+            # Run tests with py.test in BrazilPython
+            BrazilPython-Pytest = 3.x;
+
+            # Test libraries
+            PythonTestingDependencies = 1.2;
+
+            # Publish test results to Brazil's test and coverage detection
+            BrazilPythonTestSupport = 3.0;
+
+            # Sphinx documentation with Amazon customizations so that
+            # links on code.amazon.com work
+            Python-amazon-doc-utils = 1.0;
+            Sphinx = 1.5.x;
+
+            # Having IPython support is nice and handy; let's pull that in here.
+            # You can invoke this using `brazil-test-exec ipython`
+            Python-ipython = 5.3.x;
+        };
+    };
+
+    resolves-conflict-dependencies = {
+        1.0 = {
+        };
+    };
+
+    targets = {
+        # see setup.py for the actual build logic
+        # keep this line for brazil-path to work
+        python = { type = python; };
+    };
+};
