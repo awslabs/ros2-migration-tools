@@ -17,7 +17,7 @@ setup(name='docker_setup',
 	  version="1.0",
 	  description="Pull a docker image setup workspace for ros2 migration",
 	  author="Ryan Newell",
-	  author_email="ryanewel@amazon.com",
+	  author_email="ros-contributions@amazon.com",
 	  packages=["docker_setup"],
 	  install_requires = [
 	  	"docker",
