@@ -17,7 +17,7 @@ setup(name='ros2_migration_tool',
 	  version="1.0",
 	  description="Tools for migrating packages from ROS1 to ROS2",
 	  author="Ryan Newell",
-	  author_email="ryanewel@amazon.com",
+	  author_email="ros-contributions@amazon.com",
 	  packages=find_packages(),
 	  install_requires = [
 	  	"click",
