@@ -16,7 +16,7 @@ Python3 ros2_migration_tool.py --help
 
 ## Docker Setup
 
-For help run: python3 ros2_migration_tool.py launch_docker --help
+For help run: python3 ros2_migration_tool.py launch-docker --help
 
 ### Specifying ROS installations:
 
@@ -29,9 +29,9 @@ If you don't care about running the package in ROS1 then the ROS1 version should
 
 Checking Dependencies
 
-For help run: python3 ros2_migration_tool.py check_deps --help
+For help run: python3 ros2_migration_tool.py check-deps --help
 
-In the root directory of the ros package run python3 ros2_migration_tool.py check_deps <Package Name>
+In the root directory of the ros package run python3 ros2_migration_tool.py check-deps <Package Name>
  
 This will print out a list of dependencies and their migration status if known.
 
@@ -39,17 +39,17 @@ This will print out a list of dependencies and their migration status if known.
 
 For migrating package.xml and CMakeLists.txt files from catkin to ament run:
 
-Python3 ros2_migration_tool.py catkin_to_ament --help 
+Python3 ros2_migration_tool.py catkin-to-ament --help 
 
 Source files cannot be completed migrated automatically and will also print warnings for lines that may need to be changed. These tools are incomplete. See the README in porting_tools/ for how they can be extended.
 
 For migrating C++ source files run:
 
-Python3 ros2_migration_tool.py port_cpp --help
+Python3 ros2_migration_tool.py port-cpp --help
 
 For migrating python source files run:
 
-Python3 ros2_migration_tool.py port_python --help
+Python3 ros2_migration_tool.py port-python --help
 
 ## Package Migration Steps:
 
@@ -64,17 +64,17 @@ Python3 ros2_migration_tool.py port_python --help
     1.	By default this uses bouncy (the latest ROS2 release) and melodic (the ROS1 release for ubuntu 18.04). Use python3 ros2_migration_tool.py launch_docker --help  if you need to specify versions of ROS2 or ROS1 (also see docker_setup/README)
 5.	Check which dependencies have been migrated
     1.	From the ros package cd /workspace/<ros_package>
-    1.	 python3 ../ros2_migration_tool.py check_deps <ros_package> (Note that this must be run inside the directory containing the package)
+    1.	 python3 ../ros2_migration_tool.py check-deps <ros_package> (Note that this must be run inside the directory containing the package)
     1.	If any dependencies haven't been migrated do those first
 6.	Migrate the CMakeLists.txt and package.xml files:
-    1.	Run python3 ros2_migration_tool.py catkin_to_ament --package-path <path/to/package/src> (Note: by default this will overwrite your files!)
-    1.	Run  python3 ros2_migration_tool.py catkin_to_ament --help for options to not overwrite the current files
+    1.	Run python3 ros2_migration_tool.py catkin-to-ament --package-path <path/to/package/src> (Note: by default this will overwrite your files!)
+    1.	Run  python3 ros2_migration_tool.py catkin-to-ament --help for options to not overwrite the current files
     1.	Check the output to make sure the files were migrated successfully, note that comments may get messed up
     1.	Warning: Running the tool multiple times on the same file may result in duplicated lines
     1.	See the CMakeLists and package.xml sections below for more information on what the tool does.
 7.	Migrate the source code 
-    1.	Run python3 ros2_migration_tool.py port_cpp --src <path/to/ros1.cpp> --dst <path/to/ros2.cpp>
-    1.	Use port_python for python files
+    1.	Run python3 ros2_migration_tool.py port-cpp --src <path/to/ros1.cpp> --dst <path/to/ros2.cpp>
+    1.	Use port-python for python files
     1.	This will make some simple changes to the source code and produce warning for sections of code that may need to be changed. These warnings are not complete so even if no more warnings are generated the source code may still need changes
     1.	See the C++ source code changes and python source code change sections below for more information on what the tool does and what needs to be done by hand.
 8.	Migrate any message or service files
@@ -83,10 +83,10 @@ Python3 ros2_migration_tool.py port_python --help
     1.	In particular note the section on field names: they must be be only lowercase and cannot end in underscores
 9.	Migrate any launch files
     1.	In ROS2 launch files are python scripts not xml files
-    1.	Information about the ROS launch system can be found here and here
-    1.	Examples of launch files in ros2 can be found here
-
-
+    1.	Information about the ROS launch system can be found [here](https://github.com/ros2/ros2/wiki/Launch-system) and [here](https://github.com/bponsler/ros2-support/blob/master/tutorials/ros2-launch.md)
+    1.	Examples of launch files in ros2 can be found [here](https://github.com/ros2/launch)
+    
+  
 ## Reference:
 
 The migration tool is not able to do a complete migration itself. Please add or modify rules and warnings to improve it. Instructions for contributing can be found in porting_tools/README.md.
@@ -95,9 +95,9 @@ In general: follow the instructions for migration available at : https://github.
 
 Also look at these packages for example migrations:
 
-•	For messages: turtlebot3_msgs
+•	For messages: [turtlebot3_msgs](https://github.com/ROBOTIS-GIT/turtlebot3_msgs/pull/12/commits/437c5efdc5c6f013f270ca45faa985f3b5f7aaf2)
 
-•	Some example nodes: turtlebot3_nodes
+•	Some example nodes: [turtlebot3_nodes](https://github.com/ROBOTIS-GIT/turtlebot3/tree/ros2/turtlebot3_node/src)
 
 
 ### CMakeLists.txt Changes
