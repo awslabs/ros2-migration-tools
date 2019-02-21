@@ -36,8 +36,8 @@ class MigrationStatus():
     ignore = "Ignore"
     not_migrated = "Not Migrated"
     unknown = "Unknown Status"
-    def __init__(self, status=MigrationStatus.unknown, detail=""):
-        self.status = status
+    def __init__(self, status=None, detail=""):
+        self.status = MigrationStatus.unknown if status is None else status
         self.detail = detail
 
     def __str__(self):
