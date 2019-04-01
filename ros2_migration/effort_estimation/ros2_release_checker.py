@@ -19,8 +19,8 @@ import yaml
 
 
 
-DISTRIBUTION_YAML_URLS = ['https://raw.githubusercontent.com/ros2/rosdistro/ros2/ardent/distribution.yaml',
-                          'https://raw.githubusercontent.com/ros2/rosdistro/ros2/bouncy/distribution.yaml', ]
+DISTRIBUTION_YAML_URLS = ['https://raw.githubusercontent.com/ros/rosdistro/master/bouncy/distribution.yaml',
+                          'https://raw.githubusercontent.com/ros/rosdistro/master/crystal/distribution.yaml', ]
 
 
 IGNORE_PACKAGES = ['roscpp', 'rospy', 'roscpp_traits', 'roscpp_serialization', 'catkin',
