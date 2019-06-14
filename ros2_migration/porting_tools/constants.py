@@ -144,7 +144,7 @@ class CPPSourceChanges():
         r"#include <boost/thread/mutex.hpp>" : r"#include <mutex>",
         r"#include <boost/unordered_map.hpp>" : r"#include <unorder_map>",
         r"boost::unordered_map" : r"std::unordered_map",
-        r"#include<boost/function.hpp>" : r"#include <functional>",
+        r"#include <boost/function.hpp>" : r"#include <functional>",
         r"boost::function" : "std::function",
     }
 
