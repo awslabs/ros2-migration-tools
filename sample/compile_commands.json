@@ -1,7 +1,0 @@
-[
-{
-  "directory": "/opt/amanrja/Documents/my_plugin/sample",
-  "command": "/usr/bin/c++      -Wall -Wextra -Wpedantic -std=gnu++14 -o CMakeFiles/example.dir/example.cpp.o -c /opt/amanrja/Documents/my_plugin/sample/example.cpp",
-  "file": "/opt/amanrja/Documents/my_plugin/sample/example.cpp"
-}
-]
