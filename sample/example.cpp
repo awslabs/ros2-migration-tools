@@ -22,7 +22,7 @@ int addition (int a, int b) {
 
 int main () {
   int z, q;
-  swap(x,q);
+  //swap(x,q);
   funTest();
   z = addition (5,3);
   q = addition (5,5);
