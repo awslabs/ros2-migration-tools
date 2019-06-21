@@ -11,9 +11,9 @@ endif()
 
 set(CMAKE_C_COMPILER "clang")
 set(CMAKE_CXX_COMPILER "clang++")
-set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -stdlib=libstdc++")
 
 add_executable(example example.cpp)
 target_include_directories(example PUBLIC ${.})
-target_include_directories(example PUBLIC ${/Library/Developer/CommandLineTools/usr/include/c++/v1/})
+#target_include_directories(example PUBLIC ${/Library/Developer/CommandLineTools/usr/include/c++/v1/})
 
