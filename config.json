@@ -1,0 +1,6 @@
+{
+  "LIBCLANG_PATH": "clang/",
+  "COMPILE_DB_DIR": "../ROS_1/small_sample/build/talker",
+  "WORKSPACE_DIR": "../ROS_1/small_sample/src",
+  "USER_INCLUDES":  ["."]
+}

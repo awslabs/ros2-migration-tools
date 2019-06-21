@@ -856,12 +856,29 @@ class CppAstParser(object):
             return self._parse_without_db(file_path)
         return self._parse_from_db(file_path)
 
-    def get_ast(self, file_path):
+    def get_ast_str(self, file_path):
         file_path = os.path.abspath(file_path)
-        if self._db is None:
-            return self._parse_without_db(file_path, just_ast = True)
+        # if self._db is None:
+        #     return self._parse_without_db(file_path, just_ast = True)
         return self._parse_from_db(file_path, just_ast = True)
 
+    def get_ast_obj(self, file_path):
+        file_path = os.path.abspath(file_path)
+        return self._parse_from_db_as_obj(file_path)
+
+    def _parse_from_db_as_obj(self, file_path):
+    # ----- command retrieval -------------------------------------------------
+        cmd = self._db.getCompileCommands(file_path) or ()
+        if not cmd:
+            return None
+        for c in cmd:
+            with cwd(os.path.join(self._db.db_path, c.directory)):
+                args = ["-I" + CppAstParser.includes] + list(c.arguments)[1:]
+                if self._index is None:
+                    self._index = clang.Index.create()
+                unit = self._index.parse(None, args)
+                self._check_compilation_problems(unit)
+                return self._ast_obj(unit.cursor)
 
     def _parse_from_db(self, file_path, just_ast = False):
     # ----- command retrieval -------------------------------------------------
@@ -919,6 +936,26 @@ class CppAstParser(object):
                     builder.parent._add(cppobj)
                 queue.extend(builders)
 
+    def _ast_obj(self, top_cursor):
+        assert top_cursor.kind == CK.TRANSLATION_UNIT
+        objects = {}
+        for cursor in top_cursor.get_children():
+            if (cursor.location.file
+                    and cursor.location.file.name.startswith(self.workspace)):
+                curr_obj = self._cursor_obj(cursor)
+                if curr_obj["kind"] not in objects:
+                    objects[curr_obj["kind"]] = []
+                objects[curr_obj["kind"]].append(curr_obj)
+                stack = list(cursor.get_children())
+                while stack:
+                    c = stack.pop()
+                    curr_obj = self._cursor_obj(c)
+                    if curr_obj["kind"] not in objects:
+                        objects[curr_obj["kind"]] = []
+                    objects[curr_obj["kind"]].append(curr_obj)
+                    stack.extend(c.get_children())
+        return objects
+
     def _ast_str(self, top_cursor):
         assert top_cursor.kind == CK.TRANSLATION_UNIT
         lines = []
@@ -946,6 +983,30 @@ class CppAstParser(object):
                 if diagnostic.severity >= clang.Diagnostic.Error:
                     # logging.warning(diagnostic.spelling)
                     print "WARNING", diagnostic.spelling
+
+    def _cursor_obj(self, cursor):
+        line = 0
+        col = 0
+        file_name = ""
+        try:
+            if cursor.location.file:
+                line = cursor.location.line
+                col = cursor.location.column
+                file_name = cursor.location.file.name
+        except ArgumentError as e:
+            pass
+        name = repr(cursor.kind)[11:]
+        spell = cursor.spelling or "[no spelling]"
+        tokens = len(list(cursor.get_tokens()))
+        return {
+            "line": line,
+            "column": col,
+            "kind": name,
+            "spell": spell,
+            "tokens": tokens,
+            "file": file_name,
+            "offset": cursor.location.offset
+        }
 
     def _cursor_str(self, cursor, indent):
         line = 0
