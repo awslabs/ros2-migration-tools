@@ -19,5 +19,5 @@ The available modules are:
     Bindings for the Clang indexing library.
 """
 
-__all__ = ['libclang']
+__all__ = []
 
