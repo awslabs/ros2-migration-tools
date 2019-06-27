@@ -661,10 +661,10 @@ class CodeLiteral(CodeExpression):
         return '[{}] {!r}'.format(self.result, self.value)
 
 
-CodeExpression.TYPES = (int, long, float, bool, basestring, SomeValue,
+CodeExpression.TYPES = (int, int, float, bool, str, SomeValue,
                         CodeLiteral, CodeExpression)
 
-CodeExpression.LITERALS = (int, long, float, bool, basestring, CodeLiteral)
+CodeExpression.LITERALS = (int, int, float, bool, str, CodeLiteral)
 
 
 class CodeNull(CodeLiteral):
