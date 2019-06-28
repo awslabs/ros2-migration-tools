@@ -839,7 +839,6 @@ class CppAstParser(object):
     def set_standard_includes(std_includes):
         CppAstParser.includes = std_includes
 
-
     def __init__(self, workspace = "", user_includes = None):
     # public:
         self.workspace      = os.path.abspath(workspace) if workspace else ""
@@ -982,12 +981,13 @@ class CppAstParser(object):
             for diagnostic in translation_unit.diagnostics:
                 if diagnostic.severity >= clang.Diagnostic.Error:
                     # logging.warning(diagnostic.spelling)
-                    print "WARNING", diagnostic.spelling
+                    print("WARNING" + diagnostic.spelling)
 
     def _cursor_obj(self, cursor):
         line = 0
         col = 0
         file_name = ""
+        declaration_file_path = ""
         try:
             if cursor.location.file:
                 line = cursor.location.line
@@ -996,8 +996,13 @@ class CppAstParser(object):
         except ArgumentError as e:
             pass
         name = repr(cursor.kind)[11:]
-        spell = cursor.spelling or "[no spelling]"
+        spell = cursor.spelling or "[no name]"
         tokens = len(list(cursor.get_tokens()))
+        try:
+            declaration_file_path = cursor.referenced.location.file.name
+        except BaseException:
+            print(spell + ": " + 'declaration_file_name not present')
+
         return {
             "line": line,
             "column": col,
@@ -1005,7 +1010,8 @@ class CppAstParser(object):
             "spell": spell,
             "tokens": tokens,
             "file": file_name,
-            "offset": cursor.location.offset
+            "offset": cursor.location.offset,
+            "declaration_filepath": declaration_file_path
         }
 
     def _cursor_str(self, cursor, indent):
