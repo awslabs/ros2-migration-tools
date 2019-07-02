@@ -4,6 +4,7 @@ import shutil
 import datetime
 import json
 
+
 class Utilities:
     """
     Provides some utility functions
@@ -77,6 +78,77 @@ class Utilities:
         return os.path.abspath(os.path.join(directory, os.pardir))
 
     @staticmethod
+    def read_from_file(full_file_path):
+        """
+        Read file and return file handle
+        :param full_file_path:
+        :return: file contents as string
+        """
+        try:
+            with open(full_file_path, 'r') as f:
+                contents = f.read()
+                f.close()
+                return contents
+        except BaseException:
+            print("Not able to read json file at: " + full_file_path)
+
+    @staticmethod
+    def write_to_file(full_file_path, contents):
+        """
+        Gets write file handle for full_file_path
+        :param full_file_path:
+        :return: None
+        """
+        try:
+            with open(full_file_path, 'w') as f:
+                f.write(contents)
+                f.close()
+        except BaseException:
+            print("Write failed at: " + full_file_path)
+
+    @staticmethod
+    def read_json_file(full_file_path):
+        """
+        Read json file with path: full_file_path
+        :param full_file_path:
+        :return: json object
+        """
+        try:
+            with open(full_file_path, 'r') as f:
+                json_data = json.load(f)
+                f.close()
+                return json_data
+        except BaseException:
+            print("Not able to read json file at: " + full_file_path)
+
+    @staticmethod
+    def write_as_json(full_file_path, json_data, indent=4):
+        """
+        Write json_data to file: full_file_path
+        :param full_file_path:
+        :param json_data:
+        :return: None
+        """
+        try:
+            with open(full_file_path, 'w') as f:
+                json.dump(json_data, f, indent=indent, sort_keys=True)
+        except BaseException:
+            print("Write failed at: " + full_file_path)
+
+    @staticmethod
+    def simple_replace(original_str, mapping):
+        """
+        Replaces keys in mapping with the corresponding values
+        :param original_str: string in which replacements are to be made
+        :param mapping: key, values as to_replace and replace_with_obj(replace_with is the attribute "ros2_name")
+        :return:
+        """
+        for to_replace in mapping:
+            if to_replace != Constants.NEW_TOKENS_LIST:
+                original_str = original_str.replace(to_replace, mapping[to_replace][Constants.ROS_2_NAME])
+        return original_str
+
+    @staticmethod
     def init_ros2_folder():
         """
         Creates a new folder in ROS2_OUTPUT_DIR, with name src_currDate_currTime, and then copies the contents of ROS1
@@ -85,6 +157,7 @@ class Utilities:
         """
         Utilities.ROS2_SRC_PATH = os.path.join(Utilities.ROS2_OUTPUT_DIR, Utilities.get_uniquie_id(), Constants.ROS2_SRC_FOLDER)
         Utilities.copy_directory(Utilities.ROS1_SRC_PATH, Utilities.ROS2_SRC_PATH)
+
 
 if __name__ == "__main__":
     Utilities.init()

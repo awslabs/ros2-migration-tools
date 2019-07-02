@@ -1,16 +1,20 @@
 class AstConstants:
-    NAME = "spell"
+    KIND = "kind"
+    NAME = "name"
     NO_SPELLING = "[no spelling]"
     USING_DIRECTIVE = "USING_DIRECTIVE"
     FUNCTION_DECL = "FUNCTION_DECL"
-
+    CALL_EXPR = "CALL_EXPR"
+    NAMPSPACE_REF = "NAMESPACE_REF"
+    VAR_DECL = "VAR_DECL"
+    VAR_TYPE = "var_type"
 
 class Constants:
     ROS_1_NAME = "ros1_name"
     ROS_2_NAME = "ros2_name"
     NEW_TOKENS_LIST = "NEW_TOKENS_LIST"
-    NEW_MAPPING_MSG = "Just find it and fill it"
-    CONFIG_FILE_NAME = "config.json"
+    NEW_MAPPING_MSG = "ros2_name??"
+    CONFIG_FILE_NAME = "config2.json"
     LIBCLANG_PATH = "LIBCLANG_PATH"
     COMPILE_DB_DIR = "COMPILE_DB_DIR"
     ROS1_SRC_PATH = "ROS1_SRC_PATH"
@@ -21,7 +25,8 @@ class Constants:
     CMAKE_FILE_NAME = "CMakeLists.txt"
     PACKAGE_XML_FILE = "package.xml"
     MAPPING_FILE_NAME = 'mappings.json'
-    ROS1_INCLUDE_PATH = "include/ros"
+    ROS1_INCLUDE_PATH = "ros/kinetic"
     DECL_FILEPATH = "declaration_filepath"
     IRRELEVANT_TOKENS = "IRRELEVANT_TOKENS"
     COLCON_BUILD_SCRIPT_PATH = "./run_colcon_build.sh"
+    INCLUDES = "INCLUDES"

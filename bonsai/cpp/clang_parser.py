@@ -988,6 +988,8 @@ class CppAstParser(object):
         col = 0
         file_name = ""
         declaration_file_path = ""
+        semantic_parent = ""
+        var_type = ""
         try:
             if cursor.location.file:
                 line = cursor.location.line
@@ -998,20 +1000,38 @@ class CppAstParser(object):
         name = repr(cursor.kind)[11:]
         spell = cursor.spelling or "[no name]"
         tokens = len(list(cursor.get_tokens()))
+
         try:
             declaration_file_path = cursor.referenced.location.file.name
         except BaseException:
-            print(spell + ": " + 'declaration_file_name not present')
+            print(spell + ": declaration_file_name not present")
+
+        try:
+            semantic_parent = cursor.referenced.semantic_parent.spelling
+        except BaseException:
+            print(spell + ": semantic parent not present")
+
+        if name == "VAR_DECL":
+            print("here")
+
+        try:
+            token_list = list(cursor.get_tokens())
+            for i in range(0, len(token_list) - 1):
+                var_type += token_list[i].spelling
+        except BaseException:
+            print(spell + ": semantic parent not present")
 
         return {
             "line": line,
             "column": col,
             "kind": name,
-            "spell": spell,
-            "tokens": tokens,
-            "file": file_name,
-            "offset": cursor.location.offset,
-            "declaration_filepath": declaration_file_path
+            "name": spell,
+            #"tokens": tokens,
+            #"file": file_name,
+            #"offset": cursor.location.offset,
+            "declaration_filepath": declaration_file_path,
+            "semantic_parent": semantic_parent,
+            "var_type": var_type
         }
 
     def _cursor_str(self, cursor, indent):
