@@ -31,6 +31,7 @@ import clang.cindex as clang
 
 from ..parser import AnalysisData, MultipleDefinitionError
 from .model import *
+from Constants import AstConstants
 
 
 ###############################################################################
@@ -985,53 +986,43 @@ class CppAstParser(object):
 
     def _cursor_obj(self, cursor):
         line = 0
-        col = 0
-        file_name = ""
         declaration_file_path = ""
-        semantic_parent = ""
         var_type = ""
+        line_tokens = []
         try:
             if cursor.location.file:
                 line = cursor.location.line
-                col = cursor.location.column
-                file_name = cursor.location.file.name
-        except ArgumentError as e:
+        except AttributeError as e:
             pass
         name = repr(cursor.kind)[11:]
         spell = cursor.spelling or "[no name]"
-        tokens = len(list(cursor.get_tokens()))
 
         try:
             declaration_file_path = cursor.referenced.location.file.name
-        except BaseException:
+        except AttributeError as e:
             print(spell + ": declaration_file_name not present")
 
         try:
-            semantic_parent = cursor.referenced.semantic_parent.spelling
-        except BaseException:
-            print(spell + ": semantic parent not present")
-
-        if name == "VAR_DECL":
-            print("here")
+            var_type = cursor.type.spelling
+        except AttributeError:
+            print(spell + ": var_type not present")
 
         try:
             token_list = list(cursor.get_tokens())
-            for i in range(0, len(token_list) - 1):
-                var_type += token_list[i].spelling
-        except BaseException:
-            print(spell + ": semantic parent not present")
+            for i in range(0, len(token_list)):
+                line_tokens.append(token_list[i].spelling)
+
+            #print(name + " : " + spell + ":  " + str(line_tokens))
+        except AttributeError as e:
+            print("Couldn't get line_tokens")
 
         return {
-            "line": line,
-            "column": col,
-            "kind": name,
-            "name": spell,
-            #"tokens": tokens,
-            #"file": file_name,
-            #"offset": cursor.location.offset,
-            "declaration_filepath": declaration_file_path,
-            "semantic_parent": semantic_parent,
-            "var_type": var_type
+            AstConstants.LINE: line,
+            AstConstants.KIND: name,
+            AstConstants.NAME: spell,
+            AstConstants.DECL_FILEPATH: declaration_file_path,
+            AstConstants.VAR_TYPE: var_type,
+            AstConstants.LINE_TOKENS: line_tokens
         }
 
     def _cursor_str(self, cursor, indent):

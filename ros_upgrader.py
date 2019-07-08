@@ -9,7 +9,6 @@ import os
 import json
 import fnmatch
 import sys
-import shutil
 import copy
 
 class RosUpgrader:
@@ -17,10 +16,21 @@ class RosUpgrader:
     Convert ROS1 package to ROS2 package
     """
     TOKEN_TYPES = (
-        "CALL_EXPR",
-        "NAMESPACE_REF",
-        "USING_DIRECTIVE"
+        AstConstants.CALL_EXPR,
+        AstConstants.NAMESPACE_REF,
+        AstConstants.VAR_DECL
     )
+
+    MANUAL_TOKENS = (
+        Constants.INCLUDES,
+        Constants.MACROS
+    )
+
+    DECLARATION_PATH_CHECK = {
+        AstConstants.CALL_EXPR: True,
+        AstConstants.NAMESPACE_REF: True,
+        AstConstants.VAR_DECL: False
+    }
 
     # path to the folder containing "compile_commands.json" file, will be generated using cmake flag
     # "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON
@@ -31,6 +41,9 @@ class RosUpgrader:
 
     # path to all the include folders required by the package
     INCLUDES = []
+
+    # AST dict. Keys will be line numbers. Values will be dict with TOKEN_TYPES as keys and values will be the tokens
+    AST_LINE_BY_LINE = None
 
     @staticmethod
     def init():
@@ -137,7 +150,7 @@ class RosUpgrader:
         return declared_func_list
 
     @staticmethod
-    def get_new_mapping_attributes(token):
+    def get_mapping_attributes(token):
         """
         Populates attributes for the token to be saved in NEW_TOKEN_LIST
         :param token:
@@ -146,10 +159,88 @@ class RosUpgrader:
         attributes = {
             Constants.ROS_1_NAME: token[AstConstants.NAME],
             Constants.ROS_2_NAME: Constants.NEW_MAPPING_MSG
-            # "semantic_parent": token["semantic_parent"]
         }
         if token[AstConstants.KIND] == AstConstants.VAR_DECL:
-            attributes[Constants.ROS_1_NAME] = token[AstConstants.VAR_TYPE] + attributes[Constants.ROS_1_NAME]
+            attributes[Constants.ROS_1_NAME] = token[AstConstants.VAR_TYPE]
+            attributes[Constants.TO_SHARED_PTR] = True
+            attributes[Constants.CREATION_INFO] = {
+                Constants.IS_CREATED_BY_NODE: False,
+                Constants.MEMBER_NAME_IF_TRUE: ""
+            }
+        elif token[AstConstants.KIND] == AstConstants.CALL_EXPR:
+            attributes[Constants.NODE_ARG_INFO] = {
+                Constants.NODE_ARG_REQ: False,
+                Constants.NODE_ARG_INDEX: -1
+            }
+        return attributes
+
+    @staticmethod
+    def check_token_validity(token, mappings, irrelevant_tokens, added_set):
+        """
+        Checks for validity of a token
+        :param token:
+        :param mappings: mappings for token type
+        :param irrelevant_tokens: set of tokens to ignore
+        :param added_set: set of tokens already added
+        :return: True if token is valid False otherwise
+        """
+        if token[AstConstants.NAME] == AstConstants.NO_SPELLING:
+            return False
+
+        if RosUpgrader.DECLARATION_PATH_CHECK[token[AstConstants.KIND]]:
+            if Constants.ROS1_INCLUDE_PATH not in token[AstConstants.DECL_FILEPATH]:
+                return False
+
+        token_identifier = token[AstConstants.NAME]
+
+        # checking if there is already a duplicate mapping present
+        if token[AstConstants.KIND] == AstConstants.VAR_DECL:
+            token_identifier = token[AstConstants.VAR_TYPE]
+            if token[AstConstants.VAR_TYPE] in mappings:
+                return False
+        else:
+            if token[AstConstants.NAME] in mappings:
+                return False
+
+        if token_identifier in irrelevant_tokens or token_identifier in added_set:
+            return False
+
+        return True
+
+    @staticmethod
+    def get_line_by_line_template():
+        """
+        Generates a template for token types to be stored line by line
+        :return: dict
+        """
+        template = {}
+        for token_type in RosUpgrader.TOKEN_TYPES:
+            template[token_type] = []
+
+        return copy.deepcopy(template)
+
+    @staticmethod
+    def store_ast_line_by_line(tokens_dict):
+        """
+        Stores ast line by line for each file in tokens_dict
+        :param tokens_dict:
+        :return: None
+        """
+        RosUpgrader.AST_LINE_BY_LINE = {}
+        for file in tokens_dict:
+            RosUpgrader.AST_LINE_BY_LINE[file] = {}
+            ast_for_file = RosUpgrader.AST_LINE_BY_LINE[file]
+            for token_kind in tokens_dict[file]:
+                if token_kind not in RosUpgrader.TOKEN_TYPES:
+                    continue
+
+                tokens = tokens_dict[file][token_kind]
+                for token in tokens:
+                    line = token[AstConstants.LINE]
+                    if line not in ast_for_file:
+                        ast_for_file[line] = RosUpgrader.get_line_by_line_template()
+
+                    ast_for_file[line][token_kind].append(token)
 
     @staticmethod
     def add_new_mappings():
@@ -162,10 +253,7 @@ class RosUpgrader:
         irrelevant_tokens = set(mappings[Constants.IRRELEVANT_TOKENS])
 
         tokens_dict = RosUpgrader.get_ast_as_json()
-
-        # test code
-        Utilities.write_as_json("ast_dump.json", tokens_dict)
-        # test code end
+        RosUpgrader.store_ast_line_by_line(tokens_dict)
 
         for file in tokens_dict:
             tokens = tokens_dict[file]
@@ -173,14 +261,10 @@ class RosUpgrader:
                 if token_type in tokens:
                     added_set = set()
                     for token in tokens[token_type]:
-                        if token[AstConstants.NAME] != AstConstants.NO_SPELLING and \
-                                token[AstConstants.NAME] not in irrelevant_tokens and \
-                                token[AstConstants.NAME] not in added_set and \
-                                (token_type in mappings and token[AstConstants.NAME] not in mappings[token_type]) and \
-                                Constants.ROS1_INCLUDE_PATH in token[Constants.DECL_FILEPATH]:
+                        if RosUpgrader.check_token_validity(token, mappings[token_type], irrelevant_tokens, added_set):
 
                             mappings[token_type][Constants.NEW_TOKENS_LIST].append(
-                                RosUpgrader.get_token_attributes(token))
+                                RosUpgrader.get_mapping_attributes(token))
 
                             added_set.add(token[AstConstants.NAME])
                         else:
@@ -200,7 +284,8 @@ class RosUpgrader:
             file_list = RosUpgrader.get_cpp_file_list()
             for file_path in file_list:
                 src_content = Utilities.read_from_file(file_path)
-                new_src = SourceCodePorter.port(source=src_content, mapping=mapping)
+                new_src = SourceCodePorter.port(source=src_content, mapping=mapping,
+                                                ast=RosUpgrader.AST_LINE_BY_LINE[file_path])
                 Utilities.write_to_file(file_path, new_src)
 
     @staticmethod
@@ -221,7 +306,6 @@ class RosUpgrader:
                     else:
                         mapping[Constants.IRRELEVANT_TOKENS].append(new_token[Constants.ROS_1_NAME])
                 mapping[token_type][Constants.NEW_TOKENS_LIST] = []
-                #print(mapping)
         Utilities.write_as_json(Constants.MAPPING_FILE_NAME, mapping)
 
     @staticmethod
@@ -250,22 +334,12 @@ class RosUpgrader:
         """
         CppAstParser.set_database(Utilities.get_abs_path(compile_db_dir))
 
-    def __init__(self, compile_db_dir):
+    def __init__(self):
         pass
 
 
-def test_code():
-    RosUpgrader.SRC_PATH_TO_UPGRADE = "/Users/amanrja/Documents/ROS_2/upgraded_from_ros1/test/src"  # sys.argv[1]
-    shutil.rmtree(RosUpgrader.SRC_PATH_TO_UPGRADE)
-    Utilities.copy_directory(RosUpgrader.SRC_PATH_TO_UPGRADE + "2", RosUpgrader.SRC_PATH_TO_UPGRADE)
-
-
 def main():
-    #uncomment this
-    #RosUpgrader.SRC_PATH_TO_UPGRADE = sys.argv[1]
-
-    #test code
-    test_code()
+    RosUpgrader.SRC_PATH_TO_UPGRADE = sys.argv[1]
 
     RosUpgrader.init()
 
@@ -280,8 +354,12 @@ def main():
         RosUpgrader.set_compile_db(Utilities.get_parent_dir(compile_json))
         RosUpgrader.start_upgrade()
 
-    # print(json.dumps(RosUpgrader.get_tokens_as_json(), indent=4))
-
 
 if __name__ == '__main__':
     main()
+
+
+
+
+
+

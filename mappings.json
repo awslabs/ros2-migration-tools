@@ -1,8 +1,95 @@
 {
-  "CALL_EXPR" : {
-
-  },
-  "INCLUDES": {
-
-  }
+    "CALL_EXPR": {
+        "NEW_TOKENS_LIST": [],
+        "spinOnce": {
+            "node_arg_info": {
+                "node_arg_index": 0,
+                "node_arg_req": true
+            },
+            "ros2_name": "spin_some"
+        }
+    },
+    "EXAMPLE": {
+        "NEW_TOKENS_LIST": [],
+        "fun1": {
+            "new_name": "fun2",
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": true
+            },
+            "to_shared_ptr": true
+        }
+    },
+    "INCLUDES": {
+        "NEW_TOKENS_LIST": [],
+        "ros/ros.h": {
+            "ros2_name": "rclcpp/rclcpp.hpp"
+        },
+        "std_msgs/String.h": {
+            "ros2_name": "std_msgs/msg/string.hpp"
+        }
+    },
+    "IRRELEVANT_TOKENS": [
+        "levels",
+        "console",
+        "checkLogLocationEnabled",
+        "setLogLocationLevel",
+        "initializeLogLocation",
+        "initialize",
+        "ok",
+        "Rate",
+        "NodeHandle",
+        "init",
+        "sleep",
+        "bool",
+        "::ros::console::LogLocation",
+        "std::stringstream",
+        "int",
+        "ros::Rate"
+    ],
+    "MACROS": {
+        "NEW_TOKENS_LIST": [],
+        "ROS_INFO": {
+            "ros2_name": "RCLCPP_INFO"
+        }
+    },
+    "NAMESPACE_REF": {
+        "NEW_TOKENS_LIST": [],
+        "ros": {
+            "ros2_name": "rclcpp"
+        },
+        "std_msgs": {
+            "ros2_name": "std_msgs::msg"
+        }
+    },
+    "PARM_DECL": {
+        "NEW_TOKENS_LIST": []
+    },
+    "VAR_DECL": {
+        "NEW_TOKENS_LIST": [],
+        "ros::NodeHandle": {
+            "creation_info": {
+                "is_created_by_node": false,
+                "member_name_if_true": ""
+            },
+            "ros2_name": "ros::Node",
+            "to_shared_ptr": true
+        },
+        "ros::Publisher": {
+            "creation_info": {
+                "is_created_by_node": true,
+                "member_name_if_true": "create_publisher"
+            },
+            "ros2_name": "",
+            "to_shared_ptr": true
+        },
+        "std_msgs::String": {
+            "creation_info": {
+                "is_created_by_node": false,
+                "member_name_if_true": ""
+            },
+            "ros2_name": "std_msgs::String",
+            "to_shared_ptr": true
+        }
+    }
 }
