@@ -63,13 +63,15 @@ class SourceCodePorter():
         :param ast: ast in line by line format
         :return: new line str
         """
-        line = SourceCodePorter.rule_replace_headers(line, mapping)
-        line = SourceCodePorter.rule_replace_var_decl(line, line_number, mapping, ast)
-        line = SourceCodePorter.rule_replace_call_expr(line, line_number, mapping, ast)
-        line = SourceCodePorter.rule_replace_namespace_ref(line, mapping)
-        line = SourceCodePorter.rule_replace_dot_with_arrow(line)
-        line = SourceCodePorter.rule_dereference_pointers(line)
-        line = SourceCodePorter.rule_replace_macros(line, mapping)
+        if "#include" in line:
+            line = SourceCodePorter.rule_replace_headers(line, mapping)
+        else:
+            line = SourceCodePorter.rule_replace_var_decl(line, line_number, mapping, ast)
+            line = SourceCodePorter.rule_replace_call_expr(line, line_number, mapping, ast)
+            line = SourceCodePorter.rule_replace_namespace_ref(line, mapping)
+            line = SourceCodePorter.rule_replace_dot_with_arrow(line)
+            line = SourceCodePorter.rule_dereference_pointers(line)
+            line = SourceCodePorter.rule_replace_macros(line, mapping)
         return line
 
     @staticmethod
@@ -83,7 +85,8 @@ class SourceCodePorter():
         # use ros1_name if ros2_name not in mapping
         ros2_name = ros1_name
         if ros1_name in mapping:
-            ros2_name = mapping[ros1_name][Constants.ROS_2_NAME]
+            if Constants.ROS_2_NAME in mapping[ros1_name]:
+                ros2_name = mapping[ros1_name][Constants.ROS_2_NAME]
         return ros2_name
 
     @staticmethod
@@ -108,41 +111,46 @@ class SourceCodePorter():
         :param node_arg_ind: argument index of NODE_VAR_NAME, zero-based indexing is used
         :return: list
         """
+
+        # line_tokens should atleast be ["fun", "(", ")"]
+        if len(line_tokens) < 3:
+            raise Exception("line tokens list not valid")
+        if node_arg_ind < 0:
+            raise Exception("node argument index can't be negative")
+        if SourceCodePorter.NODE_VAR_NAME is None:
+            raise Exception("Node name missing")
+
         new_line_tokens = []
         req_comma_cnt = node_arg_ind
 
-        try:
-            ind = 0
-            bracket_found = False
-            while ind < len(line_tokens):
+        ind = 0
+        bracket_found = False
+        while ind < len(line_tokens):
 
-                if req_comma_cnt == 0 and bracket_found:
-                    new_line_tokens.append(SourceCodePorter.NODE_VAR_NAME)
-                    break
+            if req_comma_cnt == 0 and bracket_found:
+                new_line_tokens.append(SourceCodePorter.NODE_VAR_NAME)
+                break
 
-                if ind == len(line_tokens) - 1:
-                    new_line_tokens.append(",")
-                    new_line_tokens.append(SourceCodePorter.NODE_VAR_NAME)
-                    break
-
-                if line_tokens[ind] == ",":
-                    req_comma_cnt -= 1
-
-                if line_tokens[ind] == "(":
-                    bracket_found = True
-
-                new_line_tokens.append(line_tokens[ind])
-                ind += 1
-
-            if line_tokens[ind] != ')':
+            if ind == len(line_tokens) - 1:
                 new_line_tokens.append(",")
+                new_line_tokens.append(SourceCodePorter.NODE_VAR_NAME)
+                break
 
-            while ind < len(line_tokens):
-                new_line_tokens.append(line_tokens[ind])
-                ind += 1
-            assert node_arg_ind >= 0
-        except BaseException as e:
-            raise e
+            if line_tokens[ind] == ",":
+                req_comma_cnt -= 1
+
+            if line_tokens[ind] == "(":
+                bracket_found = True
+
+            new_line_tokens.append(line_tokens[ind])
+            ind += 1
+
+        if line_tokens[ind] != ')':
+            new_line_tokens.append(",")
+
+        while ind < len(line_tokens):
+            new_line_tokens.append(line_tokens[ind])
+            ind += 1
 
         return new_line_tokens
 
@@ -162,8 +170,8 @@ class SourceCodePorter():
             to_shared_ptr = mapping[var_type][Constants.TO_SHARED_PTR]
             is_created_by_node = mapping[var_type][Constants.CREATION_INFO][Constants.IS_CREATED_BY_NODE]
             node_member_name = mapping[var_type][Constants.CREATION_INFO][Constants.MEMBER_NAME_IF_TRUE]
-        except AttributeError as e:
-            raise e
+        except KeyError as e:
+            raise Exception(e.message + ": key not found")
 
         if to_shared_ptr:
             SourceCodePorter.POINTER_VARIABLES.append(var_name)
@@ -239,6 +247,8 @@ class SourceCodePorter():
                     replace_with = line_tokens[0] + line_tokens[1] + ros2_name + \
                         line_tokens[3] + line_tokens[4] + line_tokens[5] + line_tokens[6] + ")"
                     return re.sub(init_pattern, replace_with, line)
+                else:
+                    raise Exception("line tokens for ros::init invalid")
         return None
 
     @staticmethod
@@ -262,21 +272,20 @@ class SourceCodePorter():
                     if Constants.NODE_ARG_INFO in call_expr_mapping[fun_call]:
                         node_arg_info = call_expr_mapping[fun_call][Constants.NODE_ARG_INFO]
                         if Constants.NODE_ARG_REQ in node_arg_info and node_arg_info[Constants.NODE_ARG_REQ]:
-                            try:
-                                node_arg_ind = node_arg_info[Constants.NODE_ARG_INDEX]
-                                token = SourceCodePorter.find_token_in_ast(AstConstants.NAME, fun_call,
-                                                                           ast[line_number][AstConstants.CALL_EXPR])
+                            if Constants.NODE_ARG_INDEX not in node_arg_info:
+                                raise Exception(Constants.NODE_ARG_INDEX + " key missing")
+                            node_arg_ind = node_arg_info[Constants.NODE_ARG_INDEX]
+                            token = SourceCodePorter.find_token_in_ast(AstConstants.NAME, fun_call,
+                                                                       ast[line_number][AstConstants.CALL_EXPR])
+                            if token:
                                 line_tokens = token[AstConstants.LINE_TOKENS]
                                 new_line_token = SourceCodePorter.get_line_token_with_node_param(line_tokens,
                                                                                                  node_arg_ind)
                                 pattern = "(ros::)?" + fun_call + "\(.*\)"
-
                                 replacement = "".join(new_line_token)
 
                                 line = re.sub(pattern, replacement, line)
                                 line = line.replace(fun_call, call_expr_mapping[fun_call][Constants.ROS_2_NAME])
-                            except BaseException as e:
-                                raise e
                         else:
                             line = line.replace(fun_call, call_expr_mapping[fun_call][Constants.ROS_2_NAME])
             return line
@@ -293,9 +302,10 @@ class SourceCodePorter():
         :return: modified line is ros::NodeHandle found, None otherwise
         """
         if line_number in ast and RosConstants.NODE_HANDLE in line:
-            try:
-                token = SourceCodePorter.find_token_in_ast(AstConstants.VAR_TYPE, RosConstants.NODE_HANDLE,
-                                                           ast[line_number][AstConstants.VAR_DECL])
+
+            token = SourceCodePorter.find_token_in_ast(AstConstants.VAR_TYPE, RosConstants.NODE_HANDLE,
+                                                       ast[line_number][AstConstants.VAR_DECL])
+            if token:
                 var_name = token[AstConstants.NAME]
                 to_shared_ptr = mapping[RosConstants.NODE_HANDLE][Constants.TO_SHARED_PTR]
                 if to_shared_ptr:
@@ -309,8 +319,6 @@ class SourceCodePorter():
                     mapping) + "::make_shared(" + SourceCodePorter.NODE_NAME + ")"
 
                 return re.sub(pattern, replacement, line)
-            except BaseException as e:
-                raise e
 
         return None
 
@@ -336,7 +344,6 @@ class SourceCodePorter():
                                                                    ast[line_number][AstConstants.VAR_DECL])
                         if token:
                             line = SourceCodePorter.handle_var_creation_method(token, line, var_decl_mapping)
-                            return line
         return line
 
     @staticmethod

@@ -54,7 +54,7 @@ class RosUpgrader:
         try:
             config = open(Constants.CONFIG_FILE_NAME)
         except IOError as e:
-            print(e)
+            raise e
 
         config_obj = json.load(config)
 
@@ -339,6 +339,8 @@ class RosUpgrader:
 
 
 def main():
+    if len(sys.argv) != 2:
+        raise Exception("ros_upgrader.py needs SRC_PATH_TO_UPGRADE as argument")
     RosUpgrader.SRC_PATH_TO_UPGRADE = sys.argv[1]
 
     RosUpgrader.init()

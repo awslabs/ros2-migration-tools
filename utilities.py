@@ -27,7 +27,7 @@ class Utilities:
         try:
             config = open(Constants.CONFIG_FILE_NAME)
         except IOError as e:
-            print(e)
+            raise e
 
         config_obj = json.load(config)
 
@@ -55,10 +55,10 @@ class Utilities:
             shutil.copytree(src, dest)
         # Directories are the same
         except shutil.Error as e:
-            print('Directory not copied. Error: %s' % e)
+            raise e
         # Any error saying that the directory doesn't exist
         except OSError as e:
-            print('Directory not copied. Error: %s' % e)
+            raise e
 
     @staticmethod
     def get_uniquie_id():
@@ -89,8 +89,8 @@ class Utilities:
                 contents = f.read()
                 f.close()
                 return contents
-        except BaseException:
-            print("Not able to read json file at: " + full_file_path)
+        except IOError as e:
+            raise e
 
     @staticmethod
     def write_to_file(full_file_path, contents):
@@ -103,8 +103,8 @@ class Utilities:
             with open(full_file_path, 'w') as f:
                 f.write(contents)
                 f.close()
-        except BaseException:
-            print("Write failed at: " + full_file_path)
+        except IOError as e:
+            raise e
 
     @staticmethod
     def read_json_file(full_file_path):
@@ -118,8 +118,8 @@ class Utilities:
                 json_data = json.load(f)
                 f.close()
                 return json_data
-        except BaseException:
-            print("Not able to read json file at: " + full_file_path)
+        except IOError as e:
+            raise e
 
     @staticmethod
     def write_as_json(full_file_path, json_data, indent=4):
@@ -132,8 +132,8 @@ class Utilities:
         try:
             with open(full_file_path, 'w') as f:
                 json.dump(json_data, f, indent=indent, sort_keys=True)
-        except BaseException:
-            print("Write failed at: " + full_file_path)
+        except IOError as e:
+            raise e
 
     @staticmethod
     def simple_replace(original_str, mapping):
@@ -155,7 +155,8 @@ class Utilities:
         package from ROS1_SRC_PATH to the created directory
         :return:
         """
-        Utilities.ROS2_SRC_PATH = os.path.join(Utilities.ROS2_OUTPUT_DIR, Utilities.get_uniquie_id(), Constants.ROS2_SRC_FOLDER)
+        Utilities.ROS2_SRC_PATH = os.path.join(Utilities.ROS2_OUTPUT_DIR, Utilities.get_uniquie_id(),
+                                               Constants.ROS2_SRC_FOLDER)
         Utilities.copy_directory(Utilities.ROS1_SRC_PATH, Utilities.ROS2_SRC_PATH)
 
 
