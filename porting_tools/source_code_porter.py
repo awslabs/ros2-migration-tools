@@ -64,14 +64,15 @@ class SourceCodePorter():
         :return: new line str
         """
         if "#include" in line:
-            line = SourceCodePorter.rule_replace_headers(line, mapping)
+            line = SourceCodePorter.rule_replace_headers(line, line_number, mapping, ast)
         else:
             line = SourceCodePorter.rule_replace_var_decl(line, line_number, mapping, ast)
             line = SourceCodePorter.rule_replace_call_expr(line, line_number, mapping, ast)
+            line = SourceCodePorter.rule_replace_macros(line, line_number, mapping, ast)
             line = SourceCodePorter.rule_replace_namespace_ref(line, mapping)
             line = SourceCodePorter.rule_replace_dot_with_arrow(line)
             line = SourceCodePorter.rule_dereference_pointers(line)
-            line = SourceCodePorter.rule_replace_macros(line, mapping)
+
         return line
 
     @staticmethod
@@ -104,36 +105,35 @@ class SourceCodePorter():
         return None
 
     @staticmethod
-    def get_line_token_with_node_param(line_tokens, node_arg_ind):
+    def get_line_token_with_new_arg(line_tokens, arg_ind, arg_name):
         """
-        Inserts NODE_VAR_NAME as an argument and returns the new list of tokens
+        Inserts arg_name as an argument at arg_ind and returns the new list of tokens
         :param line_tokens: list containing old tokens
-        :param node_arg_ind: argument index of NODE_VAR_NAME, zero-based indexing is used
+        :param arg_ind: argument index of NODE_VAR_NAME, zero-based indexing is used
+        :param arg_name: name of the argumnent to be added at arg_ind
         :return: list
         """
 
         # line_tokens should atleast be ["fun", "(", ")"]
         if len(line_tokens) < 3:
             raise Exception("line tokens list not valid")
-        if node_arg_ind < 0:
+        if arg_ind < 0:
             raise Exception("node argument index can't be negative")
-        if SourceCodePorter.NODE_VAR_NAME is None:
-            raise Exception("Node name missing")
 
         new_line_tokens = []
-        req_comma_cnt = node_arg_ind
+        req_comma_cnt = arg_ind
 
         ind = 0
         bracket_found = False
         while ind < len(line_tokens):
 
             if req_comma_cnt == 0 and bracket_found:
-                new_line_tokens.append(SourceCodePorter.NODE_VAR_NAME)
+                new_line_tokens.append(arg_name)
                 break
 
             if ind == len(line_tokens) - 1:
                 new_line_tokens.append(",")
-                new_line_tokens.append(SourceCodePorter.NODE_VAR_NAME)
+                new_line_tokens.append(arg_name)
                 break
 
             if line_tokens[ind] == ",":
@@ -199,15 +199,20 @@ class SourceCodePorter():
     #########################
 
     @staticmethod
-    def rule_replace_headers(line, mapping):
+    def rule_replace_headers(line, line_number, mapping, ast):
         """
         Changes the ros1 includes to corresponding ros2 includes
         :param line: source line
-        :param mapping: ros1 to ros2 mapping for headers
-        :return: new source str
+        :param line_number: line number of line in source code
+        :param mapping: ros1 to ros2 mapping for various types
+        :param ast: ast in line by line format
+        :return: str
         """
-        header_mapping = mapping[Constants.INCLUDES]
-        return Utilities.simple_replace(line, header_mapping)
+        header_mapping = mapping[AstConstants.INCLUSION_DIRECTIVE]
+        for header in header_mapping:
+            if header in line:
+                line = line.replace(header, header_mapping[header][Constants.ROS_2_NAME])
+        return line
 
     @staticmethod
     def rule_replace_namespace_ref(line, mapping):
@@ -218,7 +223,12 @@ class SourceCodePorter():
         :return: new source str
         """
         namespace_mapping = mapping[AstConstants.NAMESPACE_REF]
-        return Utilities.simple_replace(line, namespace_mapping)
+        for to_replace in namespace_mapping:
+            if to_replace != Constants.NEW_TOKENS_LIST:
+                replace_with = namespace_mapping[to_replace][Constants.ROS_2_NAME] + "::"
+                to_replace += "::"
+                line = line.replace(to_replace, replace_with)
+        return line
 
     @staticmethod
     def rule_init_call_found(line, line_number, mapping, ast):
@@ -279,8 +289,14 @@ class SourceCodePorter():
                                                                        ast[line_number][AstConstants.CALL_EXPR])
                             if token:
                                 line_tokens = token[AstConstants.LINE_TOKENS]
-                                new_line_token = SourceCodePorter.get_line_token_with_node_param(line_tokens,
-                                                                                                 node_arg_ind)
+
+                                if SourceCodePorter.NODE_VAR_NAME is None:
+                                    raise Exception("Node name missing")
+
+                                new_line_token = SourceCodePorter.get_line_token_with_new_arg(line_tokens,
+                                                                                              node_arg_ind,
+                                                                                              SourceCodePorter.
+                                                                                              NODE_VAR_NAME)
                                 pattern = "(ros::)?" + fun_call + "\(.*\)"
                                 replacement = "".join(new_line_token)
 
@@ -330,7 +346,7 @@ class SourceCodePorter():
         :param line_number: line number of line in source code
         :param mapping: ros1 to ros2 mapping for various types
         :param ast: ast in line by line format
-        :return: new source str
+        :return: str
         """
         var_decl_mapping = mapping[AstConstants.VAR_DECL]
         new_line = SourceCodePorter.rule_node_handle_found(line, line_number, var_decl_mapping, ast)
@@ -351,7 +367,7 @@ class SourceCodePorter():
         """
         Replaces all c++ '.' calls with '->' calls for pointer variables
         :param line: source line
-        :return: new line
+        :return: str
         """
         for var_name in SourceCodePorter.POINTER_VARIABLES:
             pattern = "[^a-zA-Z0-9]" + var_name + "\."
@@ -369,22 +385,52 @@ class SourceCodePorter():
         """
         Replaces all pointer calls with '->' calls for pointer variables
         :param line: source line
-        :return: new line
+        :return: str
         """
 
         # ToDO: write regex for finding pointers which are required to be deferenced
         return line
 
     @staticmethod
-    def rule_replace_macros(line, mapping):
+    def rule_replace_macros(line, line_number, mapping, ast):
         """
         Changes the ros1 macros to corresponding ros2 macros
         :param line: source line
-        :param mapping: ros1 to ros2 mapping for macros
+        :param line_number: line number of line in source code
+        :param mapping: ros1 to ros2 mapping for various types
+        :param ast: ast in line by line format
         :return: str
         """
-        macros_mapping = mapping[Constants.MACROS]
-        return Utilities.simple_replace(line, macros_mapping)
+        macros_mapping = mapping[AstConstants.MACRO_INSTANTIATION]
+        for macro in macros_mapping:
+            if macro in line:
+                if Constants.NODE_ARG_INFO in macros_mapping[macro]:
+                    node_arg_info = macros_mapping[macro][Constants.NODE_ARG_INFO]
+                    if Constants.NODE_ARG_REQ in node_arg_info and node_arg_info[Constants.NODE_ARG_REQ]:
+                        if Constants.NODE_ARG_INDEX not in node_arg_info:
+                            raise Exception(Constants.NODE_ARG_INDEX + " key missing")
+
+                        member_name = None
+                        if Constants.MEMBER_NAME_IF_TRUE in node_arg_info:
+                            member_name = node_arg_info[Constants.MEMBER_NAME_IF_TRUE]
+
+                        node_arg_ind = node_arg_info[Constants.NODE_ARG_INDEX]
+                        token = SourceCodePorter.find_token_in_ast(AstConstants.NAME, macro,
+                                                                   ast[line_number][AstConstants.MACRO_INSTANTIATION])
+                        if token:
+                            line_tokens = token[AstConstants.LINE_TOKENS]
+                            if member_name is not None:
+                                arg_name = SourceCodePorter.NODE_VAR_NAME + "->" + member_name + "()"
+                                new_line_token = SourceCodePorter.get_line_token_with_new_arg(line_tokens,
+                                                                                              node_arg_ind, arg_name)
+                                pattern = macro + "\(.*\)"
+                                replacement = "".join(new_line_token)
+
+                                line = re.sub(pattern, replacement, line)
+                            line = line.replace(macro, macros_mapping[macro][Constants.ROS_2_NAME])
+                    else:
+                        line = line.replace(macro, macros_mapping[macro][Constants.ROS_2_NAME])
+        return line
 
     def __init__(self):
         pass

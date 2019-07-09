@@ -18,18 +18,21 @@ class RosUpgrader:
     TOKEN_TYPES = (
         AstConstants.CALL_EXPR,
         AstConstants.NAMESPACE_REF,
-        AstConstants.VAR_DECL
+        AstConstants.VAR_DECL,
+        AstConstants.MACRO_INSTANTIATION,
+        AstConstants.INCLUSION_DIRECTIVE
     )
 
     MANUAL_TOKENS = (
-        Constants.INCLUDES,
-        Constants.MACROS
+        Constants.INCLUDES
     )
 
     DECLARATION_PATH_CHECK = {
         AstConstants.CALL_EXPR: True,
         AstConstants.NAMESPACE_REF: True,
-        AstConstants.VAR_DECL: False
+        AstConstants.VAR_DECL: False,
+        AstConstants.MACRO_INSTANTIATION: True,
+        AstConstants.INCLUSION_DIRECTIVE: False
     }
 
     # path to the folder containing "compile_commands.json" file, will be generated using cmake flag
@@ -171,6 +174,12 @@ class RosUpgrader:
             attributes[Constants.NODE_ARG_INFO] = {
                 Constants.NODE_ARG_REQ: False,
                 Constants.NODE_ARG_INDEX: -1
+            }
+        elif token[AstConstants.KIND] == AstConstants.MACRO_INSTANTIATION:
+            attributes[Constants.NODE_ARG_INFO] = {
+                Constants.NODE_ARG_REQ: False,
+                Constants.NODE_ARG_INDEX: -1,
+                Constants.MEMBER_NAME_IF_TRUE: ""
             }
         return attributes
 

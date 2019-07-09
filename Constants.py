@@ -11,6 +11,8 @@ class AstConstants:
     LINE = "line"
     LINE_TOKENS = "line_tokens"
     DECL_FILEPATH = "declaration_filepath"
+    MACRO_INSTANTIATION = "MACRO_INSTANTIATION"
+    INCLUSION_DIRECTIVE = "INCLUSION_DIRECTIVE"
 
 class Constants:
     ROS_1_NAME = "ros1_name"

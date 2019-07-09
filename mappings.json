@@ -20,7 +20,7 @@
             "to_shared_ptr": true
         }
     },
-    "INCLUDES": {
+    "INCLUSION_DIRECTIVE": {
         "NEW_TOKENS_LIST": [],
         "ros/ros.h": {
             "ros2_name": "rclcpp/rclcpp.hpp"
@@ -45,11 +45,17 @@
         "::ros::console::LogLocation",
         "std::stringstream",
         "int",
-        "ros::Rate"
+        "ros::Rate",
+        "sstream"
     ],
-    "MACROS": {
+    "MACRO_INSTANTIATION": {
         "NEW_TOKENS_LIST": [],
         "ROS_INFO": {
+            "node_arg_info": {
+                "member_name_if_true": "get_logger",
+                "node_arg_index": 0,
+                "node_arg_req": true
+            },
             "ros2_name": "RCLCPP_INFO"
         }
     },
@@ -61,9 +67,6 @@
         "std_msgs": {
             "ros2_name": "std_msgs::msg"
         }
-    },
-    "PARM_DECL": {
-        "NEW_TOKENS_LIST": []
     },
     "VAR_DECL": {
         "NEW_TOKENS_LIST": [],

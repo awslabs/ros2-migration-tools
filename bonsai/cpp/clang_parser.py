@@ -876,7 +876,7 @@ class CppAstParser(object):
                 args = ["-I" + CppAstParser.includes] + list(c.arguments)[1:]
                 if self._index is None:
                     self._index = clang.Index.create()
-                unit = self._index.parse(None, args)
+                unit = self._index.parse(path=None, args=args, options=clang.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
                 self._check_compilation_problems(unit)
                 return self._ast_obj(unit.cursor)
 

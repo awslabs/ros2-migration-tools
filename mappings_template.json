@@ -2,20 +2,23 @@
     "CALL_EXPR": {
         "NEW_TOKENS_LIST": []
     },
-    "NAMESPACE_REF": {
-        "NEW_TOKENS_LIST": []
-    },
-    "INCLUDES": {
-        "NEW_TOKENS_LIST": []
-    },
-    "IRRELEVANT_TOKENS": [],
-    "PARM_DECL": {
-        "NEW_TOKENS_LIST": []
-    },
     "EXAMPLE": {
         "NEW_TOKENS_LIST": [],
         "ros1_name": {
             "ros2_name": "fun2"
         }
+    },
+    "INCLUSION_DIRECTIVE": {
+        "NEW_TOKENS_LIST": []
+    },
+    "IRRELEVANT_TOKENS": [],
+    "MACRO_INSTANTIATION": {
+        "NEW_TOKENS_LIST": []
+    },
+    "NAMESPACE_REF": {
+        "NEW_TOKENS_LIST": []
+    },
+    "VAR_DECL": {
+        "NEW_TOKENS_LIST": []
     }
 }
