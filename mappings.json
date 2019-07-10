@@ -46,7 +46,9 @@
         "std::stringstream",
         "int",
         "ros::Rate",
-        "sstream"
+        "sstream",
+        "getNamespace",
+        "getNamespace"
     ],
     "MACRO_INSTANTIATION": {
         "NEW_TOKENS_LIST": [],
