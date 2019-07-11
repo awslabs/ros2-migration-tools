@@ -62,6 +62,7 @@ class RosUpgrader:
         config_obj = json.load(config)
 
         CppAstParser.set_library_path(Utilities.get_abs_path(config_obj[Constants.LIBCLANG_PATH]))
+        CppAstParser.set_standard_includes(os.path.join(Utilities.get_abs_path(config_obj[Constants.LIBCLANG_PATH]), "include"))
 
         RosUpgrader.INCLUDES = []
         for fpath in config_obj[Constants.USER_INCLUDES]:
