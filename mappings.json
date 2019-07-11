@@ -1,23 +1,26 @@
 {
     "CALL_EXPR": {
         "NEW_TOKENS_LIST": [],
+        "advertise": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "create_publisher"
+        },
+        "getNamespace": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "get_namespace"
+        },
         "spinOnce": {
             "node_arg_info": {
                 "node_arg_index": 0,
                 "node_arg_req": true
             },
             "ros2_name": "spin_some"
-        }
-    },
-    "EXAMPLE": {
-        "NEW_TOKENS_LIST": [],
-        "fun1": {
-            "new_name": "fun2",
-            "node_arg_info": {
-                "node_arg_index": -1,
-                "node_arg_req": true
-            },
-            "to_shared_ptr": true
         }
     },
     "INCLUSION_DIRECTIVE": {
@@ -30,25 +33,27 @@
         }
     },
     "IRRELEVANT_TOKENS": [
-        "levels",
-        "console",
-        "checkLogLocationEnabled",
-        "setLogLocationLevel",
-        "initializeLogLocation",
-        "initialize",
-        "ok",
-        "Rate",
-        "NodeHandle",
-        "init",
-        "sleep",
-        "bool",
-        "::ros::console::LogLocation",
-        "std::stringstream",
-        "int",
-        "ros::Rate",
-        "sstream",
-        "getNamespace",
-        "getNamespace"
+        "bool_VAR_DECL",
+        "::ros::console::LogLocation_VAR_DECL",
+        "std::stringstream_VAR_DECL",
+        "int_VAR_DECL",
+        "ros::Rate_VAR_DECL",
+        "sstream_INCLUSION_DIRECTIVE",
+        "sleep_CALL_EXPR",
+        "publish_CALL_EXPR",
+        "print_CALL_EXPR",
+        "checkLogLocationEnabled_CALL_EXPR",
+        "setLogLocationLevel_CALL_EXPR",
+        "initializeLogLocation_CALL_EXPR",
+        "initialize_CALL_EXPR",
+        "ok_CALL_EXPR",
+        "String__CALL_EXPR",
+        "Rate_CALL_EXPR",
+        "NodeHandle_CALL_EXPR",
+        "spin_CALL_EXPR",
+        "init_CALL_EXPR",
+        "console_NAMESPACE_REF",
+        "levels_NAMESPACE_REF"
     ],
     "MACRO_INSTANTIATION": {
         "NEW_TOKENS_LIST": [],
@@ -73,26 +78,14 @@
     "VAR_DECL": {
         "NEW_TOKENS_LIST": [],
         "ros::NodeHandle": {
-            "creation_info": {
-                "is_created_by_node": false,
-                "member_name_if_true": ""
-            },
             "ros2_name": "ros::Node",
             "to_shared_ptr": true
         },
         "ros::Publisher": {
-            "creation_info": {
-                "is_created_by_node": true,
-                "member_name_if_true": "create_publisher"
-            },
-            "ros2_name": "",
+            "ros2_name": "ros::Publisher",
             "to_shared_ptr": true
         },
         "std_msgs::String": {
-            "creation_info": {
-                "is_created_by_node": false,
-                "member_name_if_true": ""
-            },
             "ros2_name": "std_msgs::String",
             "to_shared_ptr": true
         }

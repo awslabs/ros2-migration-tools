@@ -166,11 +166,7 @@ class RosUpgrader:
         }
         if token[AstConstants.KIND] == AstConstants.VAR_DECL:
             attributes[Constants.ROS_1_NAME] = token[AstConstants.VAR_TYPE]
-            attributes[Constants.TO_SHARED_PTR] = True
-            attributes[Constants.CREATION_INFO] = {
-                Constants.IS_CREATED_BY_NODE: False,
-                Constants.MEMBER_NAME_IF_TRUE: ""
-            }
+            attributes[Constants.TO_SHARED_PTR] = False
         elif token[AstConstants.KIND] == AstConstants.CALL_EXPR:
             attributes[Constants.NODE_ARG_INFO] = {
                 Constants.NODE_ARG_REQ: False,
@@ -212,7 +208,8 @@ class RosUpgrader:
             if token[AstConstants.NAME] in mappings:
                 return False
 
-        if token_identifier in irrelevant_tokens or token_identifier in added_set:
+        irrelevant_token_id = token_identifier + "_" + token[AstConstants.KIND]
+        if irrelevant_token_id in irrelevant_tokens or token_identifier in added_set:
             return False
 
         return True
@@ -314,7 +311,8 @@ class RosUpgrader:
                         del updated_token[Constants.ROS_1_NAME]
                         mapping[token_type][new_token[Constants.ROS_1_NAME]] = updated_token
                     else:
-                        mapping[Constants.IRRELEVANT_TOKENS].append(new_token[Constants.ROS_1_NAME])
+                        irrelevant_token_id = new_token[Constants.ROS_1_NAME] + "_" + token_type
+                        mapping[Constants.IRRELEVANT_TOKENS].append(irrelevant_token_id)
                 mapping[token_type][Constants.NEW_TOKENS_LIST] = []
         Utilities.write_as_json(Constants.MAPPING_FILE_NAME, mapping)
 

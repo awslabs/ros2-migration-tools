@@ -64,7 +64,7 @@ class SourceCodePorter():
         :return: new line str
         """
         if "#include" in line:
-            line = SourceCodePorter.rule_replace_headers(line, line_number, mapping, ast)
+            line = SourceCodePorter.rule_replace_headers(line, mapping)
         else:
             line = SourceCodePorter.rule_replace_var_decl(line, line_number, mapping, ast)
             line = SourceCodePorter.rule_replace_call_expr(line, line_number, mapping, ast)
@@ -168,22 +168,19 @@ class SourceCodePorter():
 
         try:
             to_shared_ptr = mapping[var_type][Constants.TO_SHARED_PTR]
-            is_created_by_node = mapping[var_type][Constants.CREATION_INFO][Constants.IS_CREATED_BY_NODE]
-            node_member_name = mapping[var_type][Constants.CREATION_INFO][Constants.MEMBER_NAME_IF_TRUE]
         except KeyError as e:
             raise Exception(e.message + ": key not found")
 
         if to_shared_ptr:
             SourceCodePorter.POINTER_VARIABLES.append(var_name)
 
-        if is_created_by_node:
-            replacement = "auto " + var_name + " = " + SourceCodePorter.NODE_VAR_NAME + "->" + node_member_name
-            if to_shared_ptr:
-                pattern = var_type + " *" + var_name + ".*(?=<)"
-            else:
-                pattern = var_type + " *" + var_name + ".*(?=\()"
+        ros2_name = SourceCodePorter.get_ros2_name(var_type, mapping)
+
+        line_pattern = var_type + " *" + var_name + " *="
+        if re.search(line_pattern, line) is not None:
+            pattern = var_type + " *" + var_name
+            replacement = "auto " + var_name
         else:
-            ros2_name = SourceCodePorter.get_ros2_name(var_type, mapping)
             pattern = var_type + " *" + var_name + ";"
             if to_shared_ptr:
                 replacement = "auto " + var_name + " = std::make_shared<" + ros2_name + ">();"
@@ -199,7 +196,7 @@ class SourceCodePorter():
     #########################
 
     @staticmethod
-    def rule_replace_headers(line, line_number, mapping, ast):
+    def rule_replace_headers(line, mapping):
         """
         Changes the ros1 includes to corresponding ros2 includes
         :param line: source line
@@ -370,7 +367,7 @@ class SourceCodePorter():
         :return: str
         """
         for var_name in SourceCodePorter.POINTER_VARIABLES:
-            pattern = "[^a-zA-Z0-9]" + var_name + "\."
+            pattern = "[^a-zA-Z0-9_]" + var_name + "\."
             sub_str = re.search(pattern, line)
 
             if sub_str:
