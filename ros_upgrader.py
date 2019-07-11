@@ -1,4 +1,4 @@
-from bonsai.cpp.clang_parser import CppAstParser
+from clang.clang_parser import CppAstParser
 from porting_tools.cmake_lists_porter import CMakeListsPorter
 from porting_tools.package_xml_porter import PackageXMLPorter
 from porting_tools.source_code_porter import SourceCodePorter
