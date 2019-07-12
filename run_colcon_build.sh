@@ -14,4 +14,5 @@ colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
 
 cd $current_dir
+python3 -m unittest discover
 python3 ros_upgrader.py $SRC_PATH_TO_UPGRADE
