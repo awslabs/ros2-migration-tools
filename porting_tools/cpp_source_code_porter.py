@@ -17,7 +17,7 @@ from Constants import AstConstants, Constants, RosConstants
 from utilities import Utilities
 
 
-class SourceCodePorter():
+class CPPSourceCodePorter():
     """ Class containing static methods to change and print warning on C++ source code """
     NODE_NAME = None
     NODE_VAR_NAME = None
@@ -29,9 +29,9 @@ class SourceCodePorter():
         Initializes the variables to initial values
         :return: None
         """
-        SourceCodePorter.NODE_NAME = None
-        SourceCodePorter.NODE_VAR_NAME = None
-        SourceCodePorter.POINTER_VARIABLES = []
+        CPPSourceCodePorter.NODE_NAME = None
+        CPPSourceCodePorter.NODE_VAR_NAME = None
+        CPPSourceCodePorter.POINTER_VARIABLES = []
 
     @staticmethod
     def port(source, mapping, ast):
@@ -43,13 +43,13 @@ class SourceCodePorter():
         Returns:
             The new source code
         """
-        SourceCodePorter.init()
+        CPPSourceCodePorter.init()
 
         src_lines = source.split('\n')
         new_source = []
         for line_number in range(len(src_lines)):
             # actual line number in the file will be start from 1, so use line_number + 1
-            new_source.append(SourceCodePorter.port_line(src_lines[line_number], line_number+1, mapping, ast))
+            new_source.append(CPPSourceCodePorter.port_line(src_lines[line_number], line_number + 1, mapping, ast))
 
         return "\n".join(new_source)
 
@@ -64,14 +64,14 @@ class SourceCodePorter():
         :return: new line str
         """
         if "#include" in line:
-            line = SourceCodePorter.rule_replace_headers(line, mapping)
+            line = CPPSourceCodePorter.rule_replace_headers(line, mapping)
         else:
-            line = SourceCodePorter.rule_replace_var_decl(line, line_number, mapping, ast)
-            line = SourceCodePorter.rule_replace_call_expr(line, line_number, mapping, ast)
-            line = SourceCodePorter.rule_replace_macros(line, line_number, mapping, ast)
-            line = SourceCodePorter.rule_replace_namespace_ref(line, mapping)
-            line = SourceCodePorter.rule_replace_dot_with_arrow(line)
-            line = SourceCodePorter.rule_dereference_pointers(line)
+            line = CPPSourceCodePorter.rule_replace_var_decl(line, line_number, mapping, ast)
+            line = CPPSourceCodePorter.rule_replace_call_expr(line, line_number, mapping, ast)
+            line = CPPSourceCodePorter.rule_replace_macros(line, line_number, mapping, ast)
+            line = CPPSourceCodePorter.rule_replace_namespace_ref(line, mapping)
+            line = CPPSourceCodePorter.rule_replace_dot_with_arrow(line)
+            line = CPPSourceCodePorter.rule_dereference_pointers(line)
 
         return line
 
@@ -172,9 +172,9 @@ class SourceCodePorter():
             raise Exception(e.message + ": key not found")
 
         if to_shared_ptr:
-            SourceCodePorter.POINTER_VARIABLES.append(var_name)
+            CPPSourceCodePorter.POINTER_VARIABLES.append(var_name)
 
-        ros2_name = SourceCodePorter.get_ros2_name(var_type, mapping)
+        ros2_name = CPPSourceCodePorter.get_ros2_name(var_type, mapping)
 
         line_pattern = var_type + " *" + var_name + " *="
         if re.search(line_pattern, line) is not None:
@@ -239,16 +239,16 @@ class SourceCodePorter():
         :return: new line if init found, None if init not found
         """
         if line_number in ast and RosConstants.INIT_PATTERN in line:
-            token = SourceCodePorter.find_token_in_ast(AstConstants.NAME, RosConstants.INIT_CALL_EXPR,
-                                                       ast[line_number][AstConstants.CALL_EXPR])
+            token = CPPSourceCodePorter.find_token_in_ast(AstConstants.NAME, RosConstants.INIT_CALL_EXPR,
+                                                          ast[line_number][AstConstants.CALL_EXPR])
             if token:
                 line_tokens = token[AstConstants.LINE_TOKENS]
                 # tokens for init:  ['ros', '::', 'init', '(', 'argc', ',', 'argv', ',', '"talker"', ')']
                 # so min length should be 10
                 if len(line_tokens) >= 10:
-                    SourceCodePorter.NODE_NAME = line_tokens[8]
+                    CPPSourceCodePorter.NODE_NAME = line_tokens[8]
 
-                    ros2_name = SourceCodePorter.get_ros2_name(line_tokens[2], mapping)
+                    ros2_name = CPPSourceCodePorter.get_ros2_name(line_tokens[2], mapping)
 
                     init_pattern = RosConstants.INIT_PATTERN + ".*\)"
                     replace_with = line_tokens[0] + line_tokens[1] + ros2_name + \
@@ -269,7 +269,7 @@ class SourceCodePorter():
         :return: new source str
         """
 
-        init_line = SourceCodePorter.rule_init_call_found(line, line_number, mapping, ast)
+        init_line = CPPSourceCodePorter.rule_init_call_found(line, line_number, mapping, ast)
         if init_line:
             return init_line
         else:
@@ -282,18 +282,18 @@ class SourceCodePorter():
                             if Constants.NODE_ARG_INDEX not in node_arg_info:
                                 raise Exception(Constants.NODE_ARG_INDEX + " key missing")
                             node_arg_ind = node_arg_info[Constants.NODE_ARG_INDEX]
-                            token = SourceCodePorter.find_token_in_ast(AstConstants.NAME, fun_call,
-                                                                       ast[line_number][AstConstants.CALL_EXPR])
+                            token = CPPSourceCodePorter.find_token_in_ast(AstConstants.NAME, fun_call,
+                                                                          ast[line_number][AstConstants.CALL_EXPR])
                             if token:
                                 line_tokens = token[AstConstants.LINE_TOKENS]
 
-                                if SourceCodePorter.NODE_VAR_NAME is None:
+                                if CPPSourceCodePorter.NODE_VAR_NAME is None:
                                     raise Exception("Node name missing")
 
-                                new_line_token = SourceCodePorter.get_line_token_with_new_arg(line_tokens,
-                                                                                              node_arg_ind,
-                                                                                              SourceCodePorter.
-                                                                                              NODE_VAR_NAME)
+                                new_line_token = CPPSourceCodePorter.get_line_token_with_new_arg(line_tokens,
+                                                                                                 node_arg_ind,
+                                                                                                 CPPSourceCodePorter.
+                                                                                                 NODE_VAR_NAME)
                                 pattern = "(ros::)?" + fun_call + "\(.*\)"
                                 replacement = "".join(new_line_token)
 
@@ -316,20 +316,20 @@ class SourceCodePorter():
         """
         if line_number in ast and RosConstants.NODE_HANDLE in line:
 
-            token = SourceCodePorter.find_token_in_ast(AstConstants.VAR_TYPE, RosConstants.NODE_HANDLE,
-                                                       ast[line_number][AstConstants.VAR_DECL])
+            token = CPPSourceCodePorter.find_token_in_ast(AstConstants.VAR_TYPE, RosConstants.NODE_HANDLE,
+                                                          ast[line_number][AstConstants.VAR_DECL])
             if token:
                 var_name = token[AstConstants.NAME]
                 to_shared_ptr = mapping[RosConstants.NODE_HANDLE][Constants.TO_SHARED_PTR]
                 if to_shared_ptr:
-                    SourceCodePorter.POINTER_VARIABLES.append(var_name)
+                    CPPSourceCodePorter.POINTER_VARIABLES.append(var_name)
 
-                SourceCodePorter.NODE_VAR_NAME = var_name
+                CPPSourceCodePorter.NODE_VAR_NAME = var_name
 
                 pattern = RosConstants.NODE_HANDLE + " *" + var_name
 
-                replacement = "auto " + var_name + " = " + SourceCodePorter.get_ros2_name(RosConstants.NODE_HANDLE,
-                    mapping) + "::make_shared(" + SourceCodePorter.NODE_NAME + ")"
+                replacement = "auto " + var_name + " = " + CPPSourceCodePorter.get_ros2_name(RosConstants.NODE_HANDLE,
+                                                                                             mapping) + "::make_shared(" + CPPSourceCodePorter.NODE_NAME + ")"
 
                 return re.sub(pattern, replacement, line)
 
@@ -346,17 +346,17 @@ class SourceCodePorter():
         :return: str
         """
         var_decl_mapping = mapping[AstConstants.VAR_DECL]
-        new_line = SourceCodePorter.rule_node_handle_found(line, line_number, var_decl_mapping, ast)
+        new_line = CPPSourceCodePorter.rule_node_handle_found(line, line_number, var_decl_mapping, ast)
         if new_line is not None:
             return new_line
         else:
             for var_type in var_decl_mapping:
                 if var_type in line:
                     if line_number in ast:
-                        token = SourceCodePorter.find_token_in_ast(AstConstants.VAR_TYPE, var_type,
-                                                                   ast[line_number][AstConstants.VAR_DECL])
+                        token = CPPSourceCodePorter.find_token_in_ast(AstConstants.VAR_TYPE, var_type,
+                                                                      ast[line_number][AstConstants.VAR_DECL])
                         if token:
-                            line = SourceCodePorter.handle_var_creation_method(token, line, var_decl_mapping)
+                            line = CPPSourceCodePorter.handle_var_creation_method(token, line, var_decl_mapping)
         return line
 
     @staticmethod
@@ -366,7 +366,7 @@ class SourceCodePorter():
         :param line: source line
         :return: str
         """
-        for var_name in SourceCodePorter.POINTER_VARIABLES:
+        for var_name in CPPSourceCodePorter.POINTER_VARIABLES:
             pattern = "[^a-zA-Z0-9_]" + var_name + "\."
             sub_str = re.search(pattern, line)
 
@@ -412,14 +412,14 @@ class SourceCodePorter():
                             member_name = node_arg_info[Constants.MEMBER_NAME_IF_TRUE]
 
                         node_arg_ind = node_arg_info[Constants.NODE_ARG_INDEX]
-                        token = SourceCodePorter.find_token_in_ast(AstConstants.NAME, macro,
-                                                                   ast[line_number][AstConstants.MACRO_INSTANTIATION])
+                        token = CPPSourceCodePorter.find_token_in_ast(AstConstants.NAME, macro,
+                                                                      ast[line_number][AstConstants.MACRO_INSTANTIATION])
                         if token:
                             line_tokens = token[AstConstants.LINE_TOKENS]
                             if member_name is not None:
-                                arg_name = SourceCodePorter.NODE_VAR_NAME + "->" + member_name + "()"
-                                new_line_token = SourceCodePorter.get_line_token_with_new_arg(line_tokens,
-                                                                                              node_arg_ind, arg_name)
+                                arg_name = CPPSourceCodePorter.NODE_VAR_NAME + "->" + member_name + "()"
+                                new_line_token = CPPSourceCodePorter.get_line_token_with_new_arg(line_tokens,
+                                                                                                 node_arg_ind, arg_name)
                                 pattern = macro + "\(.*\)"
                                 replacement = "".join(new_line_token)
 
