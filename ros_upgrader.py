@@ -65,7 +65,8 @@ class RosUpgrader:
         config_obj = json.load(config)
 
         CppAstParser.set_library_path(Utilities.get_abs_path(config_obj[Constants.LIBCLANG_PATH]))
-        CppAstParser.set_standard_includes(os.path.join(Utilities.get_abs_path(config_obj[Constants.LIBCLANG_PATH]), "include"))
+        CppAstParser.set_standard_includes(os.path.join(Utilities.get_abs_path(config_obj[Constants.LIBCLANG_PATH]),
+                                                        "include"))
 
         RosUpgrader.INCLUDES = []
         for fpath in config_obj[Constants.USER_INCLUDES]:
@@ -107,6 +108,7 @@ class RosUpgrader:
     def get_all_file_paths(directory, file_name):
         """
         Recursively find all the file with name 'file_name' in "directory"
+        :param directory: directory in which to search
         :param file_name: name of the file to search recursively
         :return: list containing file paths
         """

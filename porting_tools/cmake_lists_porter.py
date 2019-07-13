@@ -15,8 +15,7 @@
 A class for porting CMakeLists from ROS1 to ROS2
 """
 import os.path
-from .constants import CatkinToAmentMigration, ROS1ROS2Packages
-from .utils import get_functions_with
+
 try:
     import parse_cmake.parsing as cmkp
 except ImportError:
@@ -26,6 +25,9 @@ except ImportError:
     print("")
     print("pip3 install parse_cmake")
     exit(1)
+
+from .constants import CatkinToAmentMigration, ROS1ROS2Packages
+from .utils import get_functions_with
 
 
 def extract_args(item):

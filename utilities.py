@@ -1,8 +1,9 @@
-from Constants import Constants
-import os
-import shutil
 import datetime
 import json
+import os
+import shutil
+
+from Constants import Constants
 
 
 class Utilities:

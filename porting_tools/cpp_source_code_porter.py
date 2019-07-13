@@ -13,11 +13,11 @@
 
 """ A class and method for porting ROS1 source code to ROS2 """
 import re
+
 from Constants import AstConstants, Constants, RosConstants
-from utilities import Utilities
 
 
-class CPPSourceCodePorter():
+class CPPSourceCodePorter:
     """ Class containing static methods to change and print warning on C++ source code """
     NODE_NAME = None
     NODE_VAR_NAME = None
@@ -110,7 +110,7 @@ class CPPSourceCodePorter():
         Inserts arg_name as an argument at arg_ind and returns the new list of tokens
         :param line_tokens: list containing old tokens
         :param arg_ind: argument index of NODE_VAR_NAME, zero-based indexing is used
-        :param arg_name: name of the argumnent to be added at arg_ind
+        :param arg_name: name of the argument to be added at arg_ind
         :return: list
         """
 
@@ -158,7 +158,7 @@ class CPPSourceCodePorter():
     def handle_var_creation_method(token, line, mapping):
         """
         Handles different ways of VAR_DECL
-        :param token: token containgin the var info
+        :param token: token containing the var info
         :param line: source code line
         :param mapping: ROS1 to ROS2 mapping of VAR_DECL
         :return:
@@ -190,7 +190,6 @@ class CPPSourceCodePorter():
         line = re.sub(pattern, replacement, line)
         return line
 
-
     #########################
     #        RULES          #
     #########################
@@ -200,9 +199,7 @@ class CPPSourceCodePorter():
         """
         Changes the ros1 includes to corresponding ros2 includes
         :param line: source line
-        :param line_number: line number of line in source code
         :param mapping: ros1 to ros2 mapping for various types
-        :param ast: ast in line by line format
         :return: str
         """
         header_mapping = mapping[AstConstants.INCLUSION_DIRECTIVE]
@@ -329,7 +326,7 @@ class CPPSourceCodePorter():
                 pattern = RosConstants.NODE_HANDLE + " *" + var_name
 
                 replacement = "auto " + var_name + " = " + CPPSourceCodePorter.get_ros2_name(RosConstants.NODE_HANDLE,
-                                                                                             mapping) + "::make_shared(" + CPPSourceCodePorter.NODE_NAME + ")"
+                                mapping) + "::make_shared(" + CPPSourceCodePorter.NODE_NAME + ")"
 
                 return re.sub(pattern, replacement, line)
 
