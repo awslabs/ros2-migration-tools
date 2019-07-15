@@ -15,6 +15,7 @@
 import re
 
 from Constants import AstConstants, Constants, RosConstants
+from utilities import Utilities
 
 
 class CPPSourceCodePorter:
@@ -364,7 +365,7 @@ class CPPSourceCodePorter:
         :return: str
         """
         for var_name in CPPSourceCodePorter.POINTER_VARIABLES:
-            pattern = "[^a-zA-Z0-9_]" + var_name + "\."
+            pattern = "[^a-zA-Z0-9_]*" + var_name + "\."
             sub_str = re.search(pattern, line)
 
             if sub_str:
@@ -418,7 +419,7 @@ class CPPSourceCodePorter:
                                 new_line_token = CPPSourceCodePorter.get_line_token_with_new_arg(line_tokens,
                                                                                                  node_arg_ind, arg_name)
                                 pattern = macro + "\(.*\)"
-                                replacement = "".join(new_line_token)
+                                replacement = Utilities.get_raw_str("".join(new_line_token))
 
                                 line = re.sub(pattern, replacement, line)
                             line = line.replace(macro, macros_mapping[macro][Constants.ROS_2_NAME])
