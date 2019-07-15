@@ -1,9 +1,10 @@
+import copy
 import datetime
 import json
 import os
 import shutil
 
-from Constants import Constants
+from Constants import AstConstants, Constants
 
 
 class Utilities:
@@ -159,6 +160,48 @@ class Utilities:
         Utilities.ROS2_SRC_PATH = os.path.join(Utilities.ROS2_OUTPUT_DIR, Utilities.get_uniquie_id(),
                                                Constants.ROS2_SRC_FOLDER)
         Utilities.copy_directory(Utilities.ROS1_SRC_PATH, Utilities.ROS2_SRC_PATH)
+
+    @staticmethod
+    def get_line_by_line_template():
+        """
+        Generates a template for token types to be stored line by line
+        :return: dict
+        """
+        template = {}
+        for token_type in Constants.TOKEN_TYPES:
+            template[token_type] = []
+
+        return copy.deepcopy(template)
+
+    @staticmethod
+    def get_line_by_line_ast(ast_tokens):
+        """
+        Retuns a dict containing array of tokens for each line
+        :param ast_tokens: dict containing tokens list for each kind
+        :return: dict
+        """
+        ast_for_line = {}
+        for token_kind in ast_tokens:
+            if token_kind not in Constants.TOKEN_TYPES:
+                continue
+
+            tokens_list = ast_tokens[token_kind]
+            for token in tokens_list:
+                line = token[AstConstants.LINE]
+                if line not in ast_for_line:
+                    ast_for_line[line] = Utilities.get_line_by_line_template()
+
+                ast_for_line[line][token_kind].append(token)
+        return ast_for_line
+
+    @staticmethod
+    def get_raw_str(input_str):
+        """
+        Returns the raw string representation of input_str
+        :param input_str: input string
+        :return: str
+        """
+        return repr(input_str)[1:-1]
 
 
 if __name__ == "__main__":

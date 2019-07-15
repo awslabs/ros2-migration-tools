@@ -43,6 +43,16 @@ class Constants:
     CREATION_INFO = "creation_info"
     IS_CREATED_BY_NODE = "is_created_by_node"
     MEMBER_NAME_IF_TRUE = "member_name_if_true"
+    TOKEN_TYPES = (
+        AstConstants.CALL_EXPR,
+        AstConstants.NAMESPACE_REF,
+        AstConstants.VAR_DECL,
+        AstConstants.MACRO_INSTANTIATION,
+        AstConstants.INCLUSION_DIRECTIVE
+    )
+    MANUAL_TOKENS = (
+        INCLUDES
+    )
 
 
 class RosConstants:

@@ -18,17 +18,6 @@ class RosUpgrader:
     """
     Convert ROS1 package to ROS2 package
     """
-    TOKEN_TYPES = (
-        AstConstants.CALL_EXPR,
-        AstConstants.NAMESPACE_REF,
-        AstConstants.VAR_DECL,
-        AstConstants.MACRO_INSTANTIATION,
-        AstConstants.INCLUSION_DIRECTIVE
-    )
-
-    MANUAL_TOKENS = (
-        Constants.INCLUDES
-    )
 
     DECLARATION_PATH_CHECK = {
         AstConstants.CALL_EXPR: True,
@@ -220,18 +209,6 @@ class RosUpgrader:
         return True
 
     @staticmethod
-    def get_line_by_line_template():
-        """
-        Generates a template for token types to be stored line by line
-        :return: dict
-        """
-        template = {}
-        for token_type in RosUpgrader.TOKEN_TYPES:
-            template[token_type] = []
-
-        return copy.deepcopy(template)
-
-    @staticmethod
     def store_ast_line_by_line(tokens_dict):
         """
         Stores ast line by line for each file in tokens_dict
@@ -240,19 +217,7 @@ class RosUpgrader:
         """
         RosUpgrader.AST_LINE_BY_LINE = {}
         for file in tokens_dict:
-            RosUpgrader.AST_LINE_BY_LINE[file] = {}
-            ast_for_file = RosUpgrader.AST_LINE_BY_LINE[file]
-            for token_kind in tokens_dict[file]:
-                if token_kind not in RosUpgrader.TOKEN_TYPES:
-                    continue
-
-                tokens = tokens_dict[file][token_kind]
-                for token in tokens:
-                    line = token[AstConstants.LINE]
-                    if line not in ast_for_file:
-                        ast_for_file[line] = RosUpgrader.get_line_by_line_template()
-
-                    ast_for_file[line][token_kind].append(token)
+            RosUpgrader.AST_LINE_BY_LINE[file] = Utilities.get_line_by_line_ast(tokens_dict[file])
 
     @staticmethod
     def add_new_mappings():
@@ -269,7 +234,7 @@ class RosUpgrader:
 
         for file in tokens_dict:
             tokens = tokens_dict[file]
-            for token_type in RosUpgrader.TOKEN_TYPES:
+            for token_type in Constants.TOKEN_TYPES:
                 if token_type in tokens:
                     added_set = set()
                     for token in tokens[token_type]:
@@ -370,6 +335,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
