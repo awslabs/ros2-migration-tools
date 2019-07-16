@@ -3,6 +3,7 @@ import datetime
 import json
 import os
 import shutil
+import sys
 
 from Constants import AstConstants, Constants, RosConstants
 
@@ -151,14 +152,25 @@ class Utilities:
         return original_str
 
     @staticmethod
-    def init_ros2_folder():
+    def init_ros2_folder(is_debugging):
         """
         Creates a new folder in ROS2_OUTPUT_DIR, with name src_currDate_currTime, and then copies the contents of ROS1
         package from ROS1_SRC_PATH to the created directory
+        :param is_debugging: Flag to check if debugging
         :return:
         """
-        Utilities.ROS2_SRC_PATH = os.path.join(Utilities.ROS2_OUTPUT_DIR, Utilities.get_uniquie_id(),
-                                               Constants.ROS2_SRC_FOLDER)
+        folder_name = "test_ros" if is_debugging else Utilities.get_uniquie_id()
+        Utilities.ROS2_SRC_PATH = os.path.join(Utilities.ROS2_OUTPUT_DIR, folder_name, Constants.ROS2_SRC_FOLDER)
+
+        if os.path.exists(Utilities.ROS2_SRC_PATH):
+            shutil.rmtree(Utilities.ROS2_SRC_PATH)
+
+        if is_debugging:
+            src2 = Utilities.get_parent_dir(Utilities.ROS2_SRC_PATH) + "_backup"
+            if os.path.exists(src2):
+                shutil.rmtree(src2)
+            Utilities.copy_directory(Utilities.ROS1_SRC_PATH, src2)
+
         Utilities.copy_directory(Utilities.ROS1_SRC_PATH, Utilities.ROS2_SRC_PATH)
 
     @staticmethod
@@ -306,6 +318,9 @@ class Utilities:
 
 
 if __name__ == "__main__":
+    is_debugging = False
+    if len(sys.argv) == 2 and sys.argv[1] == Constants.DEBUGGING:
+        is_debugging = True
     Utilities.init()
-    Utilities.init_ros2_folder()
+    Utilities.init_ros2_folder(is_debugging)
     print(Utilities.ROS2_SRC_PATH)

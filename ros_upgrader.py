@@ -2,6 +2,7 @@ import copy
 import fnmatch
 import json
 import os
+import shutil
 import sys
 import xml.etree.ElementTree as etree
 
@@ -326,9 +327,15 @@ class RosUpgrader:
 
 
 def main():
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         raise Exception("ros_upgrader.py needs SRC_PATH_TO_UPGRADE as argument")
+
     RosUpgrader.SRC_PATH_TO_UPGRADE = sys.argv[1]
+
+    if len(sys.argv) == 3 and sys.argv[2] == Constants.DEBUGGING:
+        shutil.rmtree(RosUpgrader.SRC_PATH_TO_UPGRADE)
+        Utilities.copy_directory(Utilities.get_parent_dir(RosUpgrader.SRC_PATH_TO_UPGRADE) + "_backup",
+                                 RosUpgrader.SRC_PATH_TO_UPGRADE)
 
     RosUpgrader.init()
 

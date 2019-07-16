@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 
 current_dir=$(pwd)
-SRC_PATH_TO_UPGRADE=$(python3 utilities.py 2>&1)
+SRC_PATH_TO_UPGRADE=$((python3 utilities.py $1) 2>&1)
 echo "src path: "
 echo $SRC_PATH_TO_UPGRADE
 cd $SRC_PATH_TO_UPGRADE
 
-#cd ..
+cd ..
+
 #cmake ./src -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
 source /opt/ros/kinetic/setup.bash
