@@ -64,12 +64,15 @@ class CppAstParser(object):
         self._index         = None
         self._db            = CppAstParser.database
 
-    def get_ast_obj(self, file_path):
-        file_path = os.path.abspath(file_path)
+    def get_ast_obj(self, file_path=None):
         return self._parse_from_db_as_obj(file_path)
 
     def _parse_from_db_as_obj(self, file_path):
-        cmd = self._db.getCompileCommands(file_path) or ()
+        if file_path is None:
+            cmd = self._db.getAllCompileCommands() or ()
+        else:
+            cmd = self._db.getCompileCommands(os.path.abspath(file_path)) or ()
+
         if not cmd:
             return None
         for c in cmd:
@@ -89,16 +92,22 @@ class CppAstParser(object):
             if (cursor.location.file
                     and cursor.location.file.name.startswith(self.workspace)):
                 curr_obj = self._cursor_obj(cursor)
-                if curr_obj["kind"] not in objects:
-                    objects[curr_obj["kind"]] = []
-                objects[curr_obj["kind"]].append(curr_obj)
+                if curr_obj[AstConstants.KIND] not in objects:
+                    objects[curr_obj[AstConstants.KIND]] = []
+
+                if curr_obj[AstConstants.NAME] != AstConstants.NO_SPELLING:
+                    objects[curr_obj[AstConstants.KIND]].append(curr_obj)
+
                 stack = list(cursor.get_children())
                 while stack:
                     c = stack.pop()
                     curr_obj = self._cursor_obj(c)
-                    if curr_obj["kind"] not in objects:
-                        objects[curr_obj["kind"]] = []
-                    objects[curr_obj["kind"]].append(curr_obj)
+                    if curr_obj[AstConstants.KIND] not in objects:
+                        objects[curr_obj[AstConstants.KIND]] = []
+
+                    if curr_obj[AstConstants.NAME] != AstConstants.NO_SPELLING:
+                        objects[curr_obj[AstConstants.KIND]].append(curr_obj)
+
                     stack.extend(c.get_children())
         return objects
 
@@ -119,25 +128,26 @@ class CppAstParser(object):
         except AttributeError as e:
             pass
         name = repr(cursor.kind)[11:]
-        spell = cursor.spelling or "[no name]"
+        spell = cursor.spelling or AstConstants.NO_SPELLING
 
-        try:
-            declaration_file_path = cursor.referenced.location.file.name
-        except AttributeError as e:
-            print(spell + ": declaration_file_name not present")
+        if spell != AstConstants.NO_SPELLING:
+            try:
+                declaration_file_path = cursor.referenced.location.file.name
+            except AttributeError as e:
+                print(spell + ": declaration_file_name not present")
 
-        try:
-            var_type = cursor.type.spelling
-        except AttributeError:
-            print(spell + ": var_type not present")
+            try:
+                var_type = cursor.type.spelling
+            except AttributeError:
+                print(spell + ": var_type not present")
 
-        try:
-            token_list = list(cursor.get_tokens())
-            for i in range(0, len(token_list)):
-                line_tokens.append(token_list[i].spelling)
+            try:
+                token_list = list(cursor.get_tokens())
+                for i in range(0, len(token_list)):
+                    line_tokens.append(token_list[i].spelling)
 
-        except AttributeError as e:
-            print("Couldn't get line_tokens")
+            except AttributeError as e:
+                print("Couldn't get line_tokens")
 
         return {
             AstConstants.LINE: line,

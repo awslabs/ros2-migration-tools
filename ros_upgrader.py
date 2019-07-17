@@ -40,7 +40,7 @@ class RosUpgrader:
     INCLUDES = []
 
     # AST dict. Keys will be line numbers. Values will be dict with TOKEN_TYPES as keys and values will be the tokens
-    AST_LINE_BY_LINE = None
+    AST_LINE_BY_LINE = {}
 
     AST_DICT = None
 
@@ -89,11 +89,7 @@ class RosUpgrader:
         """
         cp = CppAstParser(RosUpgrader.SRC_PATH_TO_UPGRADE, RosUpgrader.INCLUDES)
 
-        file_list = RosUpgrader.get_cpp_file_list()
-
-        all_tokens = {}
-        for file_path in file_list:
-            all_tokens[file_path] = cp.get_ast_obj(file_path)
+        all_tokens = cp.get_ast_obj()
 
         return all_tokens
 
@@ -219,9 +215,19 @@ class RosUpgrader:
         :param tokens_dict:
         :return: None
         """
-        RosUpgrader.AST_LINE_BY_LINE = {}
-        for file in tokens_dict:
-            RosUpgrader.AST_LINE_BY_LINE[file] = Utilities.get_line_by_line_ast(tokens_dict[file])
+
+        ast_for_file = RosUpgrader.AST_LINE_BY_LINE
+        for token_kind in tokens_dict:
+            if token_kind not in Constants.TOKEN_TYPES:
+                continue
+
+            tokens = tokens_dict[token_kind]
+            for token in tokens:
+                line = token[AstConstants.LINE]
+                if line not in ast_for_file:
+                    ast_for_file[line] = Utilities.get_line_by_line_template()
+
+                ast_for_file[line][token_kind].append(token)
 
     @staticmethod
     def add_new_mappings():
@@ -236,23 +242,39 @@ class RosUpgrader:
         RosUpgrader.AST_DICT = copy.deepcopy(RosUpgrader.get_ast_as_json())
         RosUpgrader.store_ast_line_by_line(RosUpgrader.AST_DICT)
 
-        for file in RosUpgrader.AST_DICT:
-            tokens = RosUpgrader.AST_DICT[file]
-            for token_type in Constants.TOKEN_TYPES:
-                if token_type in tokens:
-                    added_set = set()
-                    for token in tokens[token_type]:
-                        if RosUpgrader.check_token_validity(token, mappings[token_type], irrelevant_tokens, added_set):
+        for token_type in Constants.TOKEN_TYPES:
+            if token_type in RosUpgrader.AST_DICT:
+                added_set = set()
+                for token in RosUpgrader.AST_DICT[token_type]:
+                    if RosUpgrader.check_token_validity(token, mappings[token_type], irrelevant_tokens, added_set):
 
-                            mappings[token_type][Constants.NEW_TOKENS_LIST].append(
-                                RosUpgrader.get_mapping_attributes(token))
+                        mappings[token_type][Constants.NEW_TOKENS_LIST].append(
+                            RosUpgrader.get_mapping_attributes(token))
 
-                            added_set.add(token[AstConstants.NAME])
-                        else:
-                            if token_type == AstConstants.USING_DIRECTIVE:
-                                pass
+                        added_set.add(token[AstConstants.NAME])
+                    else:
+                        if token_type == AstConstants.USING_DIRECTIVE:
+                            pass
 
         Utilities.write_as_json(Constants.MAPPING_FILE_NAME, mappings)
+
+    @staticmethod
+    def get_all_files_of_extension(directory, file_extensions):
+        """
+        Returns a list of files from `directory` and its sub-directories which have one of the file extension from
+        `file_extensions`
+        :param directory: directory in which to look for files
+        :param file_extensions: list of file extensions
+        :return: list
+        """
+        file_list = []
+        for root, dirs, files in os.walk(directory):
+            for file in files:
+                for ext in file_extensions:
+                    if file.endswith(ext):
+                        file_list.append(os.path.join(root, file))
+
+        return file_list
 
     @staticmethod
     def convert_all_source_files():
@@ -262,16 +284,16 @@ class RosUpgrader:
         """
         mapping = Utilities.read_json_file(Constants.MAPPING_FILE_NAME)
         if mapping is not None:
-            file_list = RosUpgrader.get_cpp_file_list()
+            file_list = RosUpgrader.get_all_files_of_extension(RosUpgrader.SRC_PATH_TO_UPGRADE, [".cpp", ".h", ".hpp"])
             for file_path in file_list:
                 src_content = Utilities.read_from_file(file_path)
 
-                node_info = Utilities.get_ros_node_info(RosUpgrader.AST_DICT[file_path])
-                pointer_var_names = Utilities.get_list_of_pointer_var(RosUpgrader.AST_DICT[file_path], mapping)
+                node_info = Utilities.get_ros_node_info(RosUpgrader.AST_DICT)
+                pointer_var_names = Utilities.get_list_of_pointer_var(RosUpgrader.AST_DICT, mapping)
                 cpp_porter = CPPSourceCodePorter(node_info, pointer_var_names)
 
                 new_src = cpp_porter.port(source=src_content, mapping=mapping,
-                                          ast=RosUpgrader.AST_LINE_BY_LINE[file_path])
+                                          ast=RosUpgrader.AST_LINE_BY_LINE)
 
                 Utilities.write_to_file(file_path, new_src)
 
@@ -304,7 +326,6 @@ class RosUpgrader:
         """
         RosUpgrader.convert_all_cmake()
         RosUpgrader.convert_all_package_xml()
-        RosUpgrader.add_new_mappings()
 
         prompt = str(input("All mappings filled? Press 'Y' to continue or any other key to abort"))
         if prompt == 'Y':
@@ -346,7 +367,9 @@ def main():
     for compile_json in compile_db_files:
         RosUpgrader.COMPILE_JSON_PATH = compile_json
         RosUpgrader.set_compile_db(Utilities.get_parent_dir(compile_json))
-        RosUpgrader.start_upgrade()
+        RosUpgrader.add_new_mappings()
+
+    RosUpgrader.start_upgrade()
 
 
 if __name__ == '__main__':
