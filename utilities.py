@@ -4,7 +4,7 @@ import json
 import os
 import shutil
 
-from Constants import AstConstants, Constants
+from Constants import AstConstants, Constants, RosConstants
 
 
 class Utilities:
@@ -202,6 +202,107 @@ class Utilities:
         :return: str
         """
         return repr(input_str)[1:-1]
+
+    @staticmethod
+    def get_node_name(ast_dict):
+        """
+        Returns the name of node if found in ast_dict otherwise returns None
+        :param ast_dict: dict of tokens
+        :return: string or None
+        """
+        node_name = None
+        if AstConstants.CALL_EXPR in ast_dict:
+            for token in ast_dict[AstConstants.CALL_EXPR]:
+                if token[AstConstants.NAME] == RosConstants.INIT_CALL_EXPR and \
+                        Constants.ROS1_INCLUDE_PATH in token[AstConstants.DECL_FILEPATH]:
+
+                    # ros::init(argc, argv, "talker")
+                    line_tokens = token[AstConstants.LINE_TOKENS]
+                    if len(line_tokens) == RosConstants.ROS_INIT_LINE_TOKEN_LENGTH:
+                        node_name = line_tokens[-2]
+                        break
+
+        return node_name
+
+    @staticmethod
+    def get_node_handle_var_name(ast_dict):
+        """
+        Returns name of the NodeHandle var name if found in ast_dict, otherwise return None
+        :param ast_dict: dict of tokens
+        :return: string or None
+        """
+        node_handle_var_name = None
+
+        # first try to find in FIELD_DECL
+        if AstConstants.FIELD_DECL in ast_dict:
+            for token in ast_dict[AstConstants.FIELD_DECL]:
+                if token[AstConstants.VAR_TYPE] == RosConstants.NODE_HANDLE:
+                    return token[AstConstants.NAME]
+
+        # if not found, then try to find in VAR_DECL
+        if AstConstants.VAR_DECL in ast_dict:
+            for token in ast_dict[AstConstants.VAR_DECL]:
+                if token[AstConstants.VAR_TYPE] == RosConstants.NODE_HANDLE:
+                    return token[AstConstants.NAME]
+
+        return node_handle_var_name
+
+    @staticmethod
+    def get_ros_node_info(ast_dict):
+        """
+        Return a dict containing node_name and node_var_name
+        :param ast_dict: dict of tokens
+        :return: Dict
+        """
+        node_name = Utilities.get_node_name(ast_dict)
+        if node_name is None:
+            node_name = str(input("Node name not found. Enter Node name: "))
+
+        node_handle_var_name = Utilities.get_node_handle_var_name(ast_dict)
+        if node_handle_var_name is None:
+            node_handle_var_name = str(input("NodeHandle var not found. Enter NodeHandle var name name: "))
+
+        return {
+            Constants.NODE_NAME: node_name,
+            Constants.NODE_HANDLE_VAR_NAME: node_handle_var_name
+        }
+
+    @staticmethod
+    def get_list_of_pointer_var(ast_dict, mapping):
+        """
+        Returns a list of var names which are of type shared_ptr
+        :param ast_dict: dict of tokens
+        :param mapping: ROS1 to ROS2 mapping dict
+        :return:
+        """
+
+        # get list of var types which are shared_ptr
+        var_types = []
+        for var_type in mapping[AstConstants.VAR_DECL]:
+            if var_type != Constants.NEW_TOKENS_LIST:
+                var_info = mapping[AstConstants.VAR_DECL][var_type]
+                if var_info[Constants.TO_SHARED_PTR] is True:
+                    var_types.append(var_type)
+
+        for var_type in mapping[AstConstants.FIELD_DECL]:
+            if var_type != Constants.NEW_TOKENS_LIST:
+                var_info = mapping[AstConstants.FIELD_DECL][var_type]
+                if var_info[Constants.TO_SHARED_PTR] is True:
+                    var_types.append(var_type)
+
+        # now from the ast get the names of the variables which are of type from var_types
+        pointer_var_names = []
+        if AstConstants.VAR_DECL in ast_dict:
+            for token in ast_dict[AstConstants.VAR_DECL]:
+                if token[AstConstants.VAR_TYPE] in var_types:
+                    pointer_var_names.append(token[AstConstants.NAME])
+
+        if AstConstants.FIELD_DECL in ast_dict:
+            for token in ast_dict[AstConstants.FIELD_DECL]:
+                if token[AstConstants.VAR_TYPE] in var_types:
+                    pointer_var_names.append(token[AstConstants.NAME])
+
+        return pointer_var_names
 
 
 if __name__ == "__main__":

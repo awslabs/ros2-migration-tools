@@ -20,22 +20,18 @@ from utilities import Utilities
 
 class CPPSourceCodePorter:
     """ Class containing static methods to change and print warning on C++ source code """
-    NODE_NAME = None
-    NODE_VAR_NAME = None
-    POINTER_VARIABLES = None
 
-    @staticmethod
-    def init():
+    def __init__(self, node_info, pointer_var_names=[]):
         """
-        Initializes the variables to initial values
-        :return: None
+        Constructor for CPPSourceCodePorter
+        :param node_info: dict containing node information like node_name and node_var_name
+        :param pointer_var_names: list of shared_ptr variables
         """
-        CPPSourceCodePorter.NODE_NAME = None
-        CPPSourceCodePorter.NODE_VAR_NAME = None
-        CPPSourceCodePorter.POINTER_VARIABLES = []
+        self.NODE_NAME = node_info[Constants.NODE_NAME]
+        self.NODE_VAR_NAME = node_info[Constants.NODE_HANDLE_VAR_NAME]
+        self.POINTER_VARIABLES = pointer_var_names
 
-    @staticmethod
-    def port(source, mapping, ast):
+    def port(self, source, mapping, ast):
         """
         Makes some automatic changes to ROS1 source code to port to ROS2
 
@@ -44,18 +40,16 @@ class CPPSourceCodePorter:
         Returns:
             The new source code
         """
-        CPPSourceCodePorter.init()
 
         src_lines = source.split('\n')
         new_source = []
         for line_number in range(len(src_lines)):
             # actual line number in the file will be start from 1, so use line_number + 1
-            new_source.append(CPPSourceCodePorter.port_line(src_lines[line_number], line_number + 1, mapping, ast))
+            new_source.append(self.port_line(src_lines[line_number], line_number + 1, mapping, ast))
 
         return "\n".join(new_source)
 
-    @staticmethod
-    def port_line(line, line_number, mapping, ast):
+    def port_line(self, line, line_number, mapping, ast):
         """
         Finds tokens in each line and converts it to corresponding ROS2 token
         :param line: line to convert
@@ -67,11 +61,11 @@ class CPPSourceCodePorter:
         if "#include" in line:
             line = CPPSourceCodePorter.rule_replace_headers(line, mapping)
         else:
-            line = CPPSourceCodePorter.rule_replace_var_decl(line, line_number, mapping, ast)
-            line = CPPSourceCodePorter.rule_replace_call_expr(line, line_number, mapping, ast)
-            line = CPPSourceCodePorter.rule_replace_macros(line, line_number, mapping, ast)
+            line = self.rule_replace_var_decl(line, line_number, mapping, ast)
+            line = self.rule_replace_call_expr(line, line_number, mapping, ast)
+            line = self.rule_replace_macros(line, line_number, mapping, ast)
             line = CPPSourceCodePorter.rule_replace_namespace_ref(line, mapping)
-            line = CPPSourceCodePorter.rule_replace_dot_with_arrow(line)
+            line = self.rule_replace_dot_with_arrow(line)
             line = CPPSourceCodePorter.rule_dereference_pointers(line)
 
         return line
@@ -155,8 +149,7 @@ class CPPSourceCodePorter:
 
         return new_line_tokens
 
-    @staticmethod
-    def handle_var_creation_method(token, line, mapping):
+    def handle_var_creation_method(self, token, line, mapping):
         """
         Handles different ways of VAR_DECL
         :param token: token containing the var info
@@ -173,7 +166,7 @@ class CPPSourceCodePorter:
             raise Exception(e.message + ": key not found")
 
         if to_shared_ptr:
-            CPPSourceCodePorter.POINTER_VARIABLES.append(var_name)
+            self.POINTER_VARIABLES.append(var_name)
 
         ros2_name = CPPSourceCodePorter.get_ros2_name(var_type, mapping)
 
@@ -225,11 +218,9 @@ class CPPSourceCodePorter:
                 line = line.replace(to_replace, replace_with)
         return line
 
-    @staticmethod
-    def rule_init_call_found(line, line_number, mapping, ast):
+    def rule_init_call_found(self, line, line_number, mapping, ast):
         """
-        If line contains ros::init call, then it will update SourcecodePorter.NODE_NAME and replace the call with
-        ros2 init call
+        If line contains ros::init call, it replace the call with ros2 init call
         :param line: line to convert
         :param line_number: line number of line in source code
         :param mapping: ros1 to ros2 mapping for various types
@@ -243,8 +234,7 @@ class CPPSourceCodePorter:
                 line_tokens = token[AstConstants.LINE_TOKENS]
                 # tokens for init:  ['ros', '::', 'init', '(', 'argc', ',', 'argv', ',', '"talker"', ')']
                 # so min length should be 10
-                if len(line_tokens) >= 10:
-                    CPPSourceCodePorter.NODE_NAME = line_tokens[8]
+                if len(line_tokens) >= RosConstants.ROS_INIT_LINE_TOKEN_LENGTH:
 
                     ros2_name = CPPSourceCodePorter.get_ros2_name(line_tokens[2], mapping)
 
@@ -256,8 +246,7 @@ class CPPSourceCodePorter:
                     raise Exception("line tokens for ros::init invalid")
         return None
 
-    @staticmethod
-    def rule_replace_call_expr(line, line_number, mapping, ast):
+    def rule_replace_call_expr(self, line, line_number, mapping, ast):
         """
         Changes the ros1 function calls to corresponding ros2 function calls
         :param line: line to convert
@@ -267,7 +256,7 @@ class CPPSourceCodePorter:
         :return: new source str
         """
 
-        init_line = CPPSourceCodePorter.rule_init_call_found(line, line_number, mapping, ast)
+        init_line = self.rule_init_call_found(line, line_number, mapping, ast)
         if init_line:
             return init_line
         else:
@@ -285,13 +274,12 @@ class CPPSourceCodePorter:
                             if token:
                                 line_tokens = token[AstConstants.LINE_TOKENS]
 
-                                if CPPSourceCodePorter.NODE_VAR_NAME is None:
+                                if self.NODE_VAR_NAME is None:
                                     raise Exception("Node name missing")
 
                                 new_line_token = CPPSourceCodePorter.get_line_token_with_new_arg(line_tokens,
                                                                                                  node_arg_ind,
-                                                                                                 CPPSourceCodePorter.
-                                                                                                 NODE_VAR_NAME)
+                                                                                                 self.NODE_VAR_NAME)
                                 pattern = "(ros::)?" + fun_call + "\(.*\)"
                                 replacement = "".join(new_line_token)
 
@@ -301,10 +289,9 @@ class CPPSourceCodePorter:
                             line = line.replace(fun_call, call_expr_mapping[fun_call][Constants.ROS_2_NAME])
             return line
 
-    @staticmethod
-    def rule_node_handle_found(line, line_number,  mapping, ast):
+    def rule_node_handle_found(self, line, line_number,  mapping, ast):
         """
-        When var type ros::NodeHandle is found, then line is modified for ROS2 and var name is saved in NODE_VAR_NAME
+        When var type ros::NodeHandle is found, then line is modified for ROS2
         which will be used by some CALL_EXPR
         :param line: line to convert
         :param line_number: line number of line in source code
@@ -320,21 +307,18 @@ class CPPSourceCodePorter:
                 var_name = token[AstConstants.NAME]
                 to_shared_ptr = mapping[RosConstants.NODE_HANDLE][Constants.TO_SHARED_PTR]
                 if to_shared_ptr:
-                    CPPSourceCodePorter.POINTER_VARIABLES.append(var_name)
-
-                CPPSourceCodePorter.NODE_VAR_NAME = var_name
+                    self.POINTER_VARIABLES.append(var_name)
 
                 pattern = RosConstants.NODE_HANDLE + " *" + var_name
 
-                replacement = "auto " + var_name + " = " + CPPSourceCodePorter.get_ros2_name(RosConstants.NODE_HANDLE,
-                                mapping) + "::make_shared(" + CPPSourceCodePorter.NODE_NAME + ")"
+                replacement = "auto " + var_name + " = " + CPPSourceCodePorter.get_ros2_name(
+                    RosConstants.NODE_HANDLE, mapping) + "::make_shared(" + self.NODE_NAME + ")"
 
                 return re.sub(pattern, replacement, line)
 
         return None
 
-    @staticmethod
-    def rule_replace_var_decl(line, line_number, mapping, ast):
+    def rule_replace_var_decl(self, line, line_number, mapping, ast):
         """
         Changes the ros1 var declarations to corresponding ros2 var decl
         :param line: line to convert
@@ -344,7 +328,7 @@ class CPPSourceCodePorter:
         :return: str
         """
         var_decl_mapping = mapping[AstConstants.VAR_DECL]
-        new_line = CPPSourceCodePorter.rule_node_handle_found(line, line_number, var_decl_mapping, ast)
+        new_line = self.rule_node_handle_found(line, line_number, var_decl_mapping, ast)
         if new_line is not None:
             return new_line
         else:
@@ -354,17 +338,16 @@ class CPPSourceCodePorter:
                         token = CPPSourceCodePorter.find_token_in_ast(AstConstants.VAR_TYPE, var_type,
                                                                       ast[line_number][AstConstants.VAR_DECL])
                         if token:
-                            line = CPPSourceCodePorter.handle_var_creation_method(token, line, var_decl_mapping)
+                            line = self.handle_var_creation_method(token, line, var_decl_mapping)
         return line
 
-    @staticmethod
-    def rule_replace_dot_with_arrow(line):
+    def rule_replace_dot_with_arrow(self, line):
         """
         Replaces all c++ '.' calls with '->' calls for pointer variables
         :param line: source line
         :return: str
         """
-        for var_name in CPPSourceCodePorter.POINTER_VARIABLES:
+        for var_name in self.POINTER_VARIABLES:
             pattern = "[^a-zA-Z0-9_]*" + var_name + "\."
             sub_str = re.search(pattern, line)
 
@@ -386,8 +369,7 @@ class CPPSourceCodePorter:
         # ToDO: write regex for finding pointers which are required to be deferenced
         return line
 
-    @staticmethod
-    def rule_replace_macros(line, line_number, mapping, ast):
+    def rule_replace_macros(self, line, line_number, mapping, ast):
         """
         Changes the ros1 macros to corresponding ros2 macros
         :param line: source line
@@ -415,7 +397,7 @@ class CPPSourceCodePorter:
                         if token:
                             line_tokens = token[AstConstants.LINE_TOKENS]
                             if member_name is not None:
-                                arg_name = CPPSourceCodePorter.NODE_VAR_NAME + "->" + member_name + "()"
+                                arg_name = self.NODE_VAR_NAME + "->" + member_name + "()"
                                 new_line_token = CPPSourceCodePorter.get_line_token_with_new_arg(line_tokens,
                                                                                                  node_arg_ind, arg_name)
                                 pattern = macro + "\(.*\)"
@@ -426,6 +408,3 @@ class CPPSourceCodePorter:
                     else:
                         line = line.replace(macro, macros_mapping[macro][Constants.ROS_2_NAME])
         return line
-
-    def __init__(self):
-        pass

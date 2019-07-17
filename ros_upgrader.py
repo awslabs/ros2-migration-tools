@@ -24,7 +24,8 @@ class RosUpgrader:
         AstConstants.NAMESPACE_REF: True,
         AstConstants.VAR_DECL: False,
         AstConstants.MACRO_INSTANTIATION: True,
-        AstConstants.INCLUSION_DIRECTIVE: False
+        AstConstants.INCLUSION_DIRECTIVE: False,
+        AstConstants.FIELD_DECL: True
     }
 
     # path to the folder containing "compile_commands.json" file, will be generated using cmake flag
@@ -39,6 +40,8 @@ class RosUpgrader:
 
     # AST dict. Keys will be line numbers. Values will be dict with TOKEN_TYPES as keys and values will be the tokens
     AST_LINE_BY_LINE = None
+
+    AST_DICT = None
 
     @staticmethod
     def init():
@@ -229,11 +232,11 @@ class RosUpgrader:
 
         irrelevant_tokens = set(mappings[Constants.IRRELEVANT_TOKENS])
 
-        tokens_dict = RosUpgrader.get_ast_as_json()
-        RosUpgrader.store_ast_line_by_line(tokens_dict)
+        RosUpgrader.AST_DICT = copy.deepcopy(RosUpgrader.get_ast_as_json())
+        RosUpgrader.store_ast_line_by_line(RosUpgrader.AST_DICT)
 
-        for file in tokens_dict:
-            tokens = tokens_dict[file]
+        for file in RosUpgrader.AST_DICT:
+            tokens = RosUpgrader.AST_DICT[file]
             for token_type in Constants.TOKEN_TYPES:
                 if token_type in tokens:
                     added_set = set()
@@ -261,8 +264,14 @@ class RosUpgrader:
             file_list = RosUpgrader.get_cpp_file_list()
             for file_path in file_list:
                 src_content = Utilities.read_from_file(file_path)
-                new_src = CPPSourceCodePorter.port(source=src_content, mapping=mapping,
-                                                   ast=RosUpgrader.AST_LINE_BY_LINE[file_path])
+
+                node_info = Utilities.get_ros_node_info(RosUpgrader.AST_DICT[file_path])
+                pointer_var_names = Utilities.get_list_of_pointer_var(RosUpgrader.AST_DICT[file_path], mapping)
+                cpp_porter = CPPSourceCodePorter(node_info, pointer_var_names)
+
+                new_src = cpp_porter.port(source=src_content, mapping=mapping,
+                                          ast=RosUpgrader.AST_LINE_BY_LINE[file_path])
+
                 Utilities.write_to_file(file_path, new_src)
 
     @staticmethod
@@ -335,6 +344,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 

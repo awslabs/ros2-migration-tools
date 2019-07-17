@@ -13,6 +13,8 @@ class AstConstants:
     DECL_FILEPATH = "declaration_filepath"
     MACRO_INSTANTIATION = "MACRO_INSTANTIATION"
     INCLUSION_DIRECTIVE = "INCLUSION_DIRECTIVE"
+    NODE_HANDLE_TYPE = ""
+    FIELD_DECL = "FIELD_DECL"
 
 class Constants:
     ROS_1_NAME = "ros1_name"
@@ -48,14 +50,18 @@ class Constants:
         AstConstants.NAMESPACE_REF,
         AstConstants.VAR_DECL,
         AstConstants.MACRO_INSTANTIATION,
-        AstConstants.INCLUSION_DIRECTIVE
+        AstConstants.INCLUSION_DIRECTIVE,
+        AstConstants.FIELD_DECL
     )
     MANUAL_TOKENS = (
         INCLUDES
     )
+    NODE_NAME = "node_name"
+    NODE_HANDLE_VAR_NAME = "node_handle_var_name"
 
 
 class RosConstants:
     INIT_PATTERN = "ros::init"
     INIT_CALL_EXPR = "init"
     NODE_HANDLE = "ros::NodeHandle"
+    ROS_INIT_LINE_TOKEN_LENGTH = 10

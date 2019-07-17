@@ -23,6 +23,9 @@
             "ros2_name": "spin_some"
         }
     },
+    "FIELD_DECL": {
+        "NEW_TOKENS_LIST": []
+    },
     "INCLUSION_DIRECTIVE": {
         "NEW_TOKENS_LIST": [],
         "ros/ros.h": {
