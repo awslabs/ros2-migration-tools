@@ -18,7 +18,7 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #THE SOFTWARE.
 
-
+import logging
 import os
 
 import clang.cindex as clang
@@ -101,6 +101,7 @@ class CppAstParser(object):
         for c in cmd:
             if CppAstParser.exclude_from_ast(c.directory) or CppAstParser.exclude_from_ast(c.filename):
                 continue
+
             with cwd(os.path.join(self._db.db_path, c.directory)):
                 args = ["-I" + CppAstParser.includes] + list(c.arguments)[1:]
                 if self._index is None:
@@ -145,7 +146,7 @@ class CppAstParser(object):
         if translation_unit.diagnostics:
             for diagnostic in translation_unit.diagnostics:
                 if diagnostic.severity >= clang.Diagnostic.Error:
-                    print("WARNING" + diagnostic.spelling)
+                    logging.warnings(diagnostic.spelling)
 
     def _cursor_obj(self, cursor):
         line = 0
@@ -166,12 +167,12 @@ class CppAstParser(object):
             try:
                 declaration_file_path = cursor.referenced.location.file.name
             except AttributeError as e:
-                print(spell + ": declaration_file_name not present")
+                logging.warning(spell + ": declaration_file_name not present")
 
             try:
                 var_type = cursor.type.spelling
             except AttributeError:
-                print(spell + ": var_type not present")
+                logging.warning(spell + ": var_type not present")
 
             try:
                 token_list = list(cursor.get_tokens())
@@ -179,7 +180,7 @@ class CppAstParser(object):
                     line_tokens.append(token_list[i].spelling)
 
             except AttributeError as e:
-                print("Couldn't get line_tokens")
+                logging.warning("Couldn't get line_tokens")
 
         return {
             AstConstants.LINE: line,

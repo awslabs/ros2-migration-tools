@@ -1,6 +1,7 @@
 import copy
 import fnmatch
 import json
+import logging
 import os
 import shutil
 import sys
@@ -13,6 +14,11 @@ from porting_tools.cmake_lists_porter import CMakeListsPorter
 from porting_tools.package_xml_porter import PackageXMLPorter
 from porting_tools.cpp_source_code_porter import CPPSourceCodePorter
 from utilities import Utilities
+
+logging.basicConfig(filename='logs/ros_upgrader' + Utilities.get_uniquie_id() + '.log',
+                    filemode='w',
+                    format='%(name)s - %(levelname)s - %(message)s',
+                    level=logging.DEBUG)
 
 
 class RosUpgrader:
@@ -383,7 +389,6 @@ def main():
 
 if __name__ == '__main__':
     main()
-
 
 
 
