@@ -10,6 +10,7 @@ cd $SRC_PATH_TO_UPGRADE
 #cmake ./src -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
 source /opt/ros/kinetic/setup.bash
+rosdep install --from-paths src --ignore-src -r -y
 colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
 
