@@ -13,7 +13,7 @@ corresponding [python bindings](https://github.com/llvm-mirror/clang/tree/releas
 ## Setup
 1. On the ROS1(kinetic) system, clone this repository
 2. Open config.json and update:
-    - `ROS1_SRC_PATH`: path till ROS1 package src folder
+    - `ROS1_SRC_PATH`: path to ROS1 package src folder
     - `ROS2_OUTPUT_DIR`: path where final migrated package will be copied 
 
 ## Usage
@@ -27,7 +27,7 @@ corresponding [python bindings](https://github.com/llvm-mirror/clang/tree/releas
 4. On successful run `All mappings filled? Press 'Y' to continue or any other key to abort` will be shown on terminal.
 That means compilation was successful. **Don't press 'Y' yet.**
 
-5. Open `mappings.json` file in editor of choice. Each key in the file, it contains a list named `NEW_TOKENS_LIST`. If 
+5. [TODO: This step should be an interactive part of the tool.] Open `mappings.json` file in editor of choice. Each key in the file, it contains a list named `NEW_TOKENS_LIST`. If 
 it is not empty, then update the `ros2_name` field for all of the objects in the list. All elements from `NEW_TOKENS_LIST`
 with value for `ros2_name` as `ros2_name??` will be moved to `IRRELEVANT_TOKENS` so that it don't appear in `NEW_TOKENS_LIST` again.
 Some key categories will also require some additional information which is explained below:
