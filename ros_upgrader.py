@@ -42,7 +42,7 @@ class RosUpgrader:
     # AST dict. Keys will be line numbers. Values will be dict with TOKEN_TYPES as keys and values will be the tokens
     AST_LINE_BY_LINE = {}
 
-    AST_DICT = None
+    AST_DICT = {}
 
     @staticmethod
     def init():
@@ -239,7 +239,8 @@ class RosUpgrader:
 
         irrelevant_tokens = set(mappings[Constants.IRRELEVANT_TOKENS])
 
-        RosUpgrader.AST_DICT = copy.deepcopy(RosUpgrader.get_ast_as_json())
+        Utilities.merge_ast_dict(RosUpgrader.AST_DICT, RosUpgrader.get_ast_as_json())
+
         RosUpgrader.store_ast_line_by_line(RosUpgrader.AST_DICT)
 
         for token_type in Constants.TOKEN_TYPES:
@@ -327,7 +328,7 @@ class RosUpgrader:
         RosUpgrader.convert_all_cmake()
         RosUpgrader.convert_all_package_xml()
 
-        prompt = str(input("All mappings filled? Press 'Y' to continue or any other key to abort"))
+        prompt = str(input("All mappings filled? Press 'Y' to continue or any other key to abort: "))
         if prompt == 'Y':
             RosUpgrader.add_filled_mappings()
             RosUpgrader.convert_all_source_files()
@@ -347,13 +348,19 @@ class RosUpgrader:
         pass
 
 
+def is_debugging():
+    if len(sys.argv) == 3 and sys.argv[2] == Constants.DEBUGGING:
+        return True
+    return False
+
+
 def main():
     if len(sys.argv) < 2:
         raise Exception("ros_upgrader.py needs SRC_PATH_TO_UPGRADE as argument")
 
     RosUpgrader.SRC_PATH_TO_UPGRADE = sys.argv[1]
 
-    if len(sys.argv) == 3 and sys.argv[2] == Constants.DEBUGGING:
+    if is_debugging():
         shutil.rmtree(RosUpgrader.SRC_PATH_TO_UPGRADE)
         Utilities.copy_directory(Utilities.get_parent_dir(RosUpgrader.SRC_PATH_TO_UPGRADE) + "_backup",
                                  RosUpgrader.SRC_PATH_TO_UPGRADE)
@@ -369,6 +376,8 @@ def main():
         RosUpgrader.set_compile_db(Utilities.get_parent_dir(compile_json))
         RosUpgrader.add_new_mappings()
 
+    if is_debugging():
+        Utilities.write_as_json("ast_dump.json", RosUpgrader.AST_DICT)
     RosUpgrader.start_upgrade()
 
 

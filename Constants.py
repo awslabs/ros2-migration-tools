@@ -15,6 +15,7 @@ class AstConstants:
     INCLUSION_DIRECTIVE = "INCLUSION_DIRECTIVE"
     NODE_HANDLE_TYPE = ""
     FIELD_DECL = "FIELD_DECL"
+    SRC_FILE_PATH = "src_file_path"
 
 class Constants:
     ROS_1_NAME = "ros1_name"

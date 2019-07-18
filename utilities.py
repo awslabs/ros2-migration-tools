@@ -159,7 +159,7 @@ class Utilities:
         :param is_debugging: Flag to check if debugging
         :return:
         """
-        folder_name = "test_ros" if is_debugging else Utilities.get_uniquie_id()
+        folder_name = "debug_ros" if is_debugging else Utilities.get_uniquie_id()
         Utilities.ROS2_SRC_PATH = os.path.join(Utilities.ROS2_OUTPUT_DIR, folder_name, Constants.ROS2_SRC_FOLDER)
 
         if os.path.exists(Utilities.ROS2_SRC_PATH):
@@ -315,6 +315,20 @@ class Utilities:
                     pointer_var_names.append(token[AstConstants.NAME])
 
         return pointer_var_names
+
+    @staticmethod
+    def merge_ast_dict(old_ast_dict, new_ast_dict):
+        """
+        Merge all the tokens from new_ast_dict to old_ast_dict and return the merged dict
+        :param old_ast_dict: dict to which to merge to
+        :param new_ast_dict: dict going to be merged to old_ast_dict
+        :return: None
+        """
+        for kind in new_ast_dict:
+            if kind in old_ast_dict:
+                old_ast_dict[kind].extend(new_ast_dict[kind])
+            else:
+                old_ast_dict[kind] = new_ast_dict[kind]
 
 
 if __name__ == "__main__":

@@ -20,8 +20,11 @@
 
 
 import os
+
 import clang.cindex as clang
+
 from Constants import AstConstants
+from utilities import Utilities
 
 CK = clang.CursorKind
 
@@ -34,12 +37,12 @@ class CppAstParser(object):
 
     # system required / user optional
     @staticmethod
-    def set_library_path(lib_path = "/usr/lib/llvm-3.8/lib"):
+    def set_library_path(lib_path="/usr/lib/llvm-3.8/lib"):
         clang.Config.set_library_path(lib_path)
         CppAstParser.lib_path = lib_path
 
     @staticmethod
-    def set_library_file(lib_file = "/usr/lib/llvm-3.8/lib/libclang.so"):
+    def set_library_file(lib_file="/usr/lib/llvm-3.8/lib/libclang.so"):
         clang.Config.set_library_file(lib_file)
         CppAstParser.lib_file = lib_file
 
@@ -55,6 +58,25 @@ class CppAstParser(object):
     @staticmethod
     def set_standard_includes(std_includes):
         CppAstParser.includes = std_includes
+
+    @staticmethod
+    def exclude_from_ast(path):
+        """
+        Returns True if tokens for this path are to be excluded from AST
+        :param path:
+        :return:
+        """
+
+        # Assuming all unit test will follow path like `src/some_folder1/some_folder2/test/reader_test.cpp`
+        # where 'test' occurs at least twice
+        if path.count('test') > 1:
+            return True
+
+        # check if 'gtest' is part of path, then also exclude it
+        if "gtest" in path:
+            return True
+
+        return False
 
     def __init__(self, workspace="", user_includes=None):
     # public:
@@ -73,9 +95,12 @@ class CppAstParser(object):
         else:
             cmd = self._db.getCompileCommands(os.path.abspath(file_path)) or ()
 
+        ast_obj = {}
         if not cmd:
             return None
         for c in cmd:
+            if CppAstParser.exclude_from_ast(c.directory) or CppAstParser.exclude_from_ast(c.filename):
+                continue
             with cwd(os.path.join(self._db.db_path, c.directory)):
                 args = ["-I" + CppAstParser.includes] + list(c.arguments)[1:]
                 if self._index is None:
@@ -83,7 +108,8 @@ class CppAstParser(object):
                 unit = self._index.parse(path=None, args=args, options=clang.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
 
                 self._check_compilation_problems(unit)
-                return self._ast_obj(unit.cursor)
+                Utilities.merge_ast_dict(ast_obj, self._ast_obj(unit.cursor))
+        return ast_obj
 
     def _ast_obj(self, top_cursor):
         assert top_cursor.kind == CK.TRANSLATION_UNIT
@@ -92,10 +118,12 @@ class CppAstParser(object):
             if (cursor.location.file
                     and cursor.location.file.name.startswith(self.workspace)):
                 curr_obj = self._cursor_obj(cursor)
+
                 if curr_obj[AstConstants.KIND] not in objects:
                     objects[curr_obj[AstConstants.KIND]] = []
 
-                if curr_obj[AstConstants.NAME] != AstConstants.NO_SPELLING:
+                if curr_obj[AstConstants.NAME] != AstConstants.NO_SPELLING and \
+                        not CppAstParser.exclude_from_ast(curr_obj[AstConstants.SRC_FILE_PATH]):
                     objects[curr_obj[AstConstants.KIND]].append(curr_obj)
 
                 stack = list(cursor.get_children())
@@ -105,7 +133,9 @@ class CppAstParser(object):
                     if curr_obj[AstConstants.KIND] not in objects:
                         objects[curr_obj[AstConstants.KIND]] = []
 
-                    if curr_obj[AstConstants.NAME] != AstConstants.NO_SPELLING:
+                    if curr_obj[AstConstants.NAME] != AstConstants.NO_SPELLING and \
+                            not CppAstParser.exclude_from_ast(curr_obj[AstConstants.SRC_FILE_PATH]):
+
                         objects[curr_obj[AstConstants.KIND]].append(curr_obj)
 
                     stack.extend(c.get_children())
@@ -120,11 +150,13 @@ class CppAstParser(object):
     def _cursor_obj(self, cursor):
         line = 0
         declaration_file_path = ""
+        src_file_path = ""
         var_type = ""
         line_tokens = []
         try:
             if cursor.location.file:
                 line = cursor.location.line
+                src_file_path = cursor.location.file.name
         except AttributeError as e:
             pass
         name = repr(cursor.kind)[11:]
@@ -155,7 +187,8 @@ class CppAstParser(object):
             AstConstants.NAME: spell,
             AstConstants.DECL_FILEPATH: declaration_file_path,
             AstConstants.VAR_TYPE: var_type,
-            AstConstants.LINE_TOKENS: line_tokens
+            AstConstants.LINE_TOKENS: line_tokens,
+            AstConstants.SRC_FILE_PATH: src_file_path
         }
 
 
