@@ -94,7 +94,6 @@ class RosUpgrader:
         :return: dict with key as path to .cpp and values as the tokens dict
         """
         cp = CppAstParser(RosUpgrader.SRC_PATH_TO_UPGRADE, RosUpgrader.INCLUDES)
-
         all_tokens = cp.get_ast_obj()
 
         return all_tokens
@@ -162,7 +161,11 @@ class RosUpgrader:
         """
         attributes = {
             Constants.ROS_1_NAME: token[AstConstants.NAME],
-            Constants.ROS_2_NAME: Constants.NEW_MAPPING_MSG
+            Constants.ROS_2_NAME: Constants.NEW_MAPPING_MSG,
+            Constants.TOKEN_LOCATION: {
+                AstConstants.SRC_FILE_PATH: token[AstConstants.SRC_FILE_PATH],
+                AstConstants.LINE: token[AstConstants.LINE]
+            }
         }
         if token[AstConstants.KIND] == AstConstants.VAR_DECL:
             attributes[Constants.ROS_1_NAME] = token[AstConstants.VAR_TYPE]
@@ -318,6 +321,8 @@ class RosUpgrader:
                     if new_token[Constants.ROS_2_NAME] != Constants.NEW_MAPPING_MSG:
                         updated_token = copy.deepcopy(new_token)
                         del updated_token[Constants.ROS_1_NAME]
+                        del updated_token[Constants.TOKEN_LOCATION]
+
                         mapping[token_type][new_token[Constants.ROS_1_NAME]] = updated_token
                     else:
                         irrelevant_token_id = new_token[Constants.ROS_1_NAME] + "_" + token_type

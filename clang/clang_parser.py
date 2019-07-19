@@ -76,6 +76,11 @@ class CppAstParser(object):
         if "gtest" in path:
             return True
 
+        # exclude system includes
+        if path.startswith(os.path.join(os.path.sep, "usr", "lib")) or \
+                path.startswith(os.path.join(os.path.sep, "usr", "include")):
+            return True
+
         return False
 
     def __init__(self, workspace="", user_includes=None):
@@ -124,7 +129,8 @@ class CppAstParser(object):
                     objects[curr_obj[AstConstants.KIND]] = []
 
                 if curr_obj[AstConstants.NAME] != AstConstants.NO_SPELLING and \
-                        not CppAstParser.exclude_from_ast(curr_obj[AstConstants.SRC_FILE_PATH]):
+                        not CppAstParser.exclude_from_ast(curr_obj[AstConstants.SRC_FILE_PATH]) and \
+                        not CppAstParser.exclude_from_ast(curr_obj[AstConstants.DECL_FILEPATH]):
                     objects[curr_obj[AstConstants.KIND]].append(curr_obj)
 
                 stack = list(cursor.get_children())
@@ -135,7 +141,8 @@ class CppAstParser(object):
                         objects[curr_obj[AstConstants.KIND]] = []
 
                     if curr_obj[AstConstants.NAME] != AstConstants.NO_SPELLING and \
-                            not CppAstParser.exclude_from_ast(curr_obj[AstConstants.SRC_FILE_PATH]):
+                            not CppAstParser.exclude_from_ast(curr_obj[AstConstants.SRC_FILE_PATH]) and \
+                            not CppAstParser.exclude_from_ast(curr_obj[AstConstants.DECL_FILEPATH]):
 
                         objects[curr_obj[AstConstants.KIND]].append(curr_obj)
 
