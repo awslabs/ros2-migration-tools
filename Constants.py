@@ -60,6 +60,7 @@ class Constants:
     NODE_NAME = "node_name"
     NODE_HANDLE_VAR_NAME = "node_handle_var_name"
     DEBUGGING = "DEBUG"
+    TOKEN_LOCATION = "token_location"
 
 
 class RosConstants:
