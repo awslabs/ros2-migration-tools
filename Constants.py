@@ -16,6 +16,8 @@ class AstConstants:
     NODE_HANDLE_TYPE = ""
     FIELD_DECL = "FIELD_DECL"
     SRC_FILE_PATH = "src_file_path"
+    TOKEN_START_COL = "token_start_col"
+    TOKEN_END_COL = "token_end_col"
 
 class Constants:
     ROS_1_NAME = "ros1_name"

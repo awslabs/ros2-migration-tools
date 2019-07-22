@@ -153,10 +153,12 @@ class CppAstParser(object):
         if translation_unit.diagnostics:
             for diagnostic in translation_unit.diagnostics:
                 if diagnostic.severity >= clang.Diagnostic.Error:
-                    logging.warnings(diagnostic.spelling)
+                    logging.warning(diagnostic.spelling)
 
     def _cursor_obj(self, cursor):
         line = 0
+        token_start_col = 0
+        token_end_col = 0
         declaration_file_path = ""
         src_file_path = ""
         var_type = ""
@@ -164,6 +166,8 @@ class CppAstParser(object):
         try:
             if cursor.location.file:
                 line = cursor.location.line
+                token_start_col = cursor.extent.start.column
+                token_end_col = cursor.extent.end.column
                 src_file_path = cursor.location.file.name
         except AttributeError as e:
             pass
@@ -196,7 +200,9 @@ class CppAstParser(object):
             AstConstants.DECL_FILEPATH: declaration_file_path,
             AstConstants.VAR_TYPE: var_type,
             AstConstants.LINE_TOKENS: line_tokens,
-            AstConstants.SRC_FILE_PATH: src_file_path
+            AstConstants.SRC_FILE_PATH: src_file_path,
+            AstConstants.TOKEN_START_COL: token_start_col,
+            AstConstants.TOKEN_END_COL: token_end_col
         }
 
 
