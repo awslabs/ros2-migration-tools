@@ -30,41 +30,37 @@ CK = clang.CursorKind
 
 
 class CppAstParser(object):
-    lib_path = None
-    lib_file = None
-    includes = "/usr/lib/llvm-3.8/lib/clang/3.8.0/include"
-    database = None
+    """
+    Wrapper to use libclang python API.
+    """
+    lib_path = None  # path to folder containing libclang.so
+    includes = None  # standard includes folder
 
-    # system required / user optional
-    @staticmethod
-    def set_library_path(lib_path="/usr/lib/llvm-3.8/lib"):
+    @classmethod
+    def set_library_path(cls, lib_path="/usr/lib/llvm-3.8/lib"):
+        """
+        Sets libclang.so folder path in python API
+        :param lib_path: path to folder containing libclang.so
+        :return: None
+        """
         clang.Config.set_library_path(lib_path)
-        CppAstParser.lib_path = lib_path
+        cls.lib_path = lib_path
+
+    @classmethod
+    def set_standard_includes(cls, std_includes):
+        """
+        Sets standard include path
+        :param std_includes:
+        :return: None
+        """
+        cls.includes = std_includes
 
     @staticmethod
-    def set_library_file(lib_file="/usr/lib/llvm-3.8/lib/libclang.so"):
-        clang.Config.set_library_file(lib_file)
-        CppAstParser.lib_file = lib_file
-
-    # optional
-    @staticmethod
-    def set_database(db_path):
-        if not CppAstParser.lib_path:
-            CppAstParser.set_library_path()
-        CppAstParser.database = clang.CompilationDatabase.fromDirectory(db_path)
-        CppAstParser.database.db_path = db_path
-
-    # optional
-    @staticmethod
-    def set_standard_includes(std_includes):
-        CppAstParser.includes = std_includes
-
-    @staticmethod
-    def exclude_from_ast(path):
+    def should_exclude_from_ast(path):
         """
         Returns True if tokens for this path are to be excluded from AST
-        :param path:
-        :return:
+        :param path: path to the src file
+        :return: boolean
         """
 
         # Assuming all unit test will follow path like `src/some_folder1/some_folder2/test/reader_test.cpp`
@@ -83,79 +79,25 @@ class CppAstParser(object):
 
         return False
 
-    def __init__(self, workspace="", user_includes=None):
-    # public:
-        self.workspace      = os.path.abspath(workspace) if workspace else ""
-        self.user_includes  = [] if user_includes is None else user_includes
-    # private:
-        self._index         = None
-        self._db            = CppAstParser.database
-
-    def get_ast_obj(self, file_path=None):
-        return self._parse_from_db_as_obj(file_path)
-
-    def _parse_from_db_as_obj(self, file_path):
-        if file_path is None:
-            cmd = self._db.getAllCompileCommands() or ()
-        else:
-            cmd = self._db.getCompileCommands(os.path.abspath(file_path)) or ()
-
-        ast_obj = {}
-        if not cmd:
-            return None
-        for c in cmd:
-            if CppAstParser.exclude_from_ast(c.directory) or CppAstParser.exclude_from_ast(c.filename):
-                continue
-
-            with cwd(os.path.join(self._db.db_path, c.directory)):
-                args = ["-I" + CppAstParser.includes] + list(c.arguments)[1:]
-                if self._index is None:
-                    self._index = clang.Index.create()
-                unit = self._index.parse(path=None, args=args, options=clang.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
-
-                self._check_compilation_problems(unit)
-                Utilities.merge_ast_dict(ast_obj, self._ast_obj(unit.cursor))
-        return ast_obj
-
-    def _ast_obj(self, top_cursor):
-        assert top_cursor.kind == CK.TRANSLATION_UNIT
-        objects = {}
-        for cursor in top_cursor.get_children():
-            if (cursor.location.file
-                    and cursor.location.file.name.startswith(self.workspace)):
-                curr_obj = self._cursor_obj(cursor)
-
-                if curr_obj[AstConstants.KIND] not in objects:
-                    objects[curr_obj[AstConstants.KIND]] = []
-
-                if curr_obj[AstConstants.NAME] != AstConstants.NO_SPELLING and \
-                        not CppAstParser.exclude_from_ast(curr_obj[AstConstants.SRC_FILE_PATH]) and \
-                        not CppAstParser.exclude_from_ast(curr_obj[AstConstants.DECL_FILEPATH]):
-                    objects[curr_obj[AstConstants.KIND]].append(curr_obj)
-
-                stack = list(cursor.get_children())
-                while stack:
-                    c = stack.pop()
-                    curr_obj = self._cursor_obj(c)
-                    if curr_obj[AstConstants.KIND] not in objects:
-                        objects[curr_obj[AstConstants.KIND]] = []
-
-                    if curr_obj[AstConstants.NAME] != AstConstants.NO_SPELLING and \
-                            not CppAstParser.exclude_from_ast(curr_obj[AstConstants.SRC_FILE_PATH]) and \
-                            not CppAstParser.exclude_from_ast(curr_obj[AstConstants.DECL_FILEPATH]):
-
-                        objects[curr_obj[AstConstants.KIND]].append(curr_obj)
-
-                    stack.extend(c.get_children())
-        return objects
-
-    def _check_compilation_problems(self, translation_unit):
+    @staticmethod
+    def _check_compilation_problems(translation_unit):
+        """
+        Logs the errors and warning in translation unit
+        :param translation_unit: clang translation_unit
+        :return:
+        """
         if translation_unit.diagnostics:
             for diagnostic in translation_unit.diagnostics:
                 if diagnostic.severity >= clang.Diagnostic.Error:
                     logging.warning(diagnostic.spelling)
 
-    def _cursor_obj(self, cursor):
+    @staticmethod
+    def _cursor_obj(cursor):
+        """
+        Returns dict containing token information
+        :param cursor: clang cursor to get the informations from
+        :return: dict
+        """
         line = 0
         token_start_col = 0
         token_end_col = 0
@@ -204,6 +146,84 @@ class CppAstParser(object):
             AstConstants.TOKEN_START_COL: token_start_col,
             AstConstants.TOKEN_END_COL: token_end_col
         }
+
+    def __init__(self, db_path, workspace=""):
+        """
+        Constructor for CPPAstParser
+        :param db_path: Path to folder containing compile_commands.json
+        :param workspace: path to folder containing the source code
+        """
+        self.workspace = os.path.abspath(workspace) if workspace else ""
+
+        self._index = None
+
+        self._db = clang.CompilationDatabase.fromDirectory(db_path)
+        self._db.db_path = db_path
+
+    def get_ast_obj(self, file_path=None):
+        """
+        Returns the dict of token kinds. Each kind will contain list of tokens
+        :param file_path: src file path for which to get the AST
+        :return: dict
+        """
+        if file_path is None:
+            cmd = self._db.getAllCompileCommands() or ()
+        else:
+            cmd = self._db.getCompileCommands(os.path.abspath(file_path)) or ()
+
+        ast_obj = {}
+        if not cmd:
+            return None
+        for c in cmd:
+            if CppAstParser.should_exclude_from_ast(c.directory) or CppAstParser.should_exclude_from_ast(c.filename):
+                continue
+
+            with cwd(os.path.join(self._db.db_path, c.directory)):
+                args = ["-I" + CppAstParser.includes] + list(c.arguments)[1:]
+                if self._index is None:
+                    self._index = clang.Index.create()
+                unit = self._index.parse(path=None, args=args, options=clang.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
+
+                self._check_compilation_problems(unit)
+                Utilities.merge_ast_dict(ast_obj, self._traverse_cursor(unit.cursor))
+        return ast_obj
+
+    def _traverse_cursor(self, top_cursor):
+        """
+        Traverses the cursor and returns a dict containing token list for each kind
+        :param top_cursor: starting cursor
+        :return: dict
+        """
+        assert top_cursor.kind == CK.TRANSLATION_UNIT
+        objects = {}
+        for cursor in top_cursor.get_children():
+            if (cursor.location.file
+                    and cursor.location.file.name.startswith(self.workspace)):
+                curr_obj = self._cursor_obj(cursor)
+
+                if curr_obj[AstConstants.KIND] not in objects:
+                    objects[curr_obj[AstConstants.KIND]] = []
+
+                if curr_obj[AstConstants.NAME] != AstConstants.NO_SPELLING and \
+                        not CppAstParser.should_exclude_from_ast(curr_obj[AstConstants.SRC_FILE_PATH]) and \
+                        not CppAstParser.should_exclude_from_ast(curr_obj[AstConstants.DECL_FILEPATH]):
+                    objects[curr_obj[AstConstants.KIND]].append(curr_obj)
+
+                stack = list(cursor.get_children())
+                while stack:
+                    c = stack.pop()
+                    curr_obj = self._cursor_obj(c)
+                    if curr_obj[AstConstants.KIND] not in objects:
+                        objects[curr_obj[AstConstants.KIND]] = []
+
+                    if curr_obj[AstConstants.NAME] != AstConstants.NO_SPELLING and \
+                            not CppAstParser.should_exclude_from_ast(curr_obj[AstConstants.SRC_FILE_PATH]) and \
+                            not CppAstParser.should_exclude_from_ast(curr_obj[AstConstants.DECL_FILEPATH]):
+
+                        objects[curr_obj[AstConstants.KIND]].append(curr_obj)
+
+                    stack.extend(c.get_children())
+        return objects
 
 
 ###############################################################################
