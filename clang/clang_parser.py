@@ -20,6 +20,7 @@
 
 import logging
 import os
+import re
 
 import clang.cindex as clang
 
@@ -35,6 +36,7 @@ class CppAstParser(object):
     """
     lib_path = None  # path to folder containing libclang.so
     includes = None  # standard includes folder
+    primitive_types_list = ["int", "char", "float", "double", "signed", "unsigned", "long", "short"]
 
     @classmethod
     def set_library_path(cls, lib_path="/usr/lib/llvm-3.8/lib"):
@@ -56,6 +58,20 @@ class CppAstParser(object):
         cls.includes = std_includes
 
     @staticmethod
+    def is_primitive_var_type_array(var_type):
+        """
+        Check if var_type is just an primitive type array
+        :param var_type: token var type
+        :return: boolean
+        """
+        for primitive_type in CppAstParser.primitive_types_list:
+            pattern = "\\b" + primitive_type + "\\b" + " *\*?" + " *\\w+" + " *\["  # looking for pattern like char * var[
+            if re.search(pattern, var_type) is not None:
+                return True
+
+        return False
+
+    @staticmethod
     def should_exclude_from_ast(path):
         """
         Returns True if tokens for this path are to be excluded from AST
@@ -75,6 +91,14 @@ class CppAstParser(object):
         # exclude system includes
         if path.startswith(os.path.join(os.path.sep, "usr", "lib")) or \
                 path.startswith(os.path.join(os.path.sep, "usr", "include")):
+            return True
+
+        # exclude aws tokens
+        if os.path.join("kinetic", "include", "aws", "") in path:
+            return True
+
+        # exclude aws_common tokens
+        if os.path.join("kinetic", "include", "aws_common", "") in path:
             return True
 
         return False
@@ -135,6 +159,17 @@ class CppAstParser(object):
             except AttributeError as e:
                 logging.warning("Couldn't get line_tokens")
 
+        if name == AstConstants.FIELD_DECL:
+            name = AstConstants.VAR_DECL
+
+        if name == AstConstants.PARM_DECL:
+            if "std::shared_ptr<" in var_type:
+                var_type = re.sub(r"^std::shared_ptr<", "", var_type)
+                var_type = var_type[:-1]
+            var_type = re.sub(r" *(\**)$", "", var_type)
+            var_type = re.sub(r" *(&*)$", "", var_type)
+            var_type = re.sub(r"^const *", "", var_type)
+
         return {
             AstConstants.LINE: line,
             AstConstants.KIND: name,
@@ -146,6 +181,30 @@ class CppAstParser(object):
             AstConstants.TOKEN_START_COL: token_start_col,
             AstConstants.TOKEN_END_COL: token_end_col
         }
+
+    @staticmethod
+    def should_append_to_token_list(curr_obj):
+        """
+        Check if token dict is required in the tokens list
+        :param curr_obj: token dict
+        :return: boolean
+        """
+        if curr_obj[AstConstants.NAME] == AstConstants.NO_SPELLING:
+            return False
+        if CppAstParser.should_exclude_from_ast(curr_obj[AstConstants.SRC_FILE_PATH]):
+            return False
+        if CppAstParser.should_exclude_from_ast(curr_obj[AstConstants.DECL_FILEPATH]):
+            return False
+
+        if curr_obj[AstConstants.VAR_TYPE] == AstConstants.VAR_DECL and \
+                CppAstParser.is_primitive_var_type_array(curr_obj[AstConstants.VAR_TYPE]):
+            return False
+
+        if curr_obj[AstConstants.VAR_TYPE] == AstConstants.PARM_DECL and \
+                curr_obj[AstConstants.VAR_TYPE] in CppAstParser.primitive_types_list:
+            return False
+
+        return True
 
     def __init__(self, db_path, workspace=""):
         """
@@ -204,9 +263,7 @@ class CppAstParser(object):
                 if curr_obj[AstConstants.KIND] not in objects:
                     objects[curr_obj[AstConstants.KIND]] = []
 
-                if curr_obj[AstConstants.NAME] != AstConstants.NO_SPELLING and \
-                        not CppAstParser.should_exclude_from_ast(curr_obj[AstConstants.SRC_FILE_PATH]) and \
-                        not CppAstParser.should_exclude_from_ast(curr_obj[AstConstants.DECL_FILEPATH]):
+                if CppAstParser.should_append_to_token_list(curr_obj):
                     objects[curr_obj[AstConstants.KIND]].append(curr_obj)
 
                 stack = list(cursor.get_children())
@@ -216,10 +273,7 @@ class CppAstParser(object):
                     if curr_obj[AstConstants.KIND] not in objects:
                         objects[curr_obj[AstConstants.KIND]] = []
 
-                    if curr_obj[AstConstants.NAME] != AstConstants.NO_SPELLING and \
-                            not CppAstParser.should_exclude_from_ast(curr_obj[AstConstants.SRC_FILE_PATH]) and \
-                            not CppAstParser.should_exclude_from_ast(curr_obj[AstConstants.DECL_FILEPATH]):
-
+                    if CppAstParser.should_append_to_token_list(curr_obj):
                         objects[curr_obj[AstConstants.KIND]].append(curr_obj)
 
                     stack.extend(c.get_children())

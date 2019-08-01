@@ -18,6 +18,13 @@ class AstConstants:
     SRC_FILE_PATH = "src_file_path"
     TOKEN_START_COL = "token_start_col"
     TOKEN_END_COL = "token_end_col"
+    TYPE_REF = "TYPE_REF"
+    MEMBER_REF_EXPR = "MEMBER_REF_EXPR"
+    PARM_DECL = "PARM_DECL"
+    CONVERSION_FUNCTION = "CONVERSION_FUNCTION"
+    DECL_REF_EXPR = "DECL_REF_EXPR"
+    CXX_METHOD = "CXX_METHOD"
+    CLASS_DECL = "CLASS_DECL"
 
 class Constants:
     ROS_1_NAME = "ros1_name"
@@ -54,8 +61,14 @@ class Constants:
         AstConstants.VAR_DECL,
         AstConstants.MACRO_INSTANTIATION,
         AstConstants.INCLUSION_DIRECTIVE,
-        AstConstants.FIELD_DECL
+        AstConstants.PARM_DECL,
+        AstConstants.CONVERSION_FUNCTION
     )
+    HELPER_TOKEN_TYPES = {
+        AstConstants.MEMBER_REF_EXPR,
+        AstConstants.TYPE_REF,
+        AstConstants.DECL_REF_EXPR
+    }
     MANUAL_TOKENS = (
         INCLUDES
     )
@@ -63,6 +76,16 @@ class Constants:
     NODE_HANDLE_VAR_NAME = "node_handle_var_name"
     DEBUGGING = "DEBUG"
     TOKEN_LOCATION = "token_location"
+    NODE_VAR_PARENT_CLASS = "node_var_parent_class"
+    VOID_CAST = "operator void *"
+    REMOVE_VOID_POINTER_CAST = ["ros::ServiceServer"]
+    EXTRA_PARAMS = {
+        AstConstants.TYPE_REF: {
+            "Aws::Utils::Logging::AWSROSLogger": [
+                ("Aws::Utils::Logging::LogLevel::Debug", 1)
+            ]
+        }
+    }
 
 
 class RosConstants:
@@ -70,3 +93,5 @@ class RosConstants:
     INIT_CALL_EXPR = "init"
     NODE_HANDLE = "ros::NodeHandle"
     ROS_INIT_LINE_TOKEN_LENGTH = 10
+    SERVCE_SERVER = "ros::ServiceServer"
+    CREATE_SERVICE = "create_service<>"

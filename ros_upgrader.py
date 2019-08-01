@@ -32,7 +32,8 @@ class RosUpgrader:
         AstConstants.VAR_DECL: False,
         AstConstants.MACRO_INSTANTIATION: True,
         AstConstants.INCLUSION_DIRECTIVE: False,
-        AstConstants.FIELD_DECL: True
+        AstConstants.PARM_DECL: False,
+        AstConstants.CONVERSION_FUNCTION: False
     }
 
     # path to the folder containing "compile_commands.json" file, will be generated using cmake flag
@@ -41,9 +42,6 @@ class RosUpgrader:
 
     # folder to upgrade
     SRC_PATH_TO_UPGRADE = None
-
-    # path to all the include folders required by the package
-    INCLUDES = []
 
     # AST dict. Keys will be line numbers. Values will be dict with TOKEN_TYPES as keys and values will be the tokens
     AST_LINE_BY_LINE = {}
@@ -54,7 +52,7 @@ class RosUpgrader:
     def init():
         """
         Initializes CppAstParser and Clang. Stores various config paths to be used later
-        :return:
+        :return: None
         """
         try:
             config = open(Constants.CONFIG_FILE_NAME)
@@ -66,10 +64,6 @@ class RosUpgrader:
         CppAstParser.set_library_path(Utilities.get_abs_path(config_obj[Constants.LIBCLANG_PATH]))
         CppAstParser.set_standard_includes(os.path.join(Utilities.get_abs_path(config_obj[Constants.LIBCLANG_PATH]),
                                                         "include"))
-
-        RosUpgrader.INCLUDES = []
-        for fpath in config_obj[Constants.USER_INCLUDES]:
-            RosUpgrader.INCLUDES.append(Utilities.get_abs_path(fpath))
 
     @staticmethod
     def get_cpp_file_list():
@@ -88,12 +82,13 @@ class RosUpgrader:
         return file_list
 
     @staticmethod
-    def get_ast_as_json():
+    def get_ast_as_json(compile_db_path):
         """
         Creates an instance of CppAstParser and gets all the tokens for various .cpp files as a python dict
+        :param compile_db_path: path to compile_commands.json file
         :return: dict with key as path to .cpp and values as the tokens dict
         """
-        cp = CppAstParser(RosUpgrader.SRC_PATH_TO_UPGRADE, RosUpgrader.INCLUDES)
+        cp = CppAstParser(compile_db_path, RosUpgrader.SRC_PATH_TO_UPGRADE)
         all_tokens = cp.get_ast_obj()
 
         return all_tokens
@@ -164,12 +159,20 @@ class RosUpgrader:
             Constants.ROS_2_NAME: Constants.NEW_MAPPING_MSG,
             Constants.TOKEN_LOCATION: {
                 AstConstants.SRC_FILE_PATH: token[AstConstants.SRC_FILE_PATH],
-                AstConstants.LINE: token[AstConstants.LINE]
+                AstConstants.LINE: token[AstConstants.LINE],
+                AstConstants.TOKEN_START_COL: token[AstConstants.TOKEN_START_COL],
+                AstConstants.TOKEN_END_COL: token[AstConstants.TOKEN_END_COL]
             }
         }
-        if token[AstConstants.KIND] == AstConstants.VAR_DECL:
+
+        if token[AstConstants.KIND] == AstConstants.VAR_DECL or token[AstConstants.KIND] == AstConstants.PARM_DECL:
             attributes[Constants.ROS_1_NAME] = token[AstConstants.VAR_TYPE]
             attributes[Constants.TO_SHARED_PTR] = False
+            if token[AstConstants.KIND] == AstConstants.VAR_DECL:
+                attributes[Constants.NODE_ARG_INFO] = {
+                    Constants.NODE_ARG_REQ: False,
+                    Constants.NODE_ARG_INDEX: -1
+                }
         elif token[AstConstants.KIND] == AstConstants.CALL_EXPR:
             attributes[Constants.NODE_ARG_INFO] = {
                 Constants.NODE_ARG_REQ: False,
@@ -203,7 +206,7 @@ class RosUpgrader:
         token_identifier = token[AstConstants.NAME]
 
         # checking if there is already a duplicate mapping present
-        if token[AstConstants.KIND] == AstConstants.VAR_DECL:
+        if token[AstConstants.KIND] == AstConstants.VAR_DECL or token[AstConstants.KIND] == AstConstants.PARM_DECL:
             token_identifier = token[AstConstants.VAR_TYPE]
             if token[AstConstants.VAR_TYPE] in mappings:
                 return False
@@ -221,34 +224,39 @@ class RosUpgrader:
     def store_ast_line_by_line(tokens_dict):
         """
         Stores ast line by line for each file in tokens_dict
-        :param tokens_dict:
+        :param tokens_dict: dict containing list of tokens of various kind
         :return: None
         """
 
         ast_for_file = RosUpgrader.AST_LINE_BY_LINE
         for token_kind in tokens_dict:
-            if token_kind not in Constants.TOKEN_TYPES:
+            if token_kind not in Constants.HELPER_TOKEN_TYPES and token_kind not in Constants.TOKEN_TYPES:
                 continue
 
             tokens = tokens_dict[token_kind]
             for token in tokens:
                 line = token[AstConstants.LINE]
-                if line not in ast_for_file:
-                    ast_for_file[line] = Utilities.get_line_by_line_template()
+                src_file_path = token[AstConstants.SRC_FILE_PATH]
+                if src_file_path not in ast_for_file:
+                    ast_for_file[src_file_path] = {}
 
-                ast_for_file[line][token_kind].append(token)
+                if line not in ast_for_file[src_file_path]:
+                    ast_for_file[src_file_path][line] = Utilities.get_line_by_line_template()
+
+                ast_for_file[src_file_path][line][token_kind].append(token)
 
     @staticmethod
-    def add_new_mappings():
+    def add_new_mappings(compile_db_path):
         """
         Parses the file and adds the mappings to "mappings.json" if the mapping was missing
+        :param compile_db_path: path to compile_json_file
         :return: None
         """
         mappings = Utilities.read_json_file(Constants.MAPPING_FILE_NAME)
 
         irrelevant_tokens = set(mappings[Constants.IRRELEVANT_TOKENS])
 
-        Utilities.merge_ast_dict(RosUpgrader.AST_DICT, RosUpgrader.get_ast_as_json())
+        Utilities.merge_ast_dict(RosUpgrader.AST_DICT, RosUpgrader.get_ast_as_json(compile_db_path))
 
         RosUpgrader.store_ast_line_by_line(RosUpgrader.AST_DICT)
 
@@ -257,11 +265,14 @@ class RosUpgrader:
                 added_set = set()
                 for token in RosUpgrader.AST_DICT[token_type]:
                     if RosUpgrader.check_token_validity(token, mappings[token_type], irrelevant_tokens, added_set):
-
                         mappings[token_type][Constants.NEW_TOKENS_LIST].append(
                             RosUpgrader.get_mapping_attributes(token))
 
-                        added_set.add(token[AstConstants.NAME])
+                        if token[AstConstants.KIND] == AstConstants.VAR_DECL or \
+                                token[AstConstants.KIND] == AstConstants.PARM_DECL:
+                            added_set.add(token[AstConstants.VAR_TYPE])
+                        else:
+                            added_set.add(token[AstConstants.NAME])
                     else:
                         if token_type == AstConstants.USING_DIRECTIVE:
                             pass
@@ -298,14 +309,14 @@ class RosUpgrader:
             for file_path in file_list:
                 src_content = Utilities.read_from_file(file_path)
 
-                node_info = Utilities.get_ros_node_info(RosUpgrader.AST_DICT)
-                pointer_var_names = Utilities.get_list_of_pointer_var(RosUpgrader.AST_DICT, mapping)
-                cpp_porter = CPPSourceCodePorter(node_info, pointer_var_names)
+                cpp_porter = CPPSourceCodePorter(RosUpgrader.AST_DICT, file_path)
 
-                new_src = cpp_porter.port(source=src_content, mapping=mapping,
-                                          ast=RosUpgrader.AST_LINE_BY_LINE)
+                if file_path in RosUpgrader.AST_LINE_BY_LINE:
+                    new_src = cpp_porter.port(source=src_content,
+                                              mapping=mapping,
+                                              ast=RosUpgrader.AST_LINE_BY_LINE[file_path])
 
-                Utilities.write_to_file(file_path, new_src)
+                    Utilities.write_to_file(file_path, new_src)
 
     @staticmethod
     def add_filled_mappings():
@@ -346,15 +357,6 @@ class RosUpgrader:
         else:
             print("Aborting...")
 
-    @staticmethod
-    def set_compile_db(compile_db_dir):
-        """
-        Initializes CppAstParser compile database
-        :param compile_db_dir:
-        :return:
-        """
-        CppAstParser.set_database(Utilities.get_abs_path(compile_db_dir))
-
     def __init__(self):
         pass
 
@@ -384,8 +386,7 @@ def main():
 
     for compile_json in compile_db_files:
         RosUpgrader.COMPILE_JSON_PATH = compile_json
-        RosUpgrader.set_compile_db(Utilities.get_parent_dir(compile_json))
-        RosUpgrader.add_new_mappings()
+        RosUpgrader.add_new_mappings(Utilities.get_parent_dir(compile_json))
 
     if is_debugging():
         Utilities.write_as_json("ast_dump.json", RosUpgrader.AST_DICT)
@@ -394,10 +395,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
-

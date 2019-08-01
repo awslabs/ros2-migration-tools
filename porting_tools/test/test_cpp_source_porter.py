@@ -41,7 +41,7 @@ from porting_tools.cpp_source_code_porter import CPPSourceCodePorter
 from utilities import Utilities
 
 
-class TestCPPSourceCodePorter(unittest.TestCase):
+class TestCPPSourceCodePorterTalker(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -50,8 +50,7 @@ class TestCPPSourceCodePorter(unittest.TestCase):
         ast_dict = Utilities.read_json_file(os.path.join("porting_tools", "test", "ast_dump_talker_cpp.json"))
         cls.ast_line_wise = Utilities.get_line_by_line_ast(ast_dict)
 
-        cls.cpp_porter = CPPSourceCodePorter(Utilities.get_ros_node_info(ast_dict),
-                                             Utilities.get_list_of_pointer_var(ast_dict, cls.mapping))
+        cls.cpp_porter = CPPSourceCodePorter(ast_dict, "unit_test")
 
     @classmethod
     def tearDownClass(cls):
@@ -60,12 +59,12 @@ class TestCPPSourceCodePorter(unittest.TestCase):
     def test_rule_replace_headers(self):
         source = r'#include std_msgs/String.h'
         result = r'#include std_msgs/msg/string.hpp'
-        self.assertEqual(CPPSourceCodePorter.rule_replace_headers(source, self.mapping), result)
+        self.assertEqual(self.cpp_porter.rule_replace_headers(source, 3, self.mapping), result)
 
     def test_rule_replace_namespace(self):
         source = r'std_msgs::String msg;'
         result = r'std_msgs::msg::String msg;'
-        self.assertEqual(CPPSourceCodePorter.rule_replace_namespace_ref(source, self.mapping), result)
+        self.assertEqual(self.cpp_porter.rule_replace_namespace_ref(source, 16, self.mapping), result)
 
     def test_rule_init_call_found_failure(self):
         source = r'ros::different_init(argc, argv, "talker")'
@@ -89,40 +88,34 @@ class TestCPPSourceCodePorter(unittest.TestCase):
         self.assertEqual(self.cpp_porter.rule_replace_call_expr(source, 10, self.mapping, self.ast_line_wise),
                          result)
 
-    def test_rule_node_handle_found_success(self):
+    def test_rule_replace_var_decl(self):
         source = r'ros::NodeHandle node;'
-        result = r'auto node = ros::Node::make_shared("talker");'
-        self.assertEqual(self.cpp_porter.rule_node_handle_found(source, 8, self.mapping[AstConstants.VAR_DECL],
-                                                                self.ast_line_wise), result)
+        result = r'std::shared_ptr<ros::Node> node;'
+        self.assertEqual(self.cpp_porter.rule_replace_var_decl(source, 8, self.mapping, self.ast_line_wise), result)
 
-    def test_rule_node_handle_found_failure(self):
-        source = r'ros::Rate loop_rate(10);'
-        result = None
-        self.assertEqual(self.cpp_porter.rule_node_handle_found(source, 12, self.mapping[AstConstants.VAR_DECL],
-                                                                self.ast_line_wise), result)
-
-    def test_rule_replace_var_decl_with_equal_to(self):
+    def test_rule_handle_var_instantiation_with_equal_to(self):
         source = r'ros::Publisher chatter_pub = node.advertise<std_msgs::String>("chatter", 1000);'
-        result = r'auto chatter_pub = node.advertise<std_msgs::String>("chatter", 1000);'
-        self.assertEqual(self.cpp_porter.rule_replace_var_decl(source, 10, self.mapping,
-                                                               self.ast_line_wise), result)
+        result = r'ros::Publisher chatter_pub = node.advertise<std_msgs::String>("chatter", 1000);'
+        self.assertEqual(self.cpp_porter.rule_handle_var_instantiation(source, 10, self.mapping,
+                                                                       self.ast_line_wise), result)
 
-    def test_rule_replace_var_decl_without_equal_to(self):
+    def test_rule_handle_var_instantiation_without_equal_to(self):
         source = r'std_msgs::String msg;'
-        result = r'auto msg = std::make_shared<std_msgs::String>();'
-        self.assertEqual(self.cpp_porter.rule_replace_var_decl(source, 16, self.mapping,
-                                                               self.ast_line_wise), result)
+        result = r'std_msgs::String msg(std::make_shared<std_msgs::String>());'
+        self.assertEqual(self.cpp_porter.rule_handle_var_instantiation(source, 16, self.mapping,
+                                                                       self.ast_line_wise), result)
 
     def test_rule_replace_dot_with_arrow(self):
         source = r'chatter_pub.publish(msg);'
         result = r'chatter_pub->publish(msg);'
-        self.assertEqual(self.cpp_porter.rule_replace_dot_with_arrow(source), result)
+        self.assertEqual(self.cpp_porter.rule_replace_dot_with_arrow(source, 27, self.mapping, self.ast_line_wise),
+                         result)
 
     def test_rule_replace_macros_with_node_arg(self):
         source = r'ROS_INFO("%s\n",msg.data.c_str());'
         result = r'RCLCPP_INFO(node->get_logger(),"%s\n",msg.data.c_str());'
         self.assertEqual(self.cpp_porter.rule_replace_macros(source, 25, self.mapping, self.ast_line_wise), result)
-
+        
 
 if __name__ == '__main__':
     unittest.main()

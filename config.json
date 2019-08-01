@@ -1,6 +1,5 @@
 {
   "LIBCLANG_PATH": "clang/",
   "ROS1_SRC_PATH": "../ROS_1/talker/src",
-  "USER_INCLUDES":  [],
   "ROS2_OUTPUT_DIR": "../ROS_2/upgraded_from_ros1"
 }

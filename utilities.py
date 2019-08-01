@@ -2,6 +2,7 @@ import copy
 import datetime
 import json
 import os
+import re
 import shutil
 import sys
 
@@ -183,6 +184,9 @@ class Utilities:
         for token_type in Constants.TOKEN_TYPES:
             template[token_type] = []
 
+        for token_type in Constants.HELPER_TOKEN_TYPES:
+            template[token_type] = []
+
         return copy.deepcopy(template)
 
     @staticmethod
@@ -194,7 +198,7 @@ class Utilities:
         """
         ast_for_line = {}
         for token_kind in ast_tokens:
-            if token_kind not in Constants.TOKEN_TYPES:
+            if token_kind not in Constants.HELPER_TOKEN_TYPES and token_kind not in Constants.TOKEN_TYPES:
                 continue
 
             tokens_list = ast_tokens[token_kind]
@@ -260,11 +264,32 @@ class Utilities:
         return node_handle_var_name
 
     @staticmethod
+    def get_node_var_parent_class(ast_dict, node_handle_var_name):
+        """
+        Returns the name of the class containing declaration of `node_handle_var_name`
+        :param ast_dict: dict of tokens
+        :param node_handle_var_name: variable name for ros::NodeHandle
+        :return: str or None
+        """
+        if AstConstants.CLASS_DECL in ast_dict:
+            for token in ast_dict[AstConstants.CLASS_DECL]:
+                line_tokens = token[AstConstants.LINE_TOKENS]
+                if node_handle_var_name in line_tokens:
+                    index = line_tokens.index(node_handle_var_name)
+
+                    # line_token will contain keywords in this order: [..., "ros","::","NodeHandle","node_handle_", ...]
+                    if index >= 3:
+                        decl_stmt = "".join(line_tokens[index-3:index])
+                        if decl_stmt == RosConstants.NODE_HANDLE:
+                            return token[AstConstants.NAME]
+        return None
+
+    @staticmethod
     def get_ros_node_info(ast_dict):
         """
         Return a dict containing node_name and node_var_name
         :param ast_dict: dict of tokens
-        :return: Dict
+        :return: dict
         """
         node_name = Utilities.get_node_name(ast_dict)
         if node_name is None:
@@ -274,9 +299,12 @@ class Utilities:
         if node_handle_var_name is None:
             node_handle_var_name = str(input("NodeHandle var not found. Enter NodeHandle var name name: "))
 
+        node_var_parent_class = Utilities.get_node_var_parent_class(ast_dict, node_handle_var_name)
+
         return {
             Constants.NODE_NAME: node_name,
-            Constants.NODE_HANDLE_VAR_NAME: node_handle_var_name
+            Constants.NODE_HANDLE_VAR_NAME: node_handle_var_name,
+            Constants.NODE_VAR_PARENT_CLASS: node_var_parent_class
         }
 
     @staticmethod
@@ -285,7 +313,7 @@ class Utilities:
         Returns a list of var names which are of type shared_ptr
         :param ast_dict: dict of tokens
         :param mapping: ROS1 to ROS2 mapping dict
-        :return:
+        :return: list
         """
 
         # get list of var types which are shared_ptr
@@ -329,6 +357,27 @@ class Utilities:
                 old_ast_dict[kind].extend(new_ast_dict[kind])
             else:
                 old_ast_dict[kind] = new_ast_dict[kind]
+
+    @staticmethod
+    def print_json(obj):
+        """
+        To print json with indentation
+        :param obj:
+        :return: None
+        """
+        print(json.dumps(obj, indent=4))
+
+    @staticmethod
+    def replace_word_in_line(line, to_replace, replace_with):
+        """
+        In `line`, replace `replace_token` with `replace_with`, and return the new line
+        :param line: line in which replacement is to be done
+        :param to_replace: candidate to replace
+        :param replace_with: replace with
+        :return: str
+        """
+        pattern = "\\b" + to_replace + "\\b"
+        return re.sub(pattern, replace_with, line)
 
 
 if __name__ == "__main__":
