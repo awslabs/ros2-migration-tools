@@ -221,31 +221,6 @@ class RosUpgrader:
         return True
 
     @staticmethod
-    def store_ast_line_by_line(tokens_dict):
-        """
-        Stores ast line by line for each file in tokens_dict
-        :param tokens_dict: dict containing list of tokens of various kind
-        :return: None
-        """
-
-        ast_for_file = RosUpgrader.AST_LINE_BY_LINE
-        for token_kind in tokens_dict:
-            if token_kind not in Constants.HELPER_TOKEN_TYPES and token_kind not in Constants.TOKEN_TYPES:
-                continue
-
-            tokens = tokens_dict[token_kind]
-            for token in tokens:
-                line = token[AstConstants.LINE]
-                src_file_path = token[AstConstants.SRC_FILE_PATH]
-                if src_file_path not in ast_for_file:
-                    ast_for_file[src_file_path] = {}
-
-                if line not in ast_for_file[src_file_path]:
-                    ast_for_file[src_file_path][line] = Utilities.get_line_by_line_template()
-
-                ast_for_file[src_file_path][line][token_kind].append(token)
-
-    @staticmethod
     def add_new_mappings(compile_db_path):
         """
         Parses the file and adds the mappings to "mappings.json" if the mapping was missing
@@ -258,7 +233,7 @@ class RosUpgrader:
 
         Utilities.merge_ast_dict(RosUpgrader.AST_DICT, RosUpgrader.get_ast_as_json(compile_db_path))
 
-        RosUpgrader.store_ast_line_by_line(RosUpgrader.AST_DICT)
+        RosUpgrader.AST_LINE_BY_LINE = Utilities.store_ast_line_by_line(RosUpgrader.AST_DICT)
 
         for token_type in Constants.TOKEN_TYPES:
             if token_type in RosUpgrader.AST_DICT:

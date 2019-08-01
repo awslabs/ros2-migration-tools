@@ -211,6 +211,31 @@ class Utilities:
         return ast_for_line
 
     @staticmethod
+    def store_ast_line_by_line(tokens_dict):
+        """
+        Stores ast line by line for each file in tokens_dict and returns the ast in new format
+        :param tokens_dict: dict containing list of tokens of various kind
+        :return: dict
+        """
+        ast_for_file = {}
+        for token_kind in tokens_dict:
+            if token_kind not in Constants.HELPER_TOKEN_TYPES and token_kind not in Constants.TOKEN_TYPES:
+                continue
+
+            tokens = tokens_dict[token_kind]
+            for token in tokens:
+                line = token[AstConstants.LINE]
+                src_file_path = token[AstConstants.SRC_FILE_PATH]
+                if src_file_path not in ast_for_file:
+                    ast_for_file[src_file_path] = {}
+
+                if line not in ast_for_file[src_file_path]:
+                    ast_for_file[src_file_path][line] = Utilities.get_line_by_line_template()
+
+                ast_for_file[src_file_path][line][token_kind].append(token)
+        return ast_for_file
+
+    @staticmethod
     def get_raw_str(input_str):
         """
         Returns the raw string representation of input_str
