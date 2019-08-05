@@ -1,5 +1,6 @@
 import copy
 import datetime
+import difflib
 import json
 import os
 import re
@@ -403,6 +404,40 @@ class Utilities:
         """
         pattern = "\\b" + to_replace + "\\b"
         return re.sub(pattern, replace_with, line)
+
+    @staticmethod
+    def get_diff_content_of_files(src_content, new_src, src_file):
+        """
+        Returns a list containing the diff between the `src_content` and `new_src`
+        :param src_content: old content of the file
+        :param new_src: new content after migration
+        :param src_file: file path
+        :return: list
+        """
+        lines1 = src_content.splitlines()
+        lines2 = new_src.splitlines()
+
+        diff_content = []
+
+        deletions = []
+        additions = []
+        for line in difflib.ndiff(lines1, lines2):
+            if line[0] == '-':
+                deletions.append(line)
+            if line[0] == '+':
+                additions.append(line)
+
+        diff_content.append('#' * 10 + src_file + '#' * 10)
+        diff_content.append('=' * 160)
+
+        for i, line in enumerate(deletions):
+            diff_content.append(line)
+            if i < len(additions):
+                diff_content.append(additions[i])
+            diff_content.append('='*160)
+
+        diff_content.append("\n\n")
+        return diff_content
 
 
 if __name__ == "__main__":

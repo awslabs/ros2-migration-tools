@@ -37,6 +37,7 @@ class CppAstParser(object):
     lib_path = None  # path to folder containing libclang.so
     includes = None  # standard includes folder
     primitive_types_list = ["int", "char", "float", "double", "signed", "unsigned", "long", "short"]
+    ros_versions = ["kinetic", "melodic"]
 
     @classmethod
     def set_library_path(cls, lib_path="/usr/lib/llvm-3.8/lib"):
@@ -93,13 +94,14 @@ class CppAstParser(object):
                 path.startswith(os.path.join(os.path.sep, "usr", "include")):
             return True
 
-        # exclude aws tokens
-        if os.path.join("kinetic", "include", "aws", "") in path:
-            return True
+        for version in CppAstParser.ros_versions:
+            # exclude aws tokens
+            if os.path.join(version, "include", "aws", "") in path:
+                return True
 
-        # exclude aws_common tokens
-        if os.path.join("kinetic", "include", "aws_common", "") in path:
-            return True
+            # exclude aws_common tokens
+            if os.path.join(version, "include", "aws_common", "") in path:
+                return True
 
         return False
 

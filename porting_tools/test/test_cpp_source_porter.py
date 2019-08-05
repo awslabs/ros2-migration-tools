@@ -15,6 +15,8 @@ class TestCPPSourceCodePorterTalker(unittest.TestCase):
         ast_dict = Utilities.read_json_file(os.path.join("porting_tools", "test", "ast_dump_talker_cpp.json"))
         cls.ast_line_wise = Utilities.store_ast_line_by_line(ast_dict)
 
+        # file_path as mentioned in the `ast_dump_talker_cpp.json` file, will not be used for file reading purpose
+        # as the path is system specific
         cls.file_path_in_ast = "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp"
         cls.cpp_porter = CPPSourceCodePorter(ast_dict, cls.file_path_in_ast)
 
@@ -65,6 +67,7 @@ class TestCPPSourceCodePorterTalker(unittest.TestCase):
                                                                self.ast_line_wise[self.file_path_in_ast]), result)
 
     def test_rule_handle_var_instantiation_with_equal_to(self):
+        # source and result will be same as `chatter_pub` has already been instantiated
         source = r'ros::Publisher chatter_pub = node.advertise<std_msgs::String>("chatter", 1000);'
         result = r'ros::Publisher chatter_pub = node.advertise<std_msgs::String>("chatter", 1000);'
         self.assertEqual(self.cpp_porter.rule_handle_var_instantiation(source, 10,
@@ -90,7 +93,8 @@ class TestCPPSourceCodePorterTalker(unittest.TestCase):
         self.assertEqual(self.cpp_porter.rule_replace_macros(source, 25, self.mapping,
                                                              self.ast_line_wise[self.file_path_in_ast]), result)
 
-
+# file paths as mentioned in the `ast_dump_lex_node.json` file, will not be used for file reading purpose
+# as the path is system specific
 LEX_NODE_FILE_LIST = [
     u'/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_lex_node/src/lex-ros1/lex_node/src/main.cpp',
     u'/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_lex_node/src/lex-ros1/lex_node/src/lex_node.cpp',
@@ -168,8 +172,8 @@ class TestCPPSourceCodePorterLexNodeLexNodeCPP(unittest.TestCase):
 
     def test_rule_replace_call_expr_advertise_service(self):
         source = 'node_handle_.advertiseService<>("lex_conversation", &LexNode::LexServerCallback, this);'
-        result = 'node_handle_.create_service<lex_common_msgs::srv::AudioTextConversation>("lex_conversation",[this](std::shared_ptr<rmw_request_id_t> request_header,\n' \
-                 'std::shared_ptr<lex_common_msgs::srv::AudioTextConversation::Request> arg0,\n' \
+        result = 'node_handle_.create_service<lex_common_msgs::srv::AudioTextConversation>("lex_conversation",[this](std::shared_ptr<rmw_request_id_t> request_header,' \
+                 'std::shared_ptr<lex_common_msgs::srv::AudioTextConversation::Request> arg0,' \
                  'std::shared_ptr<lex_common_msgs::srv::AudioTextConversation::Response> arg1) { return LexServerCallback(*arg0,*arg1);});'
 
         self.assertEqual(self.cpp_porter.rule_replace_call_expr(source, 188,

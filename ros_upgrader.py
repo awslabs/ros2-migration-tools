@@ -281,6 +281,8 @@ class RosUpgrader:
         mapping = Utilities.read_json_file(Constants.MAPPING_FILE_NAME)
         if mapping is not None:
             file_list = RosUpgrader.get_all_files_of_extension(RosUpgrader.SRC_PATH_TO_UPGRADE, [".cpp", ".h", ".hpp"])
+
+            diff_content = []
             for file_path in file_list:
                 src_content = Utilities.read_from_file(file_path)
 
@@ -292,6 +294,10 @@ class RosUpgrader:
                                               ast=RosUpgrader.AST_LINE_BY_LINE[file_path])
 
                     Utilities.write_to_file(file_path, new_src)
+
+                    diff_content.extend(Utilities.get_diff_content_of_files(src_content, new_src, file_path))
+
+            Utilities.write_to_file(os.path.join(Utilities.get_parent_dir(RosUpgrader.SRC_PATH_TO_UPGRADE), Constants.DIFF_FILE_PATH), "\n".join(diff_content))
 
     @staticmethod
     def add_filled_mappings():

@@ -86,6 +86,7 @@ class Constants:
             ]
         }
     }
+    DIFF_FILE_PATH = "migration_diff.txt"
 
 
 

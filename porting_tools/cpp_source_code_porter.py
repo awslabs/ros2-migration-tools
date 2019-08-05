@@ -501,7 +501,7 @@ class CPPSourceCodePorter:
                 call_back_call = call_back_name + "("
                 for ind, arg in enumerate(arg_list):
                     arg_var = "arg" + str(ind)
-                    lambda_wrap += ",\nstd::shared_ptr<" \
+                    lambda_wrap += ",std::shared_ptr<" \
                                    + CPPSourceCodePorter.get_ros2_name(arg, mapping[AstConstants.PARM_DECL]) \
                                    + "> " + arg_var
                     call_back_call += "*" + arg_var
