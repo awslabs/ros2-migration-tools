@@ -1,0 +1,268 @@
+{
+    "CALL_EXPR": {
+        "NEW_TOKENS_LIST": [],
+        "advertise": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "create_publisher"
+        },
+        "advertiseService": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "create_service"
+        },
+        "getNamespace": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "get_namespace"
+        },
+        "spin": {
+            "node_arg_info": {
+                "node_arg_index": 0,
+                "node_arg_req": true
+            },
+            "ros2_name": "spin"
+        },
+        "spinOnce": {
+            "node_arg_info": {
+                "node_arg_index": 0,
+                "node_arg_req": true
+            },
+            "ros2_name": "spin_some"
+        }
+    },
+    "CONVERSION_FUNCTION": {
+        "NEW_TOKENS_LIST": [],
+        "operator ros::NodeHandle &": {
+            "ros2_name": "operator std::shared_ptr<ros::Node> &"
+        }
+    },
+    "FIELD_DECL": {
+        "NEW_TOKENS_LIST": []
+    },
+    "INCLUSION_DIRECTIVE": {
+        "NEW_TOKENS_LIST": [],
+        "aws_ros1_common/sdk_utils/logging/aws_ros_logger.h": {
+            "ros2_name": "aws_ros2_common/sdk_utils/logging/aws_ros_logger.h"
+        },
+        "aws_ros1_common/sdk_utils/ros1_node_parameter_reader.h": {
+            "ros2_name": "aws_ros2_common/sdk_utils/ros2_node_parameter_reader.h"
+        },
+        "lex_common_msgs/AudioTextConversation.h": {
+            "ros2_name": "lex_common_msgs/srv/audio_text_conversation.hpp"
+        },
+        "lex_common_msgs/AudioTextConversationRequest.h": {
+            "ros2_name": "lex_common_msgs/srv/audio_text_conversation.hpp"
+        },
+        "lex_common_msgs/AudioTextConversationResponse.h": {
+            "ros2_name": "lex_common_msgs/srv/audio_text_conversation.hpp"
+        },
+        "lex_common_msgs/KeyValue.h": {
+            "ros2_name": "lex_common_msgs/msg/key_value.hpp"
+        },
+        "ros/ros.h": {
+            "ros2_name": "rclcpp/rclcpp.hpp"
+        },
+        "ros/spinner.h": {
+            "ros2_name": "rclcpp/rclcpp.hpp"
+        },
+        "std_msgs/String.h": {
+            "ros2_name": "std_msgs/msg/string.hpp"
+        }
+    },
+    "IRRELEVANT_TOKENS": [
+        "bool_VAR_DECL",
+        "::ros::console::LogLocation_VAR_DECL",
+        "std::stringstream_VAR_DECL",
+        "int_VAR_DECL",
+        "ros::Rate_VAR_DECL",
+        "sstream_INCLUSION_DIRECTIVE",
+        "sleep_CALL_EXPR",
+        "publish_CALL_EXPR",
+        "print_CALL_EXPR",
+        "checkLogLocationEnabled_CALL_EXPR",
+        "setLogLocationLevel_CALL_EXPR",
+        "initializeLogLocation_CALL_EXPR",
+        "initialize_CALL_EXPR",
+        "ok_CALL_EXPR",
+        "String__CALL_EXPR",
+        "Rate_CALL_EXPR",
+        "NodeHandle_CALL_EXPR",
+        "init_CALL_EXPR",
+        "console_NAMESPACE_REF",
+        "levels_NAMESPACE_REF",
+        "operator void *_CALL_EXPR",
+        "operator=_CALL_EXPR",
+        "Logging_NAMESPACE_REF",
+        "Aws::Utils::Logging::LogSystemInterface *_VAR_DECL",
+        "Aws::Utils::Logging::LogSystemInterface *_VAR_DECL",
+        "Aws::Lex::LexNode_VAR_DECL",
+        "Aws::SDKOptions_VAR_DECL",
+        "Aws::Utils::Logging::LogSystemInterface *_VAR_DECL",
+        "std::shared_ptr<Aws::LexRuntimeService::LexRuntimeServiceClient>_VAR_DECL",
+        "Aws::Lex::LexConfiguration_VAR_DECL",
+        "Aws::Lex::LexNode_VAR_DECL",
+        "Aws::OStringStream_VAR_DECL",
+        "Aws::Utils::Logging::LogSystemInterface *_VAR_DECL",
+        "Aws::OStringStream_VAR_DECL",
+        "Aws::Utils::Logging::LogSystemInterface *_VAR_DECL",
+        "Aws::LexRuntimeService::Model::PostContentResult &_VAR_DECL",
+        "Aws::Utils::Outcome<Aws::LexRuntimeService::Model::PostContentResult, Aws::Client::AWSError<Aws::LexRuntimeService::LexRuntimeServiceErrors> >_VAR_DECL",
+        "Aws::OStringStream_VAR_DECL",
+        "Aws::Utils::Logging::LogSystemInterface *_VAR_DECL",
+        "std::shared_ptr<std::__cxx11::basic_stringstream<char, std::char_traits<char>, Aws::Allocator<char> > >_VAR_DECL",
+        "Aws::LexRuntimeService::Model::PostContentRequest_VAR_DECL",
+        "Aws::OStringStream_VAR_DECL",
+        "Aws::Utils::Logging::LogSystemInterface *_VAR_DECL",
+        "std::pair<const std::__cxx11::basic_string<char, std::char_traits<char>, Aws::Allocator<char> >, Aws::Utils::Json::JsonView> &_VAR_DECL",
+        "__gnu_cxx::__normal_iterator<lex_common_msgs::KeyValue_<std::allocator<void> > *, std::vector<lex_common_msgs::KeyValue_<std::allocator<void> >, std::allocator<lex_common_msgs::KeyValue_<std::allocator<void> > > > >_VAR_DECL",
+        "std::map<std::__cxx11::basic_string<char, std::char_traits<char>, Aws::Allocator<char> >, Aws::Utils::Json::JsonView, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, Aws::Allocator<char> > >, Aws::Allocator<std::pair<const std::__cxx11::basic_string<char, std::char_traits<char>, Aws::Allocator<char> >, Aws::Utils::Json::JsonView> > >_VAR_DECL",
+        "Aws::OStringStream_VAR_DECL",
+        "Aws::Utils::Logging::LogSystemInterface *_VAR_DECL",
+        "Aws::Utils::Json::JsonValue_VAR_DECL",
+        "Aws::String_VAR_DECL",
+        "Aws::Utils::Array<unsigned char>_VAR_DECL",
+        "std::string_VAR_DECL",
+        "std::streampos_VAR_DECL",
+        "const char [28]_VAR_DECL",
+        "const char [27]_VAR_DECL",
+        "const char [26]_VAR_DECL",
+        "Aws::Utils::Logging::LogSystemInterface *_VAR_DECL",
+        "Aws::Lex::LexConfiguration_VAR_DECL",
+        "aws/core/Aws.h_INCLUSION_DIRECTIVE",
+        "aws/core/config/AWSProfileConfigLoader.h_INCLUSION_DIRECTIVE",
+        "aws/core/utils/logging/AWSLogging.h_INCLUSION_DIRECTIVE",
+        "aws/core/utils/logging/LogMacros.h_INCLUSION_DIRECTIVE",
+        "lex_node/lex_node.h_INCLUSION_DIRECTIVE",
+        "aws/lex/LexRuntimeServiceClient.h_INCLUSION_DIRECTIVE",
+        "lex_node/lex_param_helper.h_INCLUSION_DIRECTIVE",
+        "aws_common/sdk_utils/parameter_reader.h_INCLUSION_DIRECTIVE",
+        "lex_node/lex_configuration.h_INCLUSION_DIRECTIVE",
+        "string_INCLUSION_DIRECTIVE",
+        "aws/core/utils/HashingUtils.h_INCLUSION_DIRECTIVE",
+        "aws/core/utils/Outcome.h_INCLUSION_DIRECTIVE",
+        "aws/core/utils/json/JsonSerializer.h_INCLUSION_DIRECTIVE",
+        "aws/core/utils/memory/stl/AWSString.h_INCLUSION_DIRECTIVE",
+        "aws/lex/model/PostContentRequest.h_INCLUSION_DIRECTIVE",
+        "aws/lex/model/PostContentResult.h_INCLUSION_DIRECTIVE",
+        "aws/lex/model/PostTextRequest.h_INCLUSION_DIRECTIVE",
+        "aws/lex/model/PostTextResult.h_INCLUSION_DIRECTIVE",
+        "aws_common/sdk_utils/client_configuration_provider.h_INCLUSION_DIRECTIVE",
+        "algorithm_INCLUSION_DIRECTIVE",
+        "iostream_INCLUSION_DIRECTIVE",
+        "iterator_INCLUSION_DIRECTIVE",
+        "regex_INCLUSION_DIRECTIVE",
+        "const char *_VAR_DECL",
+        "const char *_VAR_DECL",
+        "Client::ClientConfigurationProvider_VAR_DECL",
+        "Client::ParameterReaderInterface_PARM_DECL",
+        "Aws::LexRuntimeService::LexRuntimeServiceClient_PARM_DECL",
+        "Aws::Lex::LexConfiguration_PARM_DECL",
+        "char *[]_PARM_DECL",
+        "int_PARM_DECL",
+        "LexRuntimeService::LexRuntimeServiceClient_PARM_DECL",
+        "Aws::LexRuntimeService::Model::PostContentResult_PARM_DECL",
+        "std::ostream_PARM_DECL",
+        "Aws::LexRuntimeService::Model::PostContentRequest_PARM_DECL",
+        "char_PARM_DECL",
+        "char_PARM_DECL",
+        "lex_common_msgs::AudioTextConversationResponse_VAR_DECL",
+        "lex_common_msgs::AudioTextConversationRequest_VAR_DECL"
+    ],
+    "MACRO_INSTANTIATION": {
+        "NEW_TOKENS_LIST": [],
+        "ROS_INFO": {
+            "node_arg_info": {
+                "member_name_if_true": "get_logger",
+                "node_arg_index": 0,
+                "node_arg_req": true
+            },
+            "ros2_name": "RCLCPP_INFO"
+        }
+    },
+    "NAMESPACE_REF": {
+        "NEW_TOKENS_LIST": [],
+        "ros": {
+            "ros2_name": "rclcpp"
+        },
+        "std_msgs": {
+            "ros2_name": "std_msgs::msg"
+        }
+    },
+    "PARM_DECL": {
+        "NEW_TOKENS_LIST": [],
+        "lex_common_msgs::AudioTextConversationRequest": {
+            "ros2_name": "lex_common_msgs::srv::AudioTextConversation::Request",
+            "to_shared_ptr": false
+        },
+        "lex_common_msgs::AudioTextConversationResponse": {
+            "ros2_name": "lex_common_msgs::srv::AudioTextConversation::Response",
+            "to_shared_ptr": false
+        }
+    },
+    "VAR_DECL": {
+        "Aws::Client::Ros1NodeParameterReader": {
+            "node_arg_info": {
+                "node_arg_index": 0,
+                "node_arg_req": true
+            },
+            "ros2_name": "Aws::Client::Ros2NodeParameterReader",
+            "to_shared_ptr": false
+        },
+        "Aws::Utils::Logging::AWSROSLogger": {
+            "node_arg_info": {
+                "node_arg_index": 1,
+                "node_arg_req": true
+            },
+            "ros2_name": "Aws::Utils::Logging::AWSROSLogger",
+            "to_shared_ptr": false
+        },
+        "NEW_TOKENS_LIST": [],
+        "lex_common_msgs::KeyValue": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "lex_common_msgs::msg::KeyValue",
+            "to_shared_ptr": false
+        },
+        "ros::NodeHandle": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "ros::Node",
+            "to_shared_ptr": true
+        },
+        "ros::Publisher": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "ros::Publisher",
+            "to_shared_ptr": true
+        },
+        "ros::ServiceServer": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "ros::Service",
+            "to_shared_ptr": true
+        },
+        "std_msgs::String": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "std_msgs::String",
+            "to_shared_ptr": true
+        }
+    }
+}
