@@ -97,69 +97,6 @@ class CppAstParser(object):
         if os.path.join("kinetic", "include", "aws", "") in path:
             return True
 
-        return False
-
-    def __init__(self, workspace="", user_includes=None):
-    # public:
-        self.workspace      = os.path.abspath(workspace) if workspace else ""
-        self.user_includes  = [] if user_includes is None else user_includes
-    # private:
-        self._index         = None
-        self._db            = CppAstParser.database
-
-    def get_ast_obj(self, file_path=None):
-        return self._parse_from_db_as_obj(file_path)
-
-    def _parse_from_db_as_obj(self, file_path):
-        if file_path is None:
-            cmd = self._db.getAllCompileCommands() or ()
-        else:
-            cmd = self._db.getCompileCommands(os.path.abspath(file_path)) or ()
-
-        ast_obj = {}
-        if not cmd:
-            return None
-        for c in cmd:
-            if CppAstParser.exclude_from_ast(c.directory) or CppAstParser.exclude_from_ast(c.filename):
-                continue
-
-            with cwd(os.path.join(self._db.db_path, c.directory)):
-                args = ["-I" + CppAstParser.includes] + list(c.arguments)[1:]
-                if self._index is None:
-                    self._index = clang.Index.create()
-                unit = self._index.parse(path=None, args=args, options=clang.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
-
-                self._check_compilation_problems(unit)
-                Utilities.merge_ast_dict(ast_obj, self._ast_obj(unit.cursor))
-        return ast_obj
-
-    def _ast_obj(self, top_cursor):
-        assert top_cursor.kind == CK.TRANSLATION_UNIT
-        objects = {}
-        for cursor in top_cursor.get_children():
-            if (cursor.location.file
-                    and cursor.location.file.name.startswith(self.workspace)):
-                curr_obj = self._cursor_obj(cursor)
-
-                if curr_obj[AstConstants.KIND] not in objects:
-                    objects[curr_obj[AstConstants.KIND]] = []
-
-                if curr_obj[AstConstants.NAME] != AstConstants.NO_SPELLING and \
-                        not CppAstParser.exclude_from_ast(curr_obj[AstConstants.SRC_FILE_PATH]) and \
-                        not CppAstParser.exclude_from_ast(curr_obj[AstConstants.DECL_FILEPATH]):
-                    objects[curr_obj[AstConstants.KIND]].append(curr_obj)
-
-                stack = list(cursor.get_children())
-                while stack:
-                    c = stack.pop()
-                    curr_obj = self._cursor_obj(c)
-                    if curr_obj[AstConstants.KIND] not in objects:
-                        objects[curr_obj[AstConstants.KIND]] = []
-
-                    if curr_obj[AstConstants.NAME] != AstConstants.NO_SPELLING and \
-                            not CppAstParser.exclude_from_ast(curr_obj[AstConstants.SRC_FILE_PATH]) and \
-                            not CppAstParser.exclude_from_ast(curr_obj[AstConstants.DECL_FILEPATH]):
-
         # exclude aws_common tokens
         if os.path.join("kinetic", "include", "aws_common", "") in path:
             return True
