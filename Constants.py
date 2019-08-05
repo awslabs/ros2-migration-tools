@@ -88,6 +88,7 @@ class Constants:
     }
 
 
+
 class RosConstants:
     INIT_PATTERN = "ros::init"
     INIT_CALL_EXPR = "init"
