@@ -28,11 +28,20 @@ class CPPSourceCodePorter:
         :param global_ast: complete ast for the package
         ::param curr_file_path: current file_path
         """
-        node_info = Utilities.get_ros_node_info(global_ast)
-        self.NODE_NAME = node_info[Constants.NODE_NAME]
-        self.NODE_VAR_NAME = node_info[Constants.NODE_HANDLE_VAR_NAME]
-        self.NODE_VAR_PARENT_CLASS = node_info[Constants.NODE_VAR_PARENT_CLASS]
-        self.global_ast = global_ast
+
+        # flag to know if porting a unit test file
+        self.is_porting_unit_test = Utilities.is_unit_test_path(curr_file_path)
+
+        if not self.is_porting_unit_test:
+            self.global_ast = global_ast[AstConstants.NON_UNIT_TEST]
+            node_info = Utilities.get_ros_node_info(self.global_ast)
+            self.NODE_NAME = node_info[Constants.NODE_NAME]
+            self.NODE_VAR_NAME = node_info[Constants.NODE_HANDLE_VAR_NAME]
+            self.NODE_VAR_PARENT_CLASS = node_info[Constants.NODE_VAR_PARENT_CLASS]
+        else:
+            self.global_ast = global_ast[AstConstants.UNIT_TEST]
+            self.NODE_NAME = Utilities.get_node_name(self.global_ast)
+
         self.file_path = curr_file_path
 
     def port(self, source, mapping, ast):
@@ -239,10 +248,10 @@ class CPPSourceCodePorter:
                 for token in ast[line_number][AstConstants.PARM_DECL]:
                     var_type = token[AstConstants.VAR_TYPE]
                     if var_type in parm_decl_mapping:
-                        line = Utilities.replace_word_in_line(line,
-                                                              var_type,
-                                                              CPPSourceCodePorter.get_ros2_name(var_type,
-                                                                                                parm_decl_mapping))
+                        replace_with = CPPSourceCodePorter.get_ros2_name(var_type, parm_decl_mapping)
+                        if parm_decl_mapping[var_type][Constants.TO_SHARED_PTR]:
+                            replace_with = "std::shared_ptr<" + replace_with + ">"
+                        line = Utilities.replace_word_in_line(line, var_type, replace_with)
         except Exception as e:
             logging.warning("rule_replace_parm_decl failed: " + self.file_path + ":" + str(line_number))
             return line
@@ -504,7 +513,7 @@ class CPPSourceCodePorter:
                     lambda_wrap += ",std::shared_ptr<" \
                                    + CPPSourceCodePorter.get_ros2_name(arg, mapping[AstConstants.PARM_DECL]) \
                                    + "> " + arg_var
-                    call_back_call += "*" + arg_var
+                    call_back_call += arg_var
                     if ind != len(arg_list) - 1:
                         call_back_call += ","
 
@@ -798,6 +807,20 @@ class CPPSourceCodePorter:
 
         return ros2_arg_type
 
+    def get_node_var_param_for_unit_test(self, line_number, ast):
+        """
+        Searches for declaration of NodeHandle var before the line_number
+        :param line_number: line number in source
+        :param ast: line by line ast
+        :return: str or None
+        """
+        while line_number > 0:
+            if line_number in ast:
+                for token in ast[line_number][AstConstants.VAR_DECL]:
+                    if token[AstConstants.VAR_TYPE] == RosConstants.NODE_HANDLE:
+                        return token[AstConstants.NAME]
+        return None
+
     def get_node_var_param(self, line_number, ast, static_cast=False):
         """
         Finds the instantiation of class containing `self.NODE_VAR_PARENT_CLASS` and return the var_name. Optionally, it
@@ -807,6 +830,9 @@ class CPPSourceCodePorter:
         :param static_cast: flag to check if var_name needs static_cast
         :return: str
         """
+        if self.is_porting_unit_test:
+            return self.get_node_var_param_for_unit_test(line_number, ast)
+
         if self.NODE_VAR_PARENT_CLASS is None:
             return self.NODE_VAR_NAME
         var_name = None

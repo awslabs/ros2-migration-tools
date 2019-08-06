@@ -25,6 +25,8 @@ class AstConstants:
     DECL_REF_EXPR = "DECL_REF_EXPR"
     CXX_METHOD = "CXX_METHOD"
     CLASS_DECL = "CLASS_DECL"
+    UNIT_TEST = "unit_test"
+    NON_UNIT_TEST = "non_unit_test"
 
 class Constants:
     ROS_1_NAME = "ros1_name"

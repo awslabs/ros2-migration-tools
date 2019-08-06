@@ -46,7 +46,10 @@ class RosUpgrader:
     # AST dict. Keys will be line numbers. Values will be dict with TOKEN_TYPES as keys and values will be the tokens
     AST_LINE_BY_LINE = {}
 
-    AST_DICT = {}
+    AST_DICT = {
+        AstConstants.NON_UNIT_TEST: {},
+        AstConstants.UNIT_TEST: {}
+    }
 
     @staticmethod
     def init():
@@ -231,26 +234,32 @@ class RosUpgrader:
 
         irrelevant_tokens = set(mappings[Constants.IRRELEVANT_TOKENS])
 
-        Utilities.merge_ast_dict(RosUpgrader.AST_DICT, RosUpgrader.get_ast_as_json(compile_db_path))
+        ast_dict = RosUpgrader.get_ast_as_json(compile_db_path)
+        Utilities.merge_ast_dict(RosUpgrader.AST_DICT[AstConstants.NON_UNIT_TEST], ast_dict[AstConstants.NON_UNIT_TEST])
+        Utilities.merge_ast_dict(RosUpgrader.AST_DICT[AstConstants.UNIT_TEST], ast_dict[AstConstants.UNIT_TEST])
 
-        RosUpgrader.AST_LINE_BY_LINE = Utilities.store_ast_line_by_line(RosUpgrader.AST_DICT)
+        Utilities.merge_ast_dict(RosUpgrader.AST_LINE_BY_LINE,
+                                 Utilities.store_ast_line_by_line(RosUpgrader.AST_DICT[AstConstants.NON_UNIT_TEST]))
+        Utilities.merge_ast_dict(RosUpgrader.AST_LINE_BY_LINE,
+                                 Utilities.store_ast_line_by_line(RosUpgrader.AST_DICT[AstConstants.UNIT_TEST]))
 
         for token_type in Constants.TOKEN_TYPES:
-            if token_type in RosUpgrader.AST_DICT:
-                added_set = set()
-                for token in RosUpgrader.AST_DICT[token_type]:
-                    if RosUpgrader.check_token_validity(token, mappings[token_type], irrelevant_tokens, added_set):
-                        mappings[token_type][Constants.NEW_TOKENS_LIST].append(
-                            RosUpgrader.get_mapping_attributes(token))
+            for ast_category in RosUpgrader.AST_DICT:
+                if token_type in RosUpgrader.AST_DICT[ast_category]:
+                    added_set = set()
+                    for token in RosUpgrader.AST_DICT[ast_category][token_type]:
+                        if RosUpgrader.check_token_validity(token, mappings[token_type], irrelevant_tokens, added_set):
+                            mappings[token_type][Constants.NEW_TOKENS_LIST].append(
+                                RosUpgrader.get_mapping_attributes(token))
 
-                        if token[AstConstants.KIND] == AstConstants.VAR_DECL or \
-                                token[AstConstants.KIND] == AstConstants.PARM_DECL:
-                            added_set.add(token[AstConstants.VAR_TYPE])
+                            if token[AstConstants.KIND] == AstConstants.VAR_DECL or \
+                                    token[AstConstants.KIND] == AstConstants.PARM_DECL:
+                                added_set.add(token[AstConstants.VAR_TYPE])
+                            else:
+                                added_set.add(token[AstConstants.NAME])
                         else:
-                            added_set.add(token[AstConstants.NAME])
-                    else:
-                        if token_type == AstConstants.USING_DIRECTIVE:
-                            pass
+                            if token_type == AstConstants.USING_DIRECTIVE:
+                                pass
 
         Utilities.write_as_json(Constants.MAPPING_FILE_NAME, mappings)
 
@@ -281,6 +290,8 @@ class RosUpgrader:
         mapping = Utilities.read_json_file(Constants.MAPPING_FILE_NAME)
         if mapping is not None:
             file_list = RosUpgrader.get_all_files_of_extension(RosUpgrader.SRC_PATH_TO_UPGRADE, [".cpp", ".h", ".hpp"])
+
+            print(file_list)
 
             diff_content = []
             for file_path in file_list:
@@ -370,7 +381,10 @@ def main():
         RosUpgrader.add_new_mappings(Utilities.get_parent_dir(compile_json))
 
     if is_debugging():
-        Utilities.write_as_json("ast_dump.json", RosUpgrader.AST_DICT)
+        Utilities.write_as_json("ast_dump_" + AstConstants.NON_UNIT_TEST + ".json",
+                                RosUpgrader.AST_DICT[AstConstants.NON_UNIT_TEST])
+        Utilities.write_as_json("ast_dump_" + AstConstants.UNIT_TEST + ".json",
+                                RosUpgrader.AST_DICT[AstConstants.UNIT_TEST])
     RosUpgrader.start_upgrade()
 
 

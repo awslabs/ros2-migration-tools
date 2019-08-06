@@ -79,16 +79,6 @@ class CppAstParser(object):
         :param path: path to the src file
         :return: boolean
         """
-
-        # Assuming all unit test will follow path like `src/some_folder1/some_folder2/test/reader_test.cpp`
-        # where 'test' occurs at least twice
-        if path.count('test') > 1:
-            return True
-
-        # check if 'gtest' is part of path, then also exclude it
-        if "gtest" in path:
-            return True
-
         # exclude system includes
         if path.startswith(os.path.join(os.path.sep, "usr", "lib")) or \
                 path.startswith(os.path.join(os.path.sep, "usr", "include")):
@@ -208,6 +198,25 @@ class CppAstParser(object):
 
         return True
 
+    @staticmethod
+    def _add_token_to_ast(curr_obj, ast_obj):
+        """
+        Appends the `curr_obj` token dict to corresponding ast(either `UNIT_TEST` or `NON_UNIT_TEST`,
+        if `should_append_to_token_list()` for it is True
+        :param curr_obj: token attributes dict
+        :param ast_obj: dict of token categories
+        :return: None
+        """
+        if CppAstParser.should_append_to_token_list(curr_obj):
+            ast_of_category = ast_obj[AstConstants.NON_UNIT_TEST]
+            if Utilities.is_unit_test_path(curr_obj[AstConstants.SRC_FILE_PATH]):
+                ast_of_category = ast_obj[AstConstants.UNIT_TEST]
+
+            if curr_obj[AstConstants.KIND] not in ast_of_category:
+                ast_of_category[curr_obj[AstConstants.KIND]] = []
+
+            ast_of_category[curr_obj[AstConstants.KIND]].append(curr_obj)
+
     def __init__(self, db_path, workspace=""):
         """
         Constructor for CPPAstParser
@@ -232,7 +241,11 @@ class CppAstParser(object):
         else:
             cmd = self._db.getCompileCommands(os.path.abspath(file_path)) or ()
 
-        ast_obj = {}
+        ast_obj = {
+            AstConstants.UNIT_TEST: {},
+            AstConstants.NON_UNIT_TEST: {}
+        }
+
         if not cmd:
             return None
         for c in cmd:
@@ -246,40 +259,30 @@ class CppAstParser(object):
                 unit = self._index.parse(path=None, args=args, options=clang.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
 
                 self._check_compilation_problems(unit)
-                Utilities.merge_ast_dict(ast_obj, self._traverse_cursor(unit.cursor))
+                self._traverse_cursor(unit.cursor, ast_obj)
+
         return ast_obj
 
-    def _traverse_cursor(self, top_cursor):
+    def _traverse_cursor(self, top_cursor, ast_obj):
         """
-        Traverses the cursor and returns a dict containing token list for each kind
+        Traverses the cursor and adds the token to corresponding category in ast_obj
         :param top_cursor: starting cursor
-        :return: dict
+        :param ast_obj: dict of tokens category
+        :return: None
         """
         assert top_cursor.kind == CK.TRANSLATION_UNIT
-        objects = {}
         for cursor in top_cursor.get_children():
-            if (cursor.location.file
-                    and cursor.location.file.name.startswith(self.workspace)):
+            if cursor.location.file and cursor.location.file.name.startswith(self.workspace):
                 curr_obj = self._cursor_obj(cursor)
-
-                if curr_obj[AstConstants.KIND] not in objects:
-                    objects[curr_obj[AstConstants.KIND]] = []
-
-                if CppAstParser.should_append_to_token_list(curr_obj):
-                    objects[curr_obj[AstConstants.KIND]].append(curr_obj)
+                CppAstParser._add_token_to_ast(curr_obj, ast_obj)
 
                 stack = list(cursor.get_children())
                 while stack:
                     c = stack.pop()
                     curr_obj = self._cursor_obj(c)
-                    if curr_obj[AstConstants.KIND] not in objects:
-                        objects[curr_obj[AstConstants.KIND]] = []
-
-                    if CppAstParser.should_append_to_token_list(curr_obj):
-                        objects[curr_obj[AstConstants.KIND]].append(curr_obj)
+                    CppAstParser._add_token_to_ast(curr_obj, ast_obj)
 
                     stack.extend(c.get_children())
-        return objects
 
 
 ###############################################################################

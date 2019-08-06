@@ -439,6 +439,22 @@ class Utilities:
         diff_content.append("\n\n")
         return diff_content
 
+    @staticmethod
+    def is_unit_test_path(path):
+        """
+        Returns True if the token is from unit test file
+        :param path: file path
+        :return: boolean
+        """
+        # Assuming all unit test will follow path like `src/some_folder1/some_folder2/test/reader_test.cpp`
+        # where 'test' occurs at least twice
+        if path.count('test') > 1:
+            return True
+
+        # check if 'gtest' is part of path, then also exclude it
+        if "gtest" in path:
+            return True
+
 
 if __name__ == "__main__":
     is_debugging = False

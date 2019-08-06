@@ -172,8 +172,33 @@
         "Aws::LexRuntimeService::Model::PostContentRequest_PARM_DECL",
         "char_PARM_DECL",
         "char_PARM_DECL",
-        "lex_common_msgs::AudioTextConversationResponse_VAR_DECL",
-        "lex_common_msgs::AudioTextConversationRequest_VAR_DECL"
+        "LexRuntimeService::Model::PostContentResult_PARM_DECL",
+        "Aws::Client::ParameterPath_PARM_DECL",
+        "double_PARM_DECL",
+        "std::vector<std::string>_PARM_DECL",
+        "std::map<std::string, std::string>_PARM_DECL",
+        "Aws::String_PARM_DECL",
+        "std::string_PARM_DECL",
+        "bool_PARM_DECL",
+        "LexRuntimeService::Model::PostContentRequest_PARM_DECL",
+        "Lex::LexConfiguration_VAR_DECL",
+        "std::map<std::string, std::string>_VAR_DECL",
+        "std::map<std::string, int>_VAR_DECL",
+        "Aws::AwsError_VAR_DECL",
+        "std::stringstream *_VAR_DECL",
+        "std::__cxx11::basic_string<char, std::char_traits<char>, Aws::Allocator<char> >_VAR_DECL",
+        "Utils::ByteBuffer_VAR_DECL",
+        "const unsigned char [81]_VAR_DECL",
+        "LexRuntimeService::Model::PostContentResult_VAR_DECL",
+        "::testing::TestInfo *const_VAR_DECL",
+        "const ::testing::AssertionResult_VAR_DECL",
+        "const std::invalid_argument &_VAR_DECL",
+        "std::shared_ptr<TestParameterReader>_VAR_DECL",
+        "const std::exception &_VAR_DECL",
+        "std::shared_ptr<MockLexClient>_VAR_DECL",
+        "aws/core/utils/logging/DefaultLogSystem.h_INCLUSION_DIRECTIVE",
+        "aws_common/sdk_utils/aws_error.h_INCLUSION_DIRECTIVE",
+        "gtest/gtest.h_INCLUSION_DIRECTIVE"
     ],
     "MACRO_INSTANTIATION": {
         "NEW_TOKENS_LIST": [],
@@ -199,11 +224,11 @@
         "NEW_TOKENS_LIST": [],
         "lex_common_msgs::AudioTextConversationRequest": {
             "ros2_name": "lex_common_msgs::srv::AudioTextConversation::Request",
-            "to_shared_ptr": false
+            "to_shared_ptr": true
         },
         "lex_common_msgs::AudioTextConversationResponse": {
             "ros2_name": "lex_common_msgs::srv::AudioTextConversation::Response",
-            "to_shared_ptr": false
+            "to_shared_ptr": true
         }
     },
     "VAR_DECL": {
@@ -224,6 +249,22 @@
             "to_shared_ptr": false
         },
         "NEW_TOKENS_LIST": [],
+        "lex_common_msgs::AudioTextConversationRequest": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "lex_common_msgs::srv::AudioTextConversation::Request",
+            "to_shared_ptr": true
+        },
+        "lex_common_msgs::AudioTextConversationResponse": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "lex_common_msgs::srv::AudioTextConversation::Response",
+            "to_shared_ptr": true
+        },
         "lex_common_msgs::KeyValue": {
             "node_arg_info": {
                 "node_arg_index": -1,

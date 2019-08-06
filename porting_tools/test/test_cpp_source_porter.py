@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from Constants import Constants
+from Constants import AstConstants, Constants
 from porting_tools.cpp_source_code_porter import CPPSourceCodePorter
 from utilities import Utilities
 
@@ -12,8 +12,10 @@ class TestCPPSourceCodePorterTalker(unittest.TestCase):
     def setUpClass(cls):
         cls.mapping = Utilities.read_json_file(Constants.MAPPING_FILE_NAME)
 
-        ast_dict = Utilities.read_json_file(os.path.join("porting_tools", "test", "ast_dump_talker_cpp.json"))
-        cls.ast_line_wise = Utilities.store_ast_line_by_line(ast_dict)
+        ast_dict = {
+            AstConstants.NON_UNIT_TEST: Utilities.read_json_file(os.path.join("porting_tools", "test", "ast_dump_talker_cpp.json"))
+        }
+        cls.ast_line_wise = Utilities.store_ast_line_by_line(ast_dict[AstConstants.NON_UNIT_TEST])
 
         # file_path as mentioned in the `ast_dump_talker_cpp.json` file, will not be used for file reading purpose
         # as the path is system specific
@@ -111,8 +113,10 @@ class TestCPPSourceCodePorterLexNodeMainCPP(unittest.TestCase):
     def setUpClass(cls):
         cls.mapping = Utilities.read_json_file(Constants.MAPPING_FILE_NAME)
 
-        ast_dict = Utilities.read_json_file(os.path.join("porting_tools", "test", "ast_dump_lex_node.json"))
-        cls.ast_line_wise = Utilities.store_ast_line_by_line(ast_dict)
+        ast_dict = {
+            AstConstants.NON_UNIT_TEST: Utilities.read_json_file(os.path.join("porting_tools", "test", "ast_dump_lex_node.json"))
+        }
+        cls.ast_line_wise = Utilities.store_ast_line_by_line(ast_dict[AstConstants.NON_UNIT_TEST])
 
         cls.file_path_in_ast = LEX_NODE_FILE_LIST[0]
         cls.cpp_porter = CPPSourceCodePorter(ast_dict, cls.file_path_in_ast)
@@ -142,8 +146,10 @@ class TestCPPSourceCodePorterLexNodeLexNodeCPP(unittest.TestCase):
     def setUpClass(cls):
         cls.mapping = Utilities.read_json_file(Constants.MAPPING_FILE_NAME)
 
-        ast_dict = Utilities.read_json_file(os.path.join("porting_tools", "test", "ast_dump_lex_node.json"))
-        cls.ast_line_wise = Utilities.store_ast_line_by_line(ast_dict)
+        ast_dict = {
+            AstConstants.NON_UNIT_TEST: Utilities.read_json_file(os.path.join("porting_tools", "test", "ast_dump_lex_node.json"))
+        }
+        cls.ast_line_wise = Utilities.store_ast_line_by_line(ast_dict[AstConstants.NON_UNIT_TEST])
 
         cls.file_path_in_ast = LEX_NODE_FILE_LIST[1]
         cls.cpp_porter = CPPSourceCodePorter(ast_dict, cls.file_path_in_ast)
@@ -163,7 +169,7 @@ class TestCPPSourceCodePorterLexNodeLexNodeCPP(unittest.TestCase):
         source = 'bool LexNode::LexServerCallback(lex_common_msgs::AudioTextConversationRequest & request,\n' \
                  'lex_common_msgs::AudioTextConversationResponse & response)'
 
-        result = 'bool LexNode::LexServerCallback(lex_common_msgs::srv::AudioTextConversation::Request & request,\n' \
+        result = 'bool LexNode::LexServerCallback(std::shared_ptr<lex_common_msgs::srv::AudioTextConversation::Request> & request,\n' \
                  'lex_common_msgs::AudioTextConversationResponse & response)'
 
         self.assertEqual(self.cpp_porter.rule_replace_parm_decl(source, 199,
@@ -174,7 +180,7 @@ class TestCPPSourceCodePorterLexNodeLexNodeCPP(unittest.TestCase):
         source = 'node_handle_.advertiseService<>("lex_conversation", &LexNode::LexServerCallback, this);'
         result = 'node_handle_.create_service<lex_common_msgs::srv::AudioTextConversation>("lex_conversation",[this](std::shared_ptr<rmw_request_id_t> request_header,' \
                  'std::shared_ptr<lex_common_msgs::srv::AudioTextConversation::Request> arg0,' \
-                 'std::shared_ptr<lex_common_msgs::srv::AudioTextConversation::Response> arg1) { return LexServerCallback(*arg0,*arg1);});'
+                 'std::shared_ptr<lex_common_msgs::srv::AudioTextConversation::Response> arg1) { return LexServerCallback(arg0,arg1);});'
 
         self.assertEqual(self.cpp_porter.rule_replace_call_expr(source, 188,
                                                                 self.mapping,
@@ -187,8 +193,10 @@ class TestCPPSourceCodePorterLexNodeLexNodeH(unittest.TestCase):
     def setUpClass(cls):
         cls.mapping = Utilities.read_json_file(Constants.MAPPING_FILE_NAME)
 
-        ast_dict = Utilities.read_json_file(os.path.join("porting_tools", "test", "ast_dump_lex_node.json"))
-        cls.ast_line_wise = Utilities.store_ast_line_by_line(ast_dict)
+        ast_dict = {
+            AstConstants.NON_UNIT_TEST: Utilities.read_json_file(os.path.join("porting_tools", "test", "ast_dump_lex_node.json"))
+        }
+        cls.ast_line_wise = Utilities.store_ast_line_by_line(ast_dict[AstConstants.NON_UNIT_TEST])
 
         cls.file_path_in_ast = LEX_NODE_FILE_LIST[2]
         cls.cpp_porter = CPPSourceCodePorter(ast_dict, cls.file_path_in_ast)
