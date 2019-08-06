@@ -291,8 +291,6 @@ class RosUpgrader:
         if mapping is not None:
             file_list = RosUpgrader.get_all_files_of_extension(RosUpgrader.SRC_PATH_TO_UPGRADE, [".cpp", ".h", ".hpp"])
 
-            print(file_list)
-
             diff_content = []
             for file_path in file_list:
                 src_content = Utilities.read_from_file(file_path)
