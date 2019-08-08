@@ -52,4 +52,5 @@ Some key categories will also require some additional information which is expla
      will be taken care by `NAMESPACE_REF` category.
         
 4. `ROS2_OUTPUT_DIR` will have a folder with unique name `currData_currTime`(e.g. 2019-07-15_20_30_55).
-This folder will contain the `src` folder migrated to ROS2 
+    This folder will contain the `src` folder migrated to ROS2 
+
