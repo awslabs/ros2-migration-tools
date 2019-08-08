@@ -1,0 +1,7 @@
+{
+    "VAR_DECL": ["int", "char", "float", "double", "signed", "unsigned", "long", "short", "bool"],
+    "NAMESPACE_REF": ["std::", "boost::", "__gnu_cxx::"],
+    "TYPE_QUALIFIER": ["const", "static", "volatile"],
+    "INCLUSION_DIRECTIVE": ["iostream", "vector", "map", "unordered_map", "memory", "algorithm", "iterator", "string", "sstream"],
+    "ROS_VERSIONS": ["kinetic", "melodic"]
+}

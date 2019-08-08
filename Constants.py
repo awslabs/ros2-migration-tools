@@ -27,6 +27,9 @@ class AstConstants:
     CLASS_DECL = "CLASS_DECL"
     UNIT_TEST = "unit_test"
     NON_UNIT_TEST = "non_unit_test"
+    TYPE_QUALIFIER = "TYPE_QUALIFIER"
+    ROS_VERSIONS = "ROS_VERSIONS"
+
 
 class Constants:
     ROS_1_NAME = "ros1_name"
@@ -89,7 +92,7 @@ class Constants:
         }
     }
     DIFF_FILE_PATH = "migration_diff.txt"
-
+    FILTER_OUT_FILE_PATH = "filter_out.json"
 
 
 class RosConstants:

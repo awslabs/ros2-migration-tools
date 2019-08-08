@@ -24,7 +24,7 @@ import re
 
 import clang.cindex as clang
 
-from Constants import AstConstants
+from Constants import AstConstants, Constants
 from utilities import Utilities
 
 CK = clang.CursorKind
@@ -36,8 +36,7 @@ class CppAstParser(object):
     """
     lib_path = None  # path to folder containing libclang.so
     includes = None  # standard includes folder
-    primitive_types_list = ["int", "char", "float", "double", "signed", "unsigned", "long", "short"]
-    ros_versions = ["kinetic", "melodic"]
+    filter_out = Utilities.read_json_file(os.path.join("clang", Constants.FILTER_OUT_FILE_PATH))
 
     @classmethod
     def set_library_path(cls, lib_path="/usr/lib/llvm-3.8/lib"):
@@ -59,20 +58,6 @@ class CppAstParser(object):
         cls.includes = std_includes
 
     @staticmethod
-    def is_primitive_var_type_array(var_type):
-        """
-        Check if var_type is just an primitive type array
-        :param var_type: token var type
-        :return: boolean
-        """
-        for primitive_type in CppAstParser.primitive_types_list:
-            pattern = "\\b" + primitive_type + "\\b" + " *\*?" + " *\\w+" + " *\["  # looking for pattern like char * var[
-            if re.search(pattern, var_type) is not None:
-                return True
-
-        return False
-
-    @staticmethod
     def should_exclude_from_ast(path):
         """
         Returns True if tokens for this path are to be excluded from AST
@@ -84,7 +69,7 @@ class CppAstParser(object):
                 path.startswith(os.path.join(os.path.sep, "usr", "include")):
             return True
 
-        for version in CppAstParser.ros_versions:
+        for version in CppAstParser.filter_out[AstConstants.ROS_VERSIONS]:
             # exclude aws tokens
             if os.path.join(version, "include", "aws", "") in path:
                 return True
@@ -188,13 +173,32 @@ class CppAstParser(object):
         if CppAstParser.should_exclude_from_ast(curr_obj[AstConstants.DECL_FILEPATH]):
             return False
 
-        if curr_obj[AstConstants.VAR_TYPE] == AstConstants.VAR_DECL and \
-                CppAstParser.is_primitive_var_type_array(curr_obj[AstConstants.VAR_TYPE]):
+        if curr_obj[AstConstants.KIND] == AstConstants.INCLUSION_DIRECTIVE and \
+                curr_obj[AstConstants.NAME] in CppAstParser.filter_out[AstConstants.INCLUSION_DIRECTIVE]:
             return False
 
-        if curr_obj[AstConstants.VAR_TYPE] == AstConstants.PARM_DECL and \
-                curr_obj[AstConstants.VAR_TYPE] in CppAstParser.primitive_types_list:
-            return False
+        identifier = curr_obj[AstConstants.NAME]
+        if curr_obj[AstConstants.KIND] == AstConstants.VAR_DECL or curr_obj[AstConstants.KIND] == AstConstants.PARM_DECL:
+            identifier = curr_obj[AstConstants.VAR_TYPE]
+
+        try:
+            # removing "const", "static" etc from beginning
+            for qualifier in CppAstParser.filter_out[AstConstants.TYPE_QUALIFIER]:
+                if identifier.startswith(qualifier):
+                    identifier = identifier.split(qualifier)[1].strip()
+
+            for prim_type in CppAstParser.filter_out[AstConstants.VAR_DECL]:
+                pattern = "\\b" + prim_type + "\\b"
+                if re.search(pattern, identifier):
+                    return False
+
+            for ns in CppAstParser.filter_out[AstConstants.NAMESPACE_REF]:
+                if identifier.startswith(ns):
+                    return False
+
+        except Exception as e:
+            logging.warning("should_append_to_token_list: couldn't remove const")
+            return True
 
         return True
 
