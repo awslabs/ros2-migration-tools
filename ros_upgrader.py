@@ -224,29 +224,34 @@ class RosUpgrader:
         return True
 
     @staticmethod
-    def add_new_mappings(compile_db_path):
+    def add_new_mappings(compile_db_path, mappings, already_added_mappings):
         """
         Parses the file and adds the mappings to "mappings.json" if the mapping was missing
         :param compile_db_path: path to compile_json_file
+        :param mappings: dict containing ROS1->ROS2 mapping for various token kinds
+        :param already_added_mappings: dict containing list of token identifiers for various kind which has already been
+        added as new mapping
         :return: None
         """
-        mappings = Utilities.read_json_file(Constants.MAPPING_FILE_NAME)
-
         irrelevant_tokens = set(mappings[Constants.IRRELEVANT_TOKENS])
 
         ast_dict = RosUpgrader.get_ast_as_json(compile_db_path)
         Utilities.merge_ast_dict(RosUpgrader.AST_DICT[AstConstants.NON_UNIT_TEST], ast_dict[AstConstants.NON_UNIT_TEST])
         Utilities.merge_ast_dict(RosUpgrader.AST_DICT[AstConstants.UNIT_TEST], ast_dict[AstConstants.UNIT_TEST])
 
-        Utilities.merge_ast_dict(RosUpgrader.AST_LINE_BY_LINE,
-                                 Utilities.store_ast_line_by_line(RosUpgrader.AST_DICT[AstConstants.NON_UNIT_TEST]))
-        Utilities.merge_ast_dict(RosUpgrader.AST_LINE_BY_LINE,
-                                 Utilities.store_ast_line_by_line(RosUpgrader.AST_DICT[AstConstants.UNIT_TEST]))
+        RosUpgrader.AST_LINE_BY_LINE = Utilities.store_ast_line_by_line(RosUpgrader.AST_DICT[AstConstants.NON_UNIT_TEST])
+
+        ast_line_unit_test = Utilities.store_ast_line_by_line(RosUpgrader.AST_DICT[AstConstants.UNIT_TEST])
+        for file_path in ast_line_unit_test:
+            if file_path not in RosUpgrader.AST_LINE_BY_LINE:
+                RosUpgrader.AST_LINE_BY_LINE[file_path] = ast_line_unit_test[file_path]
 
         for token_type in Constants.TOKEN_TYPES:
             for ast_category in RosUpgrader.AST_DICT:
                 if token_type in RosUpgrader.AST_DICT[ast_category]:
-                    added_set = set()
+                    if token_type not in already_added_mappings:
+                        already_added_mappings[token_type] = set()
+                    added_set = already_added_mappings[token_type]
                     for token in RosUpgrader.AST_DICT[ast_category][token_type]:
                         if RosUpgrader.check_token_validity(token, mappings[token_type], irrelevant_tokens, added_set):
                             mappings[token_type][Constants.NEW_TOKENS_LIST].append(
@@ -260,8 +265,6 @@ class RosUpgrader:
                         else:
                             if token_type == AstConstants.USING_DIRECTIVE:
                                 pass
-
-        Utilities.write_as_json(Constants.MAPPING_FILE_NAME, mappings)
 
     @staticmethod
     def get_all_files_of_extension(directory, file_extensions):
@@ -374,9 +377,12 @@ def main():
 
     compile_db_files = RosUpgrader.get_all_file_paths(src_parent_dir, Constants.COMPILE_COMMANDS_FILE)
 
+    mappings = Utilities.read_json_file(Constants.MAPPING_FILE_NAME)
+    already_added_mappings = {}
     for compile_json in compile_db_files:
         RosUpgrader.COMPILE_JSON_PATH = compile_json
-        RosUpgrader.add_new_mappings(Utilities.get_parent_dir(compile_json))
+        RosUpgrader.add_new_mappings(Utilities.get_parent_dir(compile_json), mappings, already_added_mappings)
+    Utilities.write_as_json(Constants.MAPPING_FILE_NAME, mappings)
 
     if is_debugging():
         Utilities.write_as_json("ast_dump_" + AstConstants.NON_UNIT_TEST + ".json",
