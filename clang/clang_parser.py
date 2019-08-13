@@ -18,13 +18,14 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #THE SOFTWARE.
 
+import json
 import logging
 import os
 import re
 
 import clang.cindex as clang
 
-from Constants import AstConstants, Constants
+from Constants import AstConstants, Constants, RosConstants
 from utilities import Utilities
 
 CK = clang.CursorKind
@@ -37,6 +38,7 @@ class CppAstParser(object):
     lib_path = None  # path to folder containing libclang.so
     includes = None  # standard includes folder
     filter_out = Utilities.read_json_file(os.path.join("clang", Constants.FILTER_OUT_FILE_PATH))
+    token_hash = set()
 
     @classmethod
     def set_library_path(cls, lib_path="/usr/lib/llvm-3.8/lib"):
@@ -139,12 +141,15 @@ class CppAstParser(object):
         if name == AstConstants.FIELD_DECL:
             name = AstConstants.VAR_DECL
 
-        if name == AstConstants.PARM_DECL:
-            if "std::shared_ptr<" in var_type:
-                var_type = re.sub(r"^std::shared_ptr<", "", var_type)
-                var_type = var_type[:-1]
-            var_type = re.sub(r" *(\**)$", "", var_type)
-            var_type = re.sub(r" *(&*)$", "", var_type)
+        if name == AstConstants.PARM_DECL or name == AstConstants.VAR_DECL:
+            if "," not in var_type and "std::shared_ptr" not in var_type and var_type.startswith("std::"):  # not map and shared_ptr
+                if "<" in var_type and ">" in var_type:
+                    var_type = var_type[var_type.find("<") + 1: var_type.rfind(">")]
+
+            #     var_type = re.sub(r"^std::shared_ptr<", "", var_type)
+            #     var_type = var_type[:-1]
+            #var_type = re.sub(r" *(\**)$", "", var_type)
+            #var_type = re.sub(r" *(&*)$", "", var_type)
             var_type = re.sub(r"^const *", "", var_type)
 
         return {
@@ -184,13 +189,19 @@ class CppAstParser(object):
         try:
             # removing "const", "static" etc from beginning
             for qualifier in CppAstParser.filter_out[AstConstants.TYPE_QUALIFIER]:
-                if identifier.startswith(qualifier):
-                    identifier = identifier.split(qualifier)[1].strip()
+                pattern = qualifier + " "
+                if identifier.startswith(pattern):
+                    identifier = identifier[len(pattern):]
 
             for prim_type in CppAstParser.filter_out[AstConstants.VAR_DECL]:
-                pattern = "\\b" + prim_type + "\\b"
+                pattern = "^" + prim_type + "\\b"
                 if re.search(pattern, identifier):
                     return False
+
+            if curr_obj[AstConstants.KIND] == AstConstants.PARM_DECL or curr_obj[AstConstants.KIND] == AstConstants.VAR_DECL:
+                if "std::shared_ptr" in identifier and \
+                        re.search("\\b" + RosConstants.ROS1_NAMESPACE + "\\b", identifier):
+                    return True
 
             for ns in CppAstParser.filter_out[AstConstants.NAMESPACE_REF]:
                 if identifier.startswith(ns):
@@ -211,6 +222,14 @@ class CppAstParser(object):
         :param ast_obj: dict of token categories
         :return: None
         """
+
+        # check for duplicates
+        curr_obj_hash = hash(json.dumps(curr_obj, sort_keys=True))
+        if curr_obj_hash in CppAstParser.token_hash:
+            return
+        else:
+            CppAstParser.token_hash.add(curr_obj_hash)
+
         if CppAstParser.should_append_to_token_list(curr_obj):
             ast_of_category = ast_obj[AstConstants.NON_UNIT_TEST]
             if Utilities.is_unit_test_path(curr_obj[AstConstants.SRC_FILE_PATH]):

@@ -385,6 +385,24 @@ class Utilities:
                 old_ast_dict[kind] = new_ast_dict[kind]
 
     @staticmethod
+    def merge_ast_line_dict(old_ast_dict, new_ast_dict):
+        """
+        Merge all the tokens from new_ast_dict to old_ast_dict and return the merged dict
+        :param old_ast_dict: dict to which to merge to
+        :param new_ast_dict: dict going to be merged to old_ast_dict
+        :return: None
+        """
+        for file_path in new_ast_dict:
+            if file_path not in old_ast_dict:
+                old_ast_dict[file_path] = new_ast_dict[file_path]
+            else:
+                for line_number in new_ast_dict[file_path]:
+                    if line_number not in old_ast_dict[file_path]:
+                        old_ast_dict[file_path][line_number] = new_ast_dict[file_path][line_number]
+                    else:
+                        Utilities.merge_ast_dict(old_ast_dict[file_path][line_number], new_ast_dict[file_path][line_number])
+
+    @staticmethod
     def print_json(obj):
         """
         To print json with indentation

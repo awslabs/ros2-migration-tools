@@ -171,6 +171,7 @@ class RosUpgrader:
         if token[AstConstants.KIND] == AstConstants.VAR_DECL or token[AstConstants.KIND] == AstConstants.PARM_DECL:
             attributes[Constants.ROS_1_NAME] = token[AstConstants.VAR_TYPE]
             attributes[Constants.TO_SHARED_PTR] = False
+            attributes[Constants.TO_BE_REMOVED] = False
             if token[AstConstants.KIND] == AstConstants.VAR_DECL:
                 attributes[Constants.NODE_ARG_INFO] = {
                     Constants.NODE_ARG_REQ: False,
@@ -239,12 +240,10 @@ class RosUpgrader:
         Utilities.merge_ast_dict(RosUpgrader.AST_DICT[AstConstants.NON_UNIT_TEST], ast_dict[AstConstants.NON_UNIT_TEST])
         Utilities.merge_ast_dict(RosUpgrader.AST_DICT[AstConstants.UNIT_TEST], ast_dict[AstConstants.UNIT_TEST])
 
-        RosUpgrader.AST_LINE_BY_LINE = Utilities.store_ast_line_by_line(RosUpgrader.AST_DICT[AstConstants.NON_UNIT_TEST])
-
-        ast_line_unit_test = Utilities.store_ast_line_by_line(RosUpgrader.AST_DICT[AstConstants.UNIT_TEST])
-        for file_path in ast_line_unit_test:
-            if file_path not in RosUpgrader.AST_LINE_BY_LINE:
-                RosUpgrader.AST_LINE_BY_LINE[file_path] = ast_line_unit_test[file_path]
+        Utilities.merge_ast_line_dict(RosUpgrader.AST_LINE_BY_LINE,
+                                      Utilities.store_ast_line_by_line(RosUpgrader.AST_DICT[AstConstants.NON_UNIT_TEST]))
+        Utilities.merge_ast_line_dict(RosUpgrader.AST_LINE_BY_LINE,
+                                      Utilities.store_ast_line_by_line(RosUpgrader.AST_DICT[AstConstants.UNIT_TEST]))
 
         for token_type in Constants.TOKEN_TYPES:
             for ast_category in RosUpgrader.AST_DICT:

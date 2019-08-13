@@ -15,6 +15,7 @@
 import logging
 import re
 
+from clang.clang_parser import CppAstParser
 from Constants import AstConstants, Constants, RosConstants
 from utilities import Utilities
 
@@ -43,6 +44,11 @@ class CPPSourceCodePorter:
             self.NODE_NAME = Utilities.get_node_name(self.global_ast)
 
         self.file_path = curr_file_path
+        self.vars_to_be_removed = []
+        self.template_from_call_back = {
+            RosConstants.SERVICE_SERVER: self.get_ros_service_template,
+            RosConstants.SUBSCRIBE: self.get_ros_subscribe_template
+        }
 
     def port(self, source, mapping, ast):
         """
@@ -52,6 +58,12 @@ class CPPSourceCodePorter:
         :param ast: line by line AST
         :return: str
         """
+        var_decl_mapping = mapping[AstConstants.VAR_DECL]
+        for var_type in var_decl_mapping:
+            if Constants.TO_BE_REMOVED in var_decl_mapping[var_type] and \
+                    var_decl_mapping[var_type][Constants.TO_BE_REMOVED]:
+                self.vars_to_be_removed.append(var_type)
+
         src_lines = source.split('\n')
         new_source = []
         for line_number in range(len(src_lines)):
@@ -72,16 +84,20 @@ class CPPSourceCodePorter:
         if "#include" in line:
             line = self.rule_replace_headers(line, line_number, mapping)
         else:
+            line = self.rule_replace_function_signature(line, line_number, mapping, ast)
+
             line = self.rule_replace_var_decl(line, line_number, mapping, ast)
+            line = self.rule_replace_removed_var(line, line_number, mapping, ast)
             line = self.rule_replace_parm_decl(line, line_number, mapping, ast)
+            line = self.rule_handle_var_instantiation(line, line_number, mapping, ast)
             line = self.rule_replace_conversion_function(line, line_number, mapping, ast)
             line = self.rule_replace_type_ref(line, line_number, mapping, ast)
             line = self.rule_replace_call_expr(line, line_number, mapping, ast)
-            line = self.rule_handle_var_instantiation(line, line_number, mapping, ast)
             line = self.rule_replace_macros(line, line_number, mapping, ast)
             line = self.rule_replace_namespace_ref(line, line_number, mapping)
             line = self.rule_replace_dot_with_arrow(line, line_number, mapping, ast)
             line = self.rule_dereference_pointers(line, line_number)
+            line = self.rule_custom_replacements(line, line_number)
 
         return line
 
@@ -178,6 +194,7 @@ class CPPSourceCodePorter:
 
                         # after replacement, if create_service<> in line, then do some special handling
                         line = self.rule_handle_create_service(line, line_number, mapping, ast, token)
+                        line = self.rule_handle_create_subscription(line, line_number, mapping, ast, token)
             except Exception as e:
                 logging.warning("rule_replace_call_expr failed: " + self.file_path + ":" + str(line_number))
                 return line
@@ -200,17 +217,30 @@ class CPPSourceCodePorter:
                     var_type = token[AstConstants.VAR_TYPE]
 
                     template = None
-                    if var_type == RosConstants.SERVCE_SERVER:
-                        template_type = self.get_ros_service_template(token[AstConstants.NAME], var_type, mapping)
-                        if template_type != "":
-                            template = "<" + template_type + ">"
+                    if var_type in RosConstants.TEMPLATED_VARS:
+                        template_type = self.template_from_call_back[var_type](token[AstConstants.NAME],
+                                                                        var_type, line_number, mapping, ast)
+                        if template_type == "":
+                            template_type = Constants.UNKNOWN_TEMPLATE
+                        template = "<" + template_type + ">"
 
                     # do not replace if used in template
-                    pattern = "\< *" + var_type + " *\>"
-                    if re.search(pattern, line) is not None:
-                        continue
+                    pattern = "std::\w*\< *" + var_type + " *\>"
+                    if re.search(pattern, line) is None:
+                        if re.search("\< *" + var_type + " *\>", line):
+                            continue
 
                     if var_type in line and var_type in var_decl_mapping:
+
+                        # to_be_removed flag
+                        to_be_removed = False
+                        if Constants.TO_BE_REMOVED in var_decl_mapping[var_type]:
+                            to_be_removed = var_decl_mapping[var_type][Constants.TO_BE_REMOVED]
+
+                        if to_be_removed:
+                            # comment out var to be removed
+                            return "//" + line
+
                         try:
                             to_shared_ptr = var_decl_mapping[var_type][Constants.TO_SHARED_PTR]
                         except KeyError as e:
@@ -247,11 +277,10 @@ class CPPSourceCodePorter:
             if line_number in ast:
                 for token in ast[line_number][AstConstants.PARM_DECL]:
                     var_type = token[AstConstants.VAR_TYPE]
+                    var_type = re.sub(r"^const *", "", var_type)
                     if var_type in parm_decl_mapping:
                         replace_with = CPPSourceCodePorter.get_ros2_name(var_type, parm_decl_mapping)
-                        if parm_decl_mapping[var_type][Constants.TO_SHARED_PTR]:
-                            replace_with = "std::shared_ptr<" + replace_with + ">"
-                        line = Utilities.replace_word_in_line(line, var_type, replace_with)
+                        line = line.replace(var_type, replace_with)
         except Exception as e:
             logging.warning("rule_replace_parm_decl failed: " + self.file_path + ":" + str(line_number))
             return line
@@ -272,32 +301,36 @@ class CPPSourceCodePorter:
                 for token in ast[line_number][AstConstants.TYPE_REF]:
                     var_type = token[AstConstants.VAR_TYPE]
 
-                    if var_type in type_ref_mapping:
-                        type_ref = var_type
-                        # first try to find var type with namespace
-                        if var_type in line:
-                            replace_with = CPPSourceCodePorter.get_ros2_name(var_type, type_ref_mapping)
-                        # try to find the var type without namespace
-                        else:
-                            replace_with = CPPSourceCodePorter.get_ros2_name(var_type, type_ref_mapping).split("::")[-1]
-                            type_ref = var_type.split("::")[-1]
+                    if var_type not in type_ref_mapping:
+                        var_type = token[AstConstants.LINE_TOKENS][0]
 
-                        pattern = type_ref + " *>? *\("
+                    type_ref = var_type
+                    # first try to find var type with namespace
+                    if var_type in line:
+                        replace_with = CPPSourceCodePorter.get_ros2_name(var_type, type_ref_mapping)
+                    # try to find the var type without namespace
+                    else:
+                        replace_with = CPPSourceCodePorter.get_ros2_name(var_type, type_ref_mapping).split("::")[-1]
+                        type_ref = var_type.split("::")[-1]
 
-                        # add node param
-                        if type_ref_mapping[var_type][Constants.NODE_ARG_INFO][Constants.NODE_ARG_REQ]:
-                            param_index = type_ref_mapping[var_type][Constants.NODE_ARG_INFO][Constants.NODE_ARG_INDEX]
+                    pattern = type_ref + " *>? *\("
 
-                            param = self.get_node_var_param(line_number, ast, True)
-                            line = self.add_param_at_index(line, pattern, param, param_index)
+                    # add node param
+                    if type_ref_mapping[var_type][Constants.NODE_ARG_INFO][Constants.NODE_ARG_REQ]:
+                        param_index = type_ref_mapping[var_type][Constants.NODE_ARG_INFO][Constants.NODE_ARG_INDEX]
 
-                        # adding any extra parameters specified
-                        if AstConstants.TYPE_REF in Constants.EXTRA_PARAMS and \
-                                type_ref in Constants.EXTRA_PARAMS[AstConstants.TYPE_REF]:
-                            for extra_param, extra_param_index in Constants.EXTRA_PARAMS[AstConstants.TYPE_REF][type_ref]:
-                                line = self.add_param_at_index(line, pattern, extra_param, extra_param_index)
+                        param = self.get_node_var_param(line_number, ast, True)
+                        line = self.add_param_at_index(line, pattern, param, param_index)
 
-                        line = Utilities.replace_word_in_line(line, type_ref, replace_with)
+                    # adding any extra parameters specified
+                    if AstConstants.TYPE_REF in Constants.EXTRA_PARAMS and \
+                            type_ref in Constants.EXTRA_PARAMS[AstConstants.TYPE_REF]:
+                        for extra_param, extra_param_index in Constants.EXTRA_PARAMS[AstConstants.TYPE_REF][type_ref]:
+                            line = self.add_param_at_index(line, pattern, extra_param, extra_param_index)
+
+                    if var_type in RosConstants.TEMPLATED_VARS:
+                        replace_with += "<" + Constants.UNKNOWN_TEMPLATE + ">"
+                    line = Utilities.replace_word_in_line(line, type_ref, replace_with)
 
         except Exception as e:
             logging.warning("rule_replace_type_ref failed: " + self.file_path + ":" + str(line_number) + str(e))
@@ -444,19 +477,95 @@ class CPPSourceCodePorter:
                                 start_ind, end_ind = CPPSourceCodePorter.get_range_for_replacement(line, pattern)
                                 line = line[:start_ind] + replace_with + line[end_ind + 1:]
                             return line
+                        elif token[AstConstants.VAR_TYPE] == RosConstants.DURATION:
+                            replace_with = CPPSourceCodePorter.get_ros2_name(token[AstConstants.VAR_TYPE], var_decl_mapping)
+                            template_var = token[AstConstants.LINE_TOKENS][-2]
+                            template_type = Constants.UNKNOWN_TEMPLATE
+                            for tem_candidate in ast[line_number][AstConstants.DECL_REF_EXPR]:
+                                if tem_candidate[AstConstants.NAME] == template_var:
+                                    template_type = tem_candidate[AstConstants.VAR_TYPE]
+                            line = line.replace(RosConstants.DURATION, replace_with + "<" + template_type + ">")
                         elif len(token[AstConstants.LINE_TOKENS]) == 1:
                             ros2_type = CPPSourceCodePorter.get_ros2_name(token[AstConstants.VAR_TYPE], var_decl_mapping)
                             replace_with = var_name + '(std::make_shared<' + ros2_type + '>())'
+                            line = re.sub(pattern, replace_with, line)
 
-                            if len(token[AstConstants.LINE_TOKENS]) == 1:
-                                line = re.sub(pattern, replace_with, line)
-                            elif len(token[AstConstants.LINE_TOKENS]) > 1:
-                                pattern = var_name + " *\("
-                                start_ind, end_ind = CPPSourceCodePorter.get_range_for_replacement(line, pattern)
-                                line = line[:start_ind] + replace_with + line[end_ind + 1:]
         except Exception as e:
             logging.warning("rule_handle_var_instantiation failed: " + self.file_path + ":" + str(line_number))
             return line
+        return line
+
+    def rule_replace_removed_var(self, line, line_number, mapping, ast):
+        """
+        Removes removes usage of removed var_type variables
+        :param line: line to convert
+        :param line_number: line number of line in source code
+        :param mapping: ros1 to ros2 mapping for various types
+        :param ast: line by line ast
+        :return: str
+        """
+        try:
+            var_decl_mapping = mapping[AstConstants.VAR_DECL]
+            if line_number in ast:
+                tokens = ast[line_number][AstConstants.DECL_REF_EXPR]
+                for token in tokens:
+                    var_name = token[AstConstants.NAME]
+                    var_type = token[AstConstants.VAR_TYPE]
+
+                    if var_type in var_decl_mapping and var_decl_mapping[var_type][Constants.TO_BE_REMOVED]:
+                        pattern = "\\b" + var_name + "\\b"
+                        replace_with = ""
+                        if re.search(pattern, line) is not None:
+                            # first remove the var_name usage
+                            line = re.sub(pattern, replace_with, line)
+
+                            # now if after var name removal there is an extra `,` remove it
+                            line = CPPSourceCodePorter.remove_extra_comma(line)
+        except Exception as e:
+            logging.warning("rule_replace_removed_var failed: " + self.file_path + ":" + str(line_number))
+            return line
+        return line
+
+    def rule_replace_function_signature(self, line, line_number, mapping, ast):
+        """
+        Modifies function signatures if required
+        :param line: line to convert
+        :param line_number: line number of line in source code
+        :param mapping: ros1 to ros2 mapping for various types
+        :param ast: line by line ast
+        :return: str
+        """
+        try:
+            if line_number in ast and AstConstants:
+                decl_list = ast[line_number][AstConstants.CXX_METHOD] + ast[line_number][AstConstants.FUNCTION_DECL]
+                for token in decl_list:
+                    function_signature = token[AstConstants.VAR_TYPE]
+
+                    for var_type in self.vars_to_be_removed:
+                        if var_type in function_signature:
+                            line = CPPSourceCodePorter.remove_param_type_from_line(line, var_type)
+        except Exception as e:
+            logging.warning("rule_replace_function_signature failed: " + self.file_path + ":" + str(line_number))
+            return line
+        return line
+
+    def rule_custom_replacements(self, line, line_number):
+        """
+        Does some custom replacements in line, if not done by other rules
+        :param line: source code line
+        :param line_number: line number in src file
+        :return: str
+        """
+        try:
+            # if line still contains "::ConstPtr" replace it with, "::SharedPtr"
+            line = Utilities.replace_word_in_line(line, "::ConstPtr", "::SharedPtr")
+
+            # remove & after ::SharedPtr
+            line = re.sub("::SharedPtr *&", "::SharedPtr", line)
+        except Exception as e:
+            logging.warning("rule_custom_replacements failed: " + self.file_path + ":" + str(line_number))
+            return line
+
         return line
 
     #########################
@@ -511,7 +620,7 @@ class CPPSourceCodePorter:
                 for ind, arg in enumerate(arg_list):
                     arg_var = "arg" + str(ind)
                     lambda_wrap += ",std::shared_ptr<" \
-                                   + CPPSourceCodePorter.get_ros2_name(arg, mapping[AstConstants.PARM_DECL]) \
+                                   + CPPSourceCodePorter.get_ros2_name(arg, mapping[AstConstants.VAR_DECL]) \
                                    + "> " + arg_var
                     call_back_call += arg_var
                     if ind != len(arg_list) - 1:
@@ -530,10 +639,41 @@ class CPPSourceCodePorter:
 
                 replace_with = RosConstants.CREATE_SERVICE[:-1] + \
                                self.get_ros_service_template(token[AstConstants.NAME],
-                                                             token[AstConstants.VAR_TYPE], mapping) + ">"
+                                                             token[AstConstants.VAR_TYPE],
+                                                             line_number, mapping, ast) + ">"
                 line = line.replace(RosConstants.CREATE_SERVICE, replace_with)
         except Exception as e:
             logging.warning("rule_handle_create_service failed: " + self.file_path + ":" + str(line_number))
+            return line
+
+        return line
+
+    def rule_handle_create_subscription(self, line, line_number, mapping, ast, token):
+        """
+        Handles create_subscription call, adds template argument and returns new line
+        :param line: souce code line
+        :param line_number: line number in source code
+        :param mapping: ROS1 to ROS2 mapping dict
+        :param ast: line by line ast
+        :param token: token attributes dict
+        :return: str
+        """
+        try:
+            if RosConstants.CREATE_SUBSCRIPTION in line:
+
+                line_tokens = token[AstConstants.LINE_TOKENS]
+                last_paren_index = len(line_tokens) - 1 - line_tokens[::-1].index(')')
+                call_back_name = line_tokens[last_paren_index - 1]
+
+                ros2_template = self.get_ros2type_for_ros1_argument_type(call_back_name, mapping)
+                # remove SharedPtr
+                ros2_template = "::".join(ros2_template.split("::")[:-1])
+                ros2_template = self.get_ros2_name(ros2_template, mapping[AstConstants.VAR_DECL])
+
+                replace_with = RosConstants.CREATE_SUBSCRIPTION + "<" + ros2_template + ">"
+                line = line.replace(RosConstants.CREATE_SUBSCRIPTION, replace_with)
+        except Exception as e:
+            logging.warning("rule_handle_create_subscription failed: " + self.file_path + ":" + str(line_number))
             return line
 
         return line
@@ -755,6 +895,54 @@ class CPPSourceCodePorter:
         line = line[:open_parenthesis_ind + 1] + ",".join(param_list) + line[close_parenthesis_ind:]
         return line
 
+    @staticmethod
+    def remove_extra_comma(line):
+        """
+        Removed extra comma from line.
+        :param line: source code line
+        :return: str
+        """
+
+        # remove if pattern like fun(a, b, , c)
+        line = re.sub(r", * ,", ",", line)
+
+        # remove if pattern like fun( , a, b)
+        line = re.sub(r"\( *, *", "(", line)
+
+        # remove if pattern like fun(a, b, )
+        line = re.sub(r", *\)", ")", line)
+
+        return line
+
+    @staticmethod
+    def remove_param_type_from_line(line, param_type):
+        """
+        Removes `param_type` from line if mentioned as a function parameter
+        :param line: source code line
+        :param param_type: variable type
+        :return: str
+        """
+        var_pattern = " *(\\w*)? *" + param_type + " *([\*, &](\\w*)?)? *"
+
+        while re.search(var_pattern, line):
+            # remove param_type as only param, fun(param_type)
+            pattern = "\(" + var_pattern + "\)"
+            line = re.sub(pattern, "()", line)
+
+            # remove param_type as first_param, fun(param_type, b, c)
+            pattern = "\(" + var_pattern + ","
+            line = re.sub(pattern, "(", line)
+
+            # remove param_type as middle param, fun(a,b,c)
+            pattern = "," + var_pattern + ","
+            line = re.sub(pattern, ",", line)
+
+            # remove param_type as last param, fun(a,b,c)
+            pattern = "," + var_pattern + "\)"
+            line = re.sub(pattern, ")", line)
+
+        return line
+
     def get_ros2type_for_ros1_argument_type(self, call_back_name, mapping):
         """
         Get the first argument type from the function signature of call_back_name and then return the corresponding
@@ -764,28 +952,17 @@ class CPPSourceCodePorter:
         :return: str
         """
         arg_type = ""
-        if AstConstants.CXX_METHOD in self.global_ast:
-            for token in self.global_ast[AstConstants.CXX_METHOD]:
-                line_tokens = token[AstConstants.LINE_TOKENS]
+        if AstConstants.DECL_REF_EXPR in self.global_ast:
+            for token in self.global_ast[AstConstants.DECL_REF_EXPR]:
+                var_type = token[AstConstants.VAR_TYPE]
+                if token[AstConstants.NAME] == call_back_name and "(" in var_type and ")" in var_type:
+                    args = self.get_arguments_for_function(call_back_name)
+                    if len(args) > 0 and args[0] in mapping[AstConstants.VAR_DECL]:
+                        return CPPSourceCodePorter.get_ros2_name(args[0], mapping[AstConstants.VAR_DECL])
 
-                if token[AstConstants.NAME] == call_back_name:
-
-                    arg_start_index = line_tokens.index("(")
-
-                    # "line_tokens": ["bool", "LexServerCallback", "(", "lex_common_msgs", "::",
-                    # "AudioTextConversationRequest", "&", "request", ",", "lex_common_msgs", "::",
-                    # "AudioTextConversationResponse", "&", "response", ")" ]
-                    arg_type = "".join(line_tokens[arg_start_index + 1: arg_start_index + 4])
-
-                    if arg_type in mapping[AstConstants.PARM_DECL]:
-                        # mapping for "AudioTextConversationRequest" is
-                        # "lex_common_msgs::srv::AudioTextConversation::Request, but template argument would be only
-                        # "lex_common_msgs::srv::AudioTextConversation
-                        return "::".join(CPPSourceCodePorter.get_ros2_name(
-                            arg_type, mapping[AstConstants.PARM_DECL]).split('::')[:-1])
         return arg_type
 
-    def get_ros_service_template(self, var_name, var_type, mapping):
+    def get_ros_service_template(self, var_name, var_type, line_number, mapping, ast):
         """
         Returns the ros::ServiceServer var declaration or instantiation template argument for ros2 type, by finding the
         type from the ast
@@ -802,7 +979,39 @@ class CPPSourceCodePorter:
                         var_name in line_tokens:
                     last_comma_index = len(line_tokens) - 1 - line_tokens[::-1].index(',')
                     call_back_name = line_tokens[last_comma_index - 1]
+
+                    # mapping for "AudioTextConversationRequest" is
+                    # "lex_common_msgs::srv::AudioTextConversation::Request, but template argument would be only
+                    # "lex_common_msgs::srv::AudioTextConversation
                     ros2_arg_type = self.get_ros2type_for_ros1_argument_type(call_back_name, mapping)
+                    ros2_arg_type = "::".join(ros2_arg_type.split("::")[:-1])
+
+                    return ros2_arg_type
+
+        return ros2_arg_type
+
+    def get_ros_subscribe_template(self, var_name, var_type, line_number, mapping, ast):
+        """
+        Returns the ros::ServiceServer var declaration or instantiation template argument for ros2 type, by finding the
+        type from the ast
+        :param var_name: name of the variable
+        :param var_type: type of the variable
+        :param mapping: ros1 to ros2 mapping for various types
+        :return: str
+        """
+        ros2_arg_type = ""
+        if line_number in ast:
+            for token in ast[line_number][AstConstants.VAR_DECL]:
+                line_tokens = token[AstConstants.LINE_TOKENS]
+                if token[AstConstants.VAR_TYPE] == var_type and \
+                        var_name == token[AstConstants.NAME] and \
+                        RosConstants.TEMPLATED_VARS[var_type] in line_tokens:
+                    last_parenthesis_index = len(line_tokens) - 1 - line_tokens[::-1].index(')')
+                    call_back_name = line_tokens[last_parenthesis_index - 1]
+                    ros2_arg_type = self.get_ros2type_for_ros1_argument_type(call_back_name, mapping)
+
+                    # remove ::SharedPtr from end
+                    ros2_arg_type = "::".join(ros2_arg_type.split("::")[:-1])
                     return ros2_arg_type
 
         return ros2_arg_type
@@ -814,11 +1023,12 @@ class CPPSourceCodePorter:
         :param ast: line by line ast
         :return: str or None
         """
-        while line_number > 0:
+        while line_number >= 0:
             if line_number in ast:
                 for token in ast[line_number][AstConstants.VAR_DECL]:
                     if token[AstConstants.VAR_TYPE] == RosConstants.NODE_HANDLE:
                         return token[AstConstants.NAME]
+            line_number -= 1
         return None
 
     def get_node_var_param(self, line_number, ast, static_cast=False):
@@ -831,7 +1041,8 @@ class CPPSourceCodePorter:
         :return: str
         """
         if self.is_porting_unit_test:
-            return self.get_node_var_param_for_unit_test(line_number, ast)
+            node_var = self.get_node_var_param_for_unit_test(line_number, ast)
+            return "" if node_var is None else node_var
 
         if self.NODE_VAR_PARENT_CLASS is None:
             return self.NODE_VAR_NAME
@@ -860,8 +1071,8 @@ class CPPSourceCodePorter:
         :return: list
         """
         function_args = []
-        if AstConstants.CXX_METHOD in self.global_ast:
-            for token in self.global_ast[AstConstants.CXX_METHOD]:
+        if AstConstants.DECL_REF_EXPR in self.global_ast:
+            for token in self.global_ast[AstConstants.DECL_REF_EXPR]:
                 if token[AstConstants.NAME] == function_name:
                     # signature will be like "bool (lex_common_msgs::AudioTextConversationRequest &, lex_common_msgs::AudioTextConversationResponse &)"
                     function_signature = token[AstConstants.VAR_TYPE]
@@ -870,6 +1081,15 @@ class CPPSourceCodePorter:
                     if arg_str:
                         raw_arg_list = arg_str.group(0)[1:-1].split(",")
                         for arg in raw_arg_list:
-                            function_args.append(arg.split('&')[0].strip())
+
+                            # removing "const", "static" etc from beginning
+                            for qualifier in CppAstParser.filter_out[AstConstants.TYPE_QUALIFIER]:
+                                pattern = qualifier + " "
+                                if arg.startswith(pattern):
+                                    arg = arg[len(pattern):]
+
+                            arg = re.sub(r" *[&,*]", "", arg)
+                            function_args.append(arg.strip())
                         return function_args
         return function_args
+

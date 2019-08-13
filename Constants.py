@@ -52,6 +52,7 @@ class Constants:
     COLCON_BUILD_SCRIPT_PATH = "./run_colcon_build.sh"
     INCLUDES = "INCLUDES"
     TO_SHARED_PTR = "to_shared_ptr"
+    TO_BE_REMOVED = "to_be_removed"
     PASS_NODE_VAR = "pass_node_var"
     NODE_ARG_INFO = "node_arg_info"
     NODE_ARG_REQ = "node_arg_req"
@@ -72,7 +73,9 @@ class Constants:
     HELPER_TOKEN_TYPES = {
         AstConstants.MEMBER_REF_EXPR,
         AstConstants.TYPE_REF,
-        AstConstants.DECL_REF_EXPR
+        AstConstants.DECL_REF_EXPR,
+        AstConstants.FUNCTION_DECL,
+        AstConstants.CXX_METHOD
     }
     MANUAL_TOKENS = (
         INCLUDES
@@ -93,6 +96,7 @@ class Constants:
     }
     DIFF_FILE_PATH = "migration_diff.txt"
     FILTER_OUT_FILE_PATH = "filter_out.json"
+    UNKNOWN_TEMPLATE = "unknown_template"
 
 
 class RosConstants:
@@ -100,5 +104,13 @@ class RosConstants:
     INIT_CALL_EXPR = "init"
     NODE_HANDLE = "ros::NodeHandle"
     ROS_INIT_LINE_TOKEN_LENGTH = 10
-    SERVCE_SERVER = "ros::ServiceServer"
+    SERVICE_SERVER = "ros::ServiceServer"
     CREATE_SERVICE = "create_service<>"
+    CREATE_SUBSCRIPTION = "create_subscription"
+    SUBSCRIBE = "ros::Subscriber"
+    TEMPLATED_VARS = {
+        SERVICE_SERVER: "advertise_service",
+        SUBSCRIBE: "subscribe"
+    }
+    ROS1_NAMESPACE = "ros::"
+    DURATION = "ros::Duration"

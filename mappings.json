@@ -15,6 +15,13 @@
             },
             "ros2_name": "create_service"
         },
+        "createTimer": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "create_wall_timer"
+        },
         "getNamespace": {
             "node_arg_info": {
                 "node_arg_index": -1,
@@ -35,6 +42,13 @@
                 "node_arg_req": true
             },
             "ros2_name": "spin_some"
+        },
+        "subscribe": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "create_subscription"
         }
     },
     "CONVERSION_FUNCTION": {
@@ -71,6 +85,9 @@
         },
         "ros/spinner.h": {
             "ros2_name": "rclcpp/rclcpp.hpp"
+        },
+        "rosgraph_msgs/Log.h": {
+            "ros2_name": "rcl_interfaces/msg/log.hpp"
         },
         "std_msgs/String.h": {
             "ros2_name": "std_msgs/msg/string.hpp"
@@ -155,11 +172,177 @@
         "Aws::AwsError_VAR_DECL",
         "Utils::ByteBuffer_VAR_DECL",
         "LexRuntimeService::Model::PostContentResult_VAR_DECL",
-        "::testing::TestInfo *const_VAR_DECL",
-        "const ::testing::AssertionResult_VAR_DECL",
         "aws/core/utils/logging/DefaultLogSystem.h_INCLUSION_DIRECTIVE",
         "aws_common/sdk_utils/aws_error.h_INCLUSION_DIRECTIVE",
-        "gtest/gtest.h_INCLUSION_DIRECTIVE"
+        "gtest/gtest.h_INCLUSION_DIRECTIVE",
+        "aws/logs/model/InputLogEvent.h_INCLUSION_DIRECTIVE",
+        "aws/logs/model/PutLogEventsRequest.h_INCLUSION_DIRECTIVE",
+        "cloudwatch_logs_common/log_manager.h_INCLUSION_DIRECTIVE",
+        "cloudwatch_logs_common/log_publisher.h_INCLUSION_DIRECTIVE",
+        "aws/logs/CloudWatchLogsClient.h_INCLUSION_DIRECTIVE",
+        "cloudwatch_logs_common/ros_cloudwatch_logs_errors.h_INCLUSION_DIRECTIVE",
+        "cloudwatch_logs_common/utils/cloudwatch_facade.h_INCLUSION_DIRECTIVE",
+        "cloudwatch_logs_common/utils/shared_object.h_INCLUSION_DIRECTIVE",
+        "cloudwatch_logs_common/log_manager_factory.h_INCLUSION_DIRECTIVE",
+        "aws/logs/CloudWatchLogsErrors.h_INCLUSION_DIRECTIVE",
+        "aws/logs/model/CreateLogGroupRequest.h_INCLUSION_DIRECTIVE",
+        "aws/logs/model/CreateLogStreamRequest.h_INCLUSION_DIRECTIVE",
+        "aws/logs/model/DescribeLogGroupsRequest.h_INCLUSION_DIRECTIVE",
+        "aws/logs/model/DescribeLogGroupsResult.h_INCLUSION_DIRECTIVE",
+        "aws/logs/model/DescribeLogStreamsRequest.h_INCLUSION_DIRECTIVE",
+        "aws/logs/model/DescribeLogStreamsResult.h_INCLUSION_DIRECTIVE",
+        "aws/logs/model/LogStream.h_INCLUSION_DIRECTIVE",
+        "gmock/gmock.h_INCLUSION_DIRECTIVE",
+        "aws/core/client/AWSClient.h_INCLUSION_DIRECTIVE",
+        "aws/core/NoResult.h_INCLUSION_DIRECTIVE",
+        "cloudwatch_logs_common/cloudwatch_logs_client_mock.h_INCLUSION_DIRECTIVE",
+        "cloudwatch_logger/log_node.h_INCLUSION_DIRECTIVE",
+        "cloudwatch_logger/log_node_param_helper.h_INCLUSION_DIRECTIVE",
+        "T_VAR_DECL",
+        "Utils::SharedObject<std::list<Aws::CloudWatchLogs::Model::InputLogEvent> *> *_VAR_DECL",
+        "Utils::SharedObject<std::list<Aws::CloudWatchLogs::Model::InputLogEvent> *>_VAR_DECL",
+        "CloudWatchLogsClientMock *_VAR_DECL",
+        "testing::InSequence_VAR_DECL",
+        "Model_NAMESPACE_REF",
+        "Client_NAMESPACE_REF",
+        "CloudWatchLogs_NAMESPACE_REF",
+        "Utils_NAMESPACE_REF",
+        "Aws_NAMESPACE_REF",
+        "AWS_LOG_ERROR_MACRO_INSTANTIATION",
+        "AWS_LOG_FATAL_MACRO_INSTANTIATION",
+        "AWS_LOG_INFO_MACRO_INSTANTIATION",
+        "AWS_LOG_WARN_MACRO_INSTANTIATION",
+        "AWS_LOGSTREAM_DEBUG_MACRO_INSTANTIATION",
+        "AWS_LOG_DEBUG_MACRO_INSTANTIATION",
+        "AWS_LOGSTREAM_ERROR_MACRO_INSTANTIATION",
+        "AWS_LOGSTREAM_WARN_MACRO_INSTANTIATION",
+        "AWS_LOGSTREAM_INFO_MACRO_INSTANTIATION",
+        "T_PARM_DECL",
+        "Utils::SharedObject<std::list<Aws::CloudWatchLogs::Model::InputLogEvent> *>_PARM_DECL",
+        "LogManagerFactory_PARM_DECL",
+        "LogNode>_PARM_DECL",
+        "SetTimestamp_CALL_EXPR",
+        "SetMessage_CALL_EXPR",
+        "InputLogEvent_CALL_EXPR",
+        "Log_CALL_EXPR",
+        "GetLogLevel_CALL_EXPR",
+        "GetLogSystem_CALL_EXPR",
+        "InitAPI_CALL_EXPR",
+        "LogStream_CALL_EXPR",
+        "GetNextSequenceToken_CALL_EXPR",
+        "GetResult_CALL_EXPR",
+        "GetErrorType_CALL_EXPR",
+        "GetError_CALL_EXPR",
+        "GetMessage_CALL_EXPR",
+        "IsSuccess_CALL_EXPR",
+        "PutLogEvents_CALL_EXPR",
+        "SetLogEvents_CALL_EXPR",
+        "SetSequenceToken_CALL_EXPR",
+        "SetLogStreamName_CALL_EXPR",
+        "SetLogGroupName_CALL_EXPR",
+        "PutLogEventsRequest_CALL_EXPR",
+        "CreateLogGroup_CALL_EXPR",
+        "CreateLogGroupRequest_CALL_EXPR",
+        "GetLogGroupName_CALL_EXPR",
+        "LogGroup_CALL_EXPR",
+        "GetNextToken_CALL_EXPR",
+        "GetLogGroups_CALL_EXPR",
+        "DescribeLogGroups_CALL_EXPR",
+        "SetNextToken_CALL_EXPR",
+        "SetLogGroupNamePrefix_CALL_EXPR",
+        "DescribeLogGroupsRequest_CALL_EXPR",
+        "CreateLogStream_CALL_EXPR",
+        "CreateLogStreamRequest_CALL_EXPR",
+        "GetLogStreamName_CALL_EXPR",
+        "GetLogStreams_CALL_EXPR",
+        "DescribeLogStreams_CALL_EXPR",
+        "SetLogStreamNamePrefix_CALL_EXPR",
+        "DescribeLogStreamsRequest_CALL_EXPR",
+        "GetUploadSequenceToken_CALL_EXPR",
+        "ShutdownAPI_CALL_EXPR",
+        "Outcome_CALL_EXPR",
+        "PutLogEventsResult_CALL_EXPR",
+        "NoResult_CALL_EXPR",
+        "AWSError_CALL_EXPR",
+        "AddLogGroups_CALL_EXPR",
+        "DescribeLogGroupsResult_CALL_EXPR",
+        "AddLogStreams_CALL_EXPR",
+        "DescribeLogStreamsResult_CALL_EXPR",
+        "operator<<_CALL_EXPR",
+        "shutdown_CALL_EXPR",
+        "Duration_CALL_EXPR",
+        "Log__CALL_EXPR",
+        "SharedObject<int>_VAR_DECL",
+        "TimerEvent_CALL_EXPR",
+        "FILE *_VAR_DECL",
+        "Aws::CloudWatchLogs::Model::LogStream_PARM_DECL",
+        "Aws::CloudWatchLogs::Model::PutLogEventsRequest_PARM_DECL",
+        "Aws::Client::ClientConfiguration_PARM_DECL",
+        "Aws::CloudWatchLogs::Utils::SharedObject<std::list<Aws::CloudWatchLogs::Model::InputLogEvent> *>_PARM_DECL",
+        "Aws::CloudWatchLogs::Utils::CloudWatchFacade_PARM_DECL",
+        "Aws::SDKOptions_PARM_DECL",
+        "Aws::CloudWatchLogs::Model::DescribeLogStreamsRequest_PARM_DECL",
+        "Aws::CloudWatchLogs::Model::CreateLogStreamRequest_PARM_DECL",
+        "Aws::CloudWatchLogs::Model::DescribeLogGroupsRequest_PARM_DECL",
+        "Aws::CloudWatchLogs::Model::CreateLogGroupRequest_PARM_DECL",
+        "Aws::Client::ParameterReaderInterface_PARM_DECL",
+        "Aws::CloudWatchLogs::ROSCloudWatchLogsErrors_VAR_DECL",
+        "Aws::CloudWatchLogs::Utils::SharedObject<std::__cxx11::list<Aws::CloudWatchLogs::Model::InputLogEvent, std::allocator<Aws::CloudWatchLogs::Model::InputLogEvent> > *> *_VAR_DECL",
+        "Aws::CloudWatchLogs::Model::InputLogEvent_VAR_DECL",
+        "Aws::CloudWatchLogs::Model::PutLogEventsOutcome_VAR_DECL",
+        "Aws::CloudWatchLogs::Model::PutLogEventsResult_VAR_DECL",
+        "Aws::CloudWatchLogs::Model::CreateLogGroupOutcome *_VAR_DECL",
+        "Aws::Client::AWSError<Aws::CloudWatchLogs::CloudWatchLogsErrors>_VAR_DECL",
+        "Aws::CloudWatchLogs::Model::DescribeLogGroupsOutcome_VAR_DECL",
+        "Aws::CloudWatchLogs::Model::DescribeLogGroupsResult_VAR_DECL",
+        "Aws::CloudWatchLogs::Model::LogGroup_VAR_DECL",
+        "Aws::CloudWatchLogs::Model::CreateLogStreamOutcome *_VAR_DECL",
+        "Aws::CloudWatchLogs::Model::LogStream *_VAR_DECL",
+        "Aws::CloudWatchLogs::Model::DescribeLogStreamsOutcome_VAR_DECL",
+        "Aws::CloudWatchLogs::Model::DescribeLogStreamsResult_VAR_DECL",
+        "Aws::CloudWatchLogs::Model::LogStream_VAR_DECL",
+        "Aws::CloudWatchLogs::LogPublisherRunState_VAR_DECL",
+        "Aws::CloudWatchLogs::Utils::SharedObject<std::list<Aws::CloudWatchLogs::Model::InputLogEvent> *>_VAR_DECL",
+        "Aws::Utils::Outcome<Aws::CloudWatchLogs::Model::PutLogEventsResult, Aws::Client::AWSError<Aws::CloudWatchLogs::CloudWatchLogsErrors> >_VAR_DECL",
+        "Aws::CloudWatchLogs::Model::PutLogEventsRequest_VAR_DECL",
+        "Aws::Vector<Aws::CloudWatchLogs::Model::InputLogEvent>_VAR_DECL",
+        "const Aws::Utils::Outcome<Aws::NoResult, Aws::Client::AWSError<Aws::CloudWatchLogs::CloudWatchLogsErrors> > &_VAR_DECL",
+        "Aws::CloudWatchLogs::Model::CreateLogGroupRequest_VAR_DECL",
+        "const Aws::Utils::Outcome<Aws::CloudWatchLogs::Model::DescribeLogGroupsResult, Aws::Client::AWSError<Aws::CloudWatchLogs::CloudWatchLogsErrors> > &_VAR_DECL",
+        "Aws::CloudWatchLogs::Model::DescribeLogGroupsRequest_VAR_DECL",
+        "Aws::CloudWatchLogs::Model::CreateLogStreamRequest_VAR_DECL",
+        "const Aws::Utils::Outcome<Aws::CloudWatchLogs::Model::DescribeLogStreamsResult, Aws::Client::AWSError<Aws::CloudWatchLogs::CloudWatchLogsErrors> > &_VAR_DECL",
+        "Aws::CloudWatchLogs::Model::DescribeLogStreamsRequest_VAR_DECL",
+        "Aws::Client::ClientConfiguration_VAR_DECL",
+        "Aws::CloudWatchLogs::Utils::LogNode_VAR_DECL",
+        "Aws::Client::ClientConfigurationProvider_VAR_DECL",
+        "Aws::Lex::LexConfiguration &_PARM_DECL",
+        "LexRuntimeService::Model::PostContentResult &_PARM_DECL",
+        "Aws::Client::ParameterPath &_PARM_DECL",
+        "Aws::String &_PARM_DECL",
+        "LexRuntimeService::Model::PostContentRequest &_PARM_DECL",
+        "Client::ParameterReaderInterface &_PARM_DECL",
+        "Aws::LexRuntimeService::Model::PostContentResult &_PARM_DECL",
+        "Aws::LexRuntimeService::Model::PostContentRequest &_PARM_DECL",
+        "Aws::CloudWatchLogs::Model::PutLogEventsRequest &_PARM_DECL",
+        "Aws::CloudWatchLogs::Model::LogStream *_PARM_DECL",
+        "Aws::Client::ClientConfiguration &_PARM_DECL",
+        "T &_PARM_DECL",
+        "Aws::CloudWatchLogs::Utils::SharedObject<std::list<Aws::CloudWatchLogs::Model::InputLogEvent> *> *_PARM_DECL",
+        "Aws::SDKOptions &_PARM_DECL",
+        "Utils::SharedObject<std::list<Aws::CloudWatchLogs::Model::InputLogEvent> *> *_PARM_DECL",
+        "Aws::CloudWatchLogs::Model::DescribeLogStreamsRequest &_PARM_DECL",
+        "Aws::CloudWatchLogs::Model::CreateLogStreamRequest &_PARM_DECL",
+        "Aws::CloudWatchLogs::Model::DescribeLogGroupsRequest &_PARM_DECL",
+        "Aws::CloudWatchLogs::Model::CreateLogGroupRequest &_PARM_DECL",
+        "Aws::CloudWatchLogs::Model::InputLogEvent_PARM_DECL",
+        "Aws::CloudWatchLogs::CloudWatchLogsClient_PARM_DECL",
+        "Aws::CloudWatchLogs::CloudWatchLogsClient_VAR_DECL",
+        "Aws::CloudWatchLogs::Utils::SharedObject<std::list<Aws::CloudWatchLogs::Model::InputLogEvent> *> *_VAR_DECL",
+        "Aws::Utils::Outcome<Aws::NoResult, Aws::Client::AWSError<Aws::CloudWatchLogs::CloudWatchLogsErrors> > &_VAR_DECL",
+        "Aws::Utils::Outcome<Aws::CloudWatchLogs::Model::DescribeLogGroupsResult, Aws::Client::AWSError<Aws::CloudWatchLogs::CloudWatchLogsErrors> > &_VAR_DECL",
+        "Aws::Utils::Outcome<Aws::CloudWatchLogs::Model::DescribeLogStreamsResult, Aws::Client::AWSError<Aws::CloudWatchLogs::CloudWatchLogsErrors> > &_VAR_DECL",
+        "CloudWatchLogsClientMock_VAR_DECL"
     ],
     "MACRO_INSTANTIATION": {
         "NEW_TOKENS_LIST": [],
@@ -174,8 +357,14 @@
     },
     "NAMESPACE_REF": {
         "NEW_TOKENS_LIST": [],
+        "boost": {
+            "ros2_name": "std"
+        },
         "ros": {
             "ros2_name": "rclcpp"
+        },
+        "rosgraph_msgs": {
+            "ros2_name": "rcl_interfaces::msg"
         },
         "std_msgs": {
             "ros2_name": "std_msgs::msg"
@@ -184,12 +373,54 @@
     "PARM_DECL": {
         "NEW_TOKENS_LIST": [],
         "lex_common_msgs::AudioTextConversationRequest": {
-            "ros2_name": "lex_common_msgs::srv::AudioTextConversation::Request",
+            "ros2_name": "std::shared_ptr<lex_common_msgs::srv::AudioTextConversation::Request>",
             "to_shared_ptr": true
         },
+        "lex_common_msgs::AudioTextConversationRequest &": {
+            "ros2_name": "std::shared_ptr<lex_common_msgs::srv::AudioTextConversation::Request>",
+            "to_be_removed": false,
+            "to_shared_ptr": false
+        },
         "lex_common_msgs::AudioTextConversationResponse": {
-            "ros2_name": "lex_common_msgs::srv::AudioTextConversation::Response",
+            "ros2_name": "std::shared_ptr<lex_common_msgs::srv::AudioTextConversation::Response>",
             "to_shared_ptr": true
+        },
+        "lex_common_msgs::AudioTextConversationResponse &": {
+            "ros2_name": "std::shared_ptr<lex_common_msgs::srv::AudioTextConversation::Response>",
+            "to_be_removed": false,
+            "to_shared_ptr": false
+        },
+        "ros::NodeHandle": {
+            "ros2_name": "std::shared_ptr<ros::Node>",
+            "to_shared_ptr": true
+        },
+        "ros::NodeHandle &": {
+            "ros2_name": "std::shared_ptr<rclcpp::Node>",
+            "to_be_removed": false,
+            "to_shared_ptr": false
+        },
+        "ros::Subscriber": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "std::shared_ptr<rclcpp::Subscription<unknown_template>>",
+            "to_shared_ptr": true
+        },
+        "rosgraph_msgs::Log": {
+            "ros2_name": "rcl_interfaces::msg::Log",
+            "to_be_removed": false,
+            "to_shared_ptr": true
+        },
+        "rosgraph_msgs::Log::ConstPtr": {
+            "ros2_name": "rosgraph_msgs::Log::SharedPtr",
+            "to_be_removed": false,
+            "to_shared_ptr": false
+        },
+        "rosgraph_msgs::Log::ConstPtr &": {
+            "ros2_name": "rcl_interfaces::msg::Log::SharedPtr &",
+            "to_be_removed": false,
+            "to_shared_ptr": false
         }
     },
     "VAR_DECL": {
@@ -234,6 +465,14 @@
             "ros2_name": "lex_common_msgs::msg::KeyValue",
             "to_shared_ptr": false
         },
+        "ros::Duration": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "std::chrono::duration",
+            "to_shared_ptr": false
+        },
         "ros::NodeHandle": {
             "node_arg_info": {
                 "node_arg_index": -1,
@@ -257,6 +496,50 @@
             },
             "ros2_name": "ros::Service",
             "to_shared_ptr": true
+        },
+        "ros::Subscriber": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "ros::Subscription",
+            "to_shared_ptr": true
+        },
+        "ros::Timer": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "ros::TimerBase",
+            "to_be_removed": false,
+            "to_shared_ptr": true
+        },
+        "ros::TimerEvent": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "",
+            "to_be_removed": true,
+            "to_shared_ptr": false
+        },
+        "rosgraph_msgs::Log": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "rcl_interfaces::msg::Log",
+            "to_be_removed": false,
+            "to_shared_ptr": true
+        },
+        "rosgraph_msgs::Log::ConstPtr": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "rcl_interfaces::msg::Log::SharedPtr",
+            "to_be_removed": false,
+            "to_shared_ptr": false
         },
         "std_msgs::String": {
             "node_arg_info": {
