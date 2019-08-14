@@ -34,8 +34,6 @@ class AstConstants:
 class Constants:
     ROS_1_NAME = "ros1_name"
     ROS_2_NAME = "ros2_name"
-    NEW_TOKENS_LIST = "NEW_TOKENS_LIST"
-    NEW_MAPPING_MSG = "ros2_name??"
     CONFIG_FILE_NAME = "config.json"
     LIBCLANG_PATH = "LIBCLANG_PATH"
     COMPILE_DB_DIR = "COMPILE_DB_DIR"
@@ -46,9 +44,7 @@ class Constants:
     ROS2_SRC_FOLDER = "src"
     CMAKE_FILE_NAME = "CMakeLists.txt"
     PACKAGE_XML_FILE = "package.xml"
-    MAPPING_FILE_NAME = 'mappings.json'
     ROS1_INCLUDE_PATH = "ros/kinetic"
-    IRRELEVANT_TOKENS = "IRRELEVANT_TOKENS"
     COLCON_BUILD_SCRIPT_PATH = "./run_colcon_build.sh"
     INCLUDES = "INCLUDES"
     TO_SHARED_PTR = "to_shared_ptr"
@@ -114,3 +110,20 @@ class RosConstants:
     }
     ROS1_NAMESPACE = "ros::"
     DURATION = "ros::Duration"
+
+
+class MappingConstants:
+    MAPPING_FOLDER = "mapping"
+    NEW_MAPPING_MSG = "ros2_name??"
+    MASTER_MAPPING_FILE_NAME = 'master_mappings.json'
+    MAPPING_TEMPLATE_FILE_NAME = 'mappings_template.json'
+    NEW_TOKENS_FILE_NAME = "new_tokens.json"
+    NEW_TOKENS_LIST = "NEW_TOKENS_LIST"
+    FILTERED_OUT_FILE_NAME = "filtered_out_tokens.json"
+
+    IGNORE_LIST = [
+        MAPPING_TEMPLATE_FILE_NAME,
+        NEW_TOKENS_FILE_NAME,
+        FILTERED_OUT_FILE_NAME
+    ]
+    IRRELEVANT_TOKENS = "IRRELEVANT_TOKENS"

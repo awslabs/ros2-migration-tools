@@ -7,7 +7,7 @@ import re
 import shutil
 import sys
 
-from Constants import AstConstants, Constants, RosConstants
+from Constants import AstConstants, Constants, MappingConstants, RosConstants
 
 
 class Utilities:
@@ -149,8 +149,7 @@ class Utilities:
         :return:
         """
         for to_replace in mapping:
-            if to_replace != Constants.NEW_TOKENS_LIST:
-                original_str = original_str.replace(to_replace, mapping[to_replace][Constants.ROS_2_NAME])
+            original_str = original_str.replace(to_replace, mapping[to_replace][Constants.ROS_2_NAME])
         return original_str
 
     @staticmethod
@@ -334,43 +333,6 @@ class Utilities:
         }
 
     @staticmethod
-    def get_list_of_pointer_var(ast_dict, mapping):
-        """
-        Returns a list of var names which are of type shared_ptr
-        :param ast_dict: dict of tokens
-        :param mapping: ROS1 to ROS2 mapping dict
-        :return: list
-        """
-
-        # get list of var types which are shared_ptr
-        var_types = []
-        for var_type in mapping[AstConstants.VAR_DECL]:
-            if var_type != Constants.NEW_TOKENS_LIST:
-                var_info = mapping[AstConstants.VAR_DECL][var_type]
-                if var_info[Constants.TO_SHARED_PTR] is True:
-                    var_types.append(var_type)
-
-        for var_type in mapping[AstConstants.FIELD_DECL]:
-            if var_type != Constants.NEW_TOKENS_LIST:
-                var_info = mapping[AstConstants.FIELD_DECL][var_type]
-                if var_info[Constants.TO_SHARED_PTR] is True:
-                    var_types.append(var_type)
-
-        # now from the ast get the names of the variables which are of type from var_types
-        pointer_var_names = []
-        if AstConstants.VAR_DECL in ast_dict:
-            for token in ast_dict[AstConstants.VAR_DECL]:
-                if token[AstConstants.VAR_TYPE] in var_types:
-                    pointer_var_names.append(token[AstConstants.NAME])
-
-        if AstConstants.FIELD_DECL in ast_dict:
-            for token in ast_dict[AstConstants.FIELD_DECL]:
-                if token[AstConstants.VAR_TYPE] in var_types:
-                    pointer_var_names.append(token[AstConstants.NAME])
-
-        return pointer_var_names
-
-    @staticmethod
     def merge_ast_dict(old_ast_dict, new_ast_dict):
         """
         Merge all the tokens from new_ast_dict to old_ast_dict and return the merged dict
@@ -472,6 +434,61 @@ class Utilities:
         # check if 'gtest' is part of path, then also exclude it
         if "gtest" in path:
             return True
+
+    @staticmethod
+    def get_all_files_of_extension(directory, file_extensions):
+        """
+        Returns a list of files from `directory` and its sub-directories which have one of the file extension from
+        `file_extensions`
+        :param directory: directory in which to look for files
+        :param file_extensions: list of file extensions
+        :return: list
+        """
+        file_list = []
+        for root, dirs, files in os.walk(directory):
+            for file in files:
+                for ext in file_extensions:
+                    if file.endswith(ext):
+                        file_list.append(os.path.join(root, file))
+
+        return file_list
+
+    @staticmethod
+    def get_consolidated_mapping():
+        """
+        Reads all the valid .json files in the `mapping` folder and created a consolidated dict
+        :return: dict
+        """
+        file_list = Utilities.get_all_files_of_extension(MappingConstants.MAPPING_FOLDER, ".json")
+
+        consolidated_mapping = Utilities.read_json_file(os.path.join(MappingConstants.MAPPING_FOLDER,
+                                                                     MappingConstants.MASTER_MAPPING_FILE_NAME))
+        for file_path in file_list:
+            is_valid_file = True
+            for ignore_file in MappingConstants.IGNORE_LIST:
+                if file_path.endswith(ignore_file) or file_path.endswith(MappingConstants.MASTER_MAPPING_FILE_NAME):
+                    is_valid_file = False
+                    break
+
+            if is_valid_file:
+                curr_mapping = Utilities.read_json_file(file_path)
+                for token_kind in consolidated_mapping:
+                    for token_name in curr_mapping[token_kind]:
+                        consolidated_mapping[token_kind][token_name] = curr_mapping[token_kind][token_name]
+
+        return consolidated_mapping
+
+    @staticmethod
+    def get_new_tokens_template():
+        """
+        Returns a template for new tokens file
+        :return: dict
+        """
+        new_token_template = {}
+        for token_type in Constants.TOKEN_TYPES:
+            new_token_template[token_type] = []
+
+        return new_token_template
 
 
 if __name__ == "__main__":

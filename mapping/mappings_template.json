@@ -1,0 +1,16 @@
+{
+    "CALL_EXPR": {
+    },
+    "CONVERSION_FUNCTION": {
+    },
+    "INCLUSION_DIRECTIVE": {
+    },
+    "MACRO_INSTANTIATION": {
+    },
+    "NAMESPACE_REF": {
+    },
+    "PARM_DECL": {
+    },
+    "VAR_DECL": {
+    }
+}

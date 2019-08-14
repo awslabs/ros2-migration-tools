@@ -9,7 +9,7 @@ import xml.etree.ElementTree as etree
 
 from clang.clang_parser import CppAstParser
 
-from Constants import AstConstants, Constants
+from Constants import AstConstants, Constants, MappingConstants
 from porting_tools.cmake_lists_porter import CMakeListsPorter
 from porting_tools.package_xml_porter import PackageXMLPorter
 from porting_tools.cpp_source_code_porter import CPPSourceCodePorter
@@ -50,6 +50,20 @@ class RosUpgrader:
         AstConstants.NON_UNIT_TEST: {},
         AstConstants.UNIT_TEST: {}
     }
+
+    # dict containing list of filtered out token ids
+    irrelevant_tokens = Utilities.read_json_file(os.path.join(MappingConstants.MAPPING_FOLDER,
+                                                              MappingConstants.FILTERED_OUT_FILE_NAME))
+
+    # dict containing consolidated mappings of all valid .json files in `mappings` folder
+    consolidated_mapping = Utilities.get_consolidated_mapping()
+
+    # flag to check if new mapping has been added to `new_tokens.json`
+    new_mappings_added = False
+
+    # template file for filled mappings
+    mapping_template = Utilities.read_json_file(os.path.join(MappingConstants.MAPPING_FOLDER,
+                                                             MappingConstants.MAPPING_TEMPLATE_FILE_NAME))
 
     @staticmethod
     def init():
@@ -137,20 +151,6 @@ class RosUpgrader:
             tree.write(file_path, encoding="utf-8", xml_declaration=True)
 
     @staticmethod
-    def get_declared_functions(tokens):
-        """
-        Creates a list containing all the tokens of kind FUNCTION_DECL
-        :param tokens:
-        :return:
-        """
-        declared_func_list = set()
-        if AstConstants.FUNCTION_DECL in tokens:
-            for token in tokens[AstConstants.FUNCTION_DECL]:
-                declared_func_list.add(token[AstConstants.NAME])
-
-        return declared_func_list
-
-    @staticmethod
     def get_mapping_attributes(token):
         """
         Populates attributes for the token to be saved in NEW_TOKEN_LIST
@@ -159,7 +159,7 @@ class RosUpgrader:
         """
         attributes = {
             Constants.ROS_1_NAME: token[AstConstants.NAME],
-            Constants.ROS_2_NAME: Constants.NEW_MAPPING_MSG,
+            Constants.ROS_2_NAME: MappingConstants.NEW_MAPPING_MSG,
             Constants.TOKEN_LOCATION: {
                 AstConstants.SRC_FILE_PATH: token[AstConstants.SRC_FILE_PATH],
                 AstConstants.LINE: token[AstConstants.LINE],
@@ -170,9 +170,9 @@ class RosUpgrader:
 
         if token[AstConstants.KIND] == AstConstants.VAR_DECL or token[AstConstants.KIND] == AstConstants.PARM_DECL:
             attributes[Constants.ROS_1_NAME] = token[AstConstants.VAR_TYPE]
-            attributes[Constants.TO_SHARED_PTR] = False
             attributes[Constants.TO_BE_REMOVED] = False
             if token[AstConstants.KIND] == AstConstants.VAR_DECL:
+                attributes[Constants.TO_SHARED_PTR] = False
                 attributes[Constants.NODE_ARG_INFO] = {
                     Constants.NODE_ARG_REQ: False,
                     Constants.NODE_ARG_INDEX: -1
@@ -225,17 +225,15 @@ class RosUpgrader:
         return True
 
     @staticmethod
-    def add_new_mappings(compile_db_path, mappings, already_added_mappings):
+    def add_new_mappings(compile_db_path, new_mappings, already_added_mappings):
         """
-        Parses the file and adds the mappings to "mappings.json" if the mapping was missing
+        Parses the file and adds the mappings to "master_mappings.json" if the mapping was missing
         :param compile_db_path: path to compile_json_file
-        :param mappings: dict containing ROS1->ROS2 mapping for various token kinds
+        :param new_mappings: dict containing ROS1->ROS2 mapping for various token kinds
         :param already_added_mappings: dict containing list of token identifiers for various kind which has already been
         added as new mapping
         :return: None
         """
-        irrelevant_tokens = set(mappings[Constants.IRRELEVANT_TOKENS])
-
         ast_dict = RosUpgrader.get_ast_as_json(compile_db_path)
         Utilities.merge_ast_dict(RosUpgrader.AST_DICT[AstConstants.NON_UNIT_TEST], ast_dict[AstConstants.NON_UNIT_TEST])
         Utilities.merge_ast_dict(RosUpgrader.AST_DICT[AstConstants.UNIT_TEST], ast_dict[AstConstants.UNIT_TEST])
@@ -245,6 +243,8 @@ class RosUpgrader:
         Utilities.merge_ast_line_dict(RosUpgrader.AST_LINE_BY_LINE,
                                       Utilities.store_ast_line_by_line(RosUpgrader.AST_DICT[AstConstants.UNIT_TEST]))
 
+        irrelevant_tokens = set(RosUpgrader.irrelevant_tokens[MappingConstants.IRRELEVANT_TOKENS])
+
         for token_type in Constants.TOKEN_TYPES:
             for ast_category in RosUpgrader.AST_DICT:
                 if token_type in RosUpgrader.AST_DICT[ast_category]:
@@ -252,9 +252,12 @@ class RosUpgrader:
                         already_added_mappings[token_type] = set()
                     added_set = already_added_mappings[token_type]
                     for token in RosUpgrader.AST_DICT[ast_category][token_type]:
-                        if RosUpgrader.check_token_validity(token, mappings[token_type], irrelevant_tokens, added_set):
-                            mappings[token_type][Constants.NEW_TOKENS_LIST].append(
-                                RosUpgrader.get_mapping_attributes(token))
+                        if RosUpgrader.check_token_validity(token,
+                                                            RosUpgrader.consolidated_mapping[token_type],
+                                                            irrelevant_tokens,
+                                                            added_set):
+
+                            new_mappings[token_type].append(RosUpgrader.get_mapping_attributes(token))
 
                             if token[AstConstants.KIND] == AstConstants.VAR_DECL or \
                                     token[AstConstants.KIND] == AstConstants.PARM_DECL:
@@ -266,32 +269,14 @@ class RosUpgrader:
                                 pass
 
     @staticmethod
-    def get_all_files_of_extension(directory, file_extensions):
-        """
-        Returns a list of files from `directory` and its sub-directories which have one of the file extension from
-        `file_extensions`
-        :param directory: directory in which to look for files
-        :param file_extensions: list of file extensions
-        :return: list
-        """
-        file_list = []
-        for root, dirs, files in os.walk(directory):
-            for file in files:
-                for ext in file_extensions:
-                    if file.endswith(ext):
-                        file_list.append(os.path.join(root, file))
-
-        return file_list
-
-    @staticmethod
     def convert_all_source_files():
         """
         Calls the porter on all source files to convert the ROS1 source to ROS2
         :return: None
         """
-        mapping = Utilities.read_json_file(Constants.MAPPING_FILE_NAME)
+        mapping = RosUpgrader.consolidated_mapping
         if mapping is not None:
-            file_list = RosUpgrader.get_all_files_of_extension(RosUpgrader.SRC_PATH_TO_UPGRADE, [".cpp", ".h", ".hpp"])
+            file_list = Utilities.get_all_files_of_extension(RosUpgrader.SRC_PATH_TO_UPGRADE, [".cpp", ".h", ".hpp"])
 
             diff_content = []
             for file_path in file_list:
@@ -301,7 +286,7 @@ class RosUpgrader:
 
                 if file_path in RosUpgrader.AST_LINE_BY_LINE:
                     new_src = cpp_porter.port(source=src_content,
-                                              mapping=mapping,
+                                              mapping=RosUpgrader.consolidated_mapping,
                                               ast=RosUpgrader.AST_LINE_BY_LINE[file_path])
 
                     Utilities.write_to_file(file_path, new_src)
@@ -311,43 +296,70 @@ class RosUpgrader:
             Utilities.write_to_file(os.path.join(Utilities.get_parent_dir(RosUpgrader.SRC_PATH_TO_UPGRADE), Constants.DIFF_FILE_PATH), "\n".join(diff_content))
 
     @staticmethod
-    def add_filled_mappings():
+    def add_filled_mappings(mapping_file_name=MappingConstants.MASTER_MAPPING_FILE_NAME):
         """
-        Adds the filled mapping from NEW_TOKENS_LIST to the node type
+        Adds the filled mapping from NEW_TOKENS_FILE to the node type
+        :param mapping_file_name: file to write the filled mappings to, if file doesn't exist then new one will be created
         :return: None
         """
-        mapping = Utilities.read_json_file(Constants.MAPPING_FILE_NAME)
-        for token_type in mapping:
-            if token_type != Constants.IRRELEVANT_TOKENS:
-                new_token_list = mapping[token_type][Constants.NEW_TOKENS_LIST]
-                for new_token in new_token_list:
-                    if new_token[Constants.ROS_2_NAME] != Constants.NEW_MAPPING_MSG:
-                        updated_token = copy.deepcopy(new_token)
-                        del updated_token[Constants.ROS_1_NAME]
-                        del updated_token[Constants.TOKEN_LOCATION]
+        mapping_file_path = os.path.join(MappingConstants.MAPPING_FOLDER, mapping_file_name)
+        new_mappings = Utilities.read_json_file(os.path.join(MappingConstants.MAPPING_FOLDER,
+                                                             MappingConstants.NEW_TOKENS_FILE_NAME))
 
-                        mapping[token_type][new_token[Constants.ROS_1_NAME]] = updated_token
-                    else:
-                        irrelevant_token_id = new_token[Constants.ROS_1_NAME] + "_" + token_type
-                        mapping[Constants.IRRELEVANT_TOKENS].append(irrelevant_token_id)
-                mapping[token_type][Constants.NEW_TOKENS_LIST] = []
-        Utilities.write_as_json(Constants.MAPPING_FILE_NAME, mapping)
+        if os.path.exists(mapping_file_path):
+            mapping = Utilities.read_json_file(mapping_file_path)
+        else:
+            mapping = copy.deepcopy(RosUpgrader.mapping_template)
+
+        for token_type in mapping:
+            new_token_list = new_mappings[token_type]
+            for new_token in new_token_list:
+                if new_token[Constants.ROS_2_NAME] != MappingConstants.NEW_MAPPING_MSG:
+                    updated_token = copy.deepcopy(new_token)
+                    del updated_token[Constants.ROS_1_NAME]
+                    del updated_token[Constants.TOKEN_LOCATION]
+
+                    mapping[token_type][new_token[Constants.ROS_1_NAME]] = updated_token
+                else:
+                    irrelevant_token_id = new_token[Constants.ROS_1_NAME] + "_" + token_type
+                    RosUpgrader.irrelevant_tokens[MappingConstants.IRRELEVANT_TOKENS].append(irrelevant_token_id)
+            new_mappings[token_type] = []
+
+        Utilities.write_as_json(mapping_file_path, mapping)
+        Utilities.write_as_json(os.path.join(MappingConstants.MAPPING_FOLDER, MappingConstants.FILTERED_OUT_FILE_NAME),
+                                RosUpgrader.irrelevant_tokens)
+        Utilities.write_as_json(os.path.join(MappingConstants.MAPPING_FOLDER, MappingConstants.NEW_TOKENS_FILE_NAME), {})
 
     @staticmethod
-    def start_upgrade():
+    def check_if_new_mappings_added(new_mappings):
+        for kind in new_mappings:
+            if len(new_mappings[kind]):
+                return True
+        return False
+
+    @staticmethod
+    def start_upgrade(new_mappings):
         """
         Calls functions required for the upgrade process
+        :param new_mappings: new mappings json to be filled by user
         :return: None
         """
         RosUpgrader.convert_all_cmake()
         RosUpgrader.convert_all_package_xml()
 
-        prompt = str(input("All mappings filled? Press 'Y' to continue or any other key to abort: "))
-        if prompt == 'Y':
-            RosUpgrader.add_filled_mappings()
-            RosUpgrader.convert_all_source_files()
+        RosUpgrader.new_mappings_added = RosUpgrader.check_if_new_mappings_added(new_mappings)
+
+        if RosUpgrader.new_mappings_added:
+            Utilities.write_as_json(os.path.join(MappingConstants.MAPPING_FOLDER, MappingConstants.NEW_TOKENS_FILE_NAME),
+                                    new_mappings)
+            prompt = str(input("All mappings filled? Press 'Y' to continue or any other key to abort: "))
+            if prompt == 'Y':
+                RosUpgrader.add_filled_mappings()
+                RosUpgrader.convert_all_source_files()
+            else:
+                print("Aborting...")
         else:
-            print("Aborting...")
+            RosUpgrader.convert_all_source_files()
 
     def __init__(self):
         pass
@@ -376,19 +388,19 @@ def main():
 
     compile_db_files = RosUpgrader.get_all_file_paths(src_parent_dir, Constants.COMPILE_COMMANDS_FILE)
 
-    mappings = Utilities.read_json_file(Constants.MAPPING_FILE_NAME)
+    new_mappings = Utilities.get_new_tokens_template()
+
     already_added_mappings = {}
     for compile_json in compile_db_files:
         RosUpgrader.COMPILE_JSON_PATH = compile_json
-        RosUpgrader.add_new_mappings(Utilities.get_parent_dir(compile_json), mappings, already_added_mappings)
-    Utilities.write_as_json(Constants.MAPPING_FILE_NAME, mappings)
+        RosUpgrader.add_new_mappings(Utilities.get_parent_dir(compile_json), new_mappings, already_added_mappings)
 
     if is_debugging():
         Utilities.write_as_json("ast_dump_" + AstConstants.NON_UNIT_TEST + ".json",
                                 RosUpgrader.AST_DICT[AstConstants.NON_UNIT_TEST])
         Utilities.write_as_json("ast_dump_" + AstConstants.UNIT_TEST + ".json",
                                 RosUpgrader.AST_DICT[AstConstants.UNIT_TEST])
-    RosUpgrader.start_upgrade()
+    RosUpgrader.start_upgrade(new_mappings)
 
 
 if __name__ == '__main__':

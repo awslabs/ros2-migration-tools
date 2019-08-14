@@ -10,7 +10,7 @@ class TestCPPSourceCodePorterTalker(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.mapping = Utilities.read_json_file(Constants.MAPPING_FILE_NAME)
+        cls.mapping = Utilities.get_consolidated_mapping()
 
         ast_dict = {
             AstConstants.NON_UNIT_TEST: Utilities.read_json_file(os.path.join("porting_tools", "test", "ast_dump_talker_cpp.json"))
@@ -111,7 +111,7 @@ class TestCPPSourceCodePorterLexNodeMainCPP(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.mapping = Utilities.read_json_file(Constants.MAPPING_FILE_NAME)
+        cls.mapping = Utilities.get_consolidated_mapping()
 
         ast_dict = {
             AstConstants.NON_UNIT_TEST: Utilities.read_json_file(os.path.join("porting_tools", "test", "ast_dump_lex_node.json"))
@@ -144,7 +144,7 @@ class TestCPPSourceCodePorterLexNodeLexNodeCPP(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.mapping = Utilities.read_json_file(Constants.MAPPING_FILE_NAME)
+        cls.mapping = Utilities.get_consolidated_mapping()
 
         ast_dict = {
             AstConstants.NON_UNIT_TEST: Utilities.read_json_file(os.path.join("porting_tools", "test", "ast_dump_lex_node.json"))
@@ -191,7 +191,7 @@ class TestCPPSourceCodePorterLexNodeLexNodeH(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.mapping = Utilities.read_json_file(Constants.MAPPING_FILE_NAME)
+        cls.mapping = Utilities.get_consolidated_mapping()
 
         ast_dict = {
             AstConstants.NON_UNIT_TEST: Utilities.read_json_file(os.path.join("porting_tools", "test", "ast_dump_lex_node.json"))

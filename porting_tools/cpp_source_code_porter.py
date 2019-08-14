@@ -133,10 +133,9 @@ class CPPSourceCodePorter:
         try:
             namespace_mapping = mapping[AstConstants.NAMESPACE_REF]
             for to_replace in namespace_mapping:
-                if to_replace != Constants.NEW_TOKENS_LIST:
-                    replace_with = CPPSourceCodePorter.get_ros2_name(to_replace, namespace_mapping) + "::"
-                    to_replace += "::"
-                    line = Utilities.replace_word_in_line(line, to_replace, replace_with)
+                replace_with = CPPSourceCodePorter.get_ros2_name(to_replace, namespace_mapping) + "::"
+                to_replace += "::"
+                line = Utilities.replace_word_in_line(line, to_replace, replace_with)
         except Exception as e:
             logging.warning("rule_replace_namespace_ref failed: " + self.file_path + ":", str(line_number))
             return line
