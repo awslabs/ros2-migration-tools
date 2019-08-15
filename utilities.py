@@ -105,6 +105,9 @@ class Utilities:
         :return: None
         """
         try:
+            directory = os.path.dirname(full_file_path)
+            if not os.path.exists(directory):
+                os.makedirs(directory)
             with open(full_file_path, 'w') as f:
                 f.write(contents)
                 f.close()

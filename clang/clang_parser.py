@@ -213,8 +213,7 @@ class CppAstParser(object):
 
         return True
 
-    @staticmethod
-    def _add_token_to_ast(curr_obj, ast_obj):
+    def _add_token_to_ast(self, curr_obj, ast_obj):
         """
         Appends the `curr_obj` token dict to corresponding ast(either `UNIT_TEST` or `NON_UNIT_TEST`,
         if `should_append_to_token_list()` for it is True
@@ -229,6 +228,9 @@ class CppAstParser(object):
             return
         else:
             CppAstParser.token_hash.add(curr_obj_hash)
+
+        if curr_obj[AstConstants.SRC_FILE_PATH] != "":
+            self.file_list.add(curr_obj[AstConstants.SRC_FILE_PATH])
 
         if CppAstParser.should_append_to_token_list(curr_obj):
             ast_of_category = ast_obj[AstConstants.NON_UNIT_TEST]
@@ -252,6 +254,7 @@ class CppAstParser(object):
 
         self._db = clang.CompilationDatabase.fromDirectory(db_path)
         self._db.db_path = db_path
+        self.file_list = set()
 
     def get_ast_obj(self, file_path=None):
         """
@@ -283,7 +286,6 @@ class CppAstParser(object):
 
                 self._check_compilation_problems(unit)
                 self._traverse_cursor(unit.cursor, ast_obj)
-
         return ast_obj
 
     def _traverse_cursor(self, top_cursor, ast_obj):
@@ -297,15 +299,22 @@ class CppAstParser(object):
         for cursor in top_cursor.get_children():
             if cursor.location.file and cursor.location.file.name.startswith(self.workspace):
                 curr_obj = self._cursor_obj(cursor)
-                CppAstParser._add_token_to_ast(curr_obj, ast_obj)
+                self._add_token_to_ast(curr_obj, ast_obj)
 
                 stack = list(cursor.get_children())
                 while stack:
                     c = stack.pop()
                     curr_obj = self._cursor_obj(c)
-                    CppAstParser._add_token_to_ast(curr_obj, ast_obj)
+                    self._add_token_to_ast(curr_obj, ast_obj)
 
                     stack.extend(c.get_children())
+
+    def get_file_list(self):
+        """
+        Returns list containing full paths of files encountered in AST
+        :return: list
+        """
+        return list(self.file_list)
 
 
 ###############################################################################

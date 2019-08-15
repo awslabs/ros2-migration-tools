@@ -12,24 +12,29 @@ corresponding [python bindings](https://github.com/llvm-mirror/clang/tree/releas
 
 ## Setup
 1. On the ROS1(kinetic) system, clone this repository
-2. Open config.json and update:
-    - `ROS1_SRC_PATH`: path to ROS1 package src folder
-    - `ROS2_OUTPUT_DIR`: path where final migrated package will be copied 
+2. Build the ROS1 package with `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`
+
+    `colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON`
 
 ## Usage
 1. `cd` to the directory where this repo is cloned
 
-2. Give execution permission to run_colcon_build.sh by running `sudo chmod a+x run_colcon_build.sh`
+2. run `ros_upgrader.py` script with required arguments. One of the following can happen now:
+    - If there are no new tokens encountered in the ROS1 package, then it will just finish running 
+    - If there are some new tokens encountered, there will be message on terminal saying 
+    `Open mappings/new_tokens.json and fill the mappings. Press 'Y' to continue or any other key to abort` 
+    will be shown on terminal. **Don't press 'Y' yet.** See the [Filling the mappings](##filling-the-mappings) section 
+    on for more details about the mappings
+        
+3. Default output folder is a folder named `output` inside the `ros_upgrader`. However you can also specify a custom 
+    output directory as an argument to the script. This folder, either default or custom, will have a folder with unique name 
+    `currData_currTime`(e.g. 2019-07-15_20_30_55). This folder will contain the package migrated to ROS2 
 
-3. Run `./run_colcon_build`: This will create a copy of the ROS1 package inside `ROS2_OUTPUT_DIR` and compile it with 
-`-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`
-
-4. On successful run `All mappings filled? Press 'Y' to continue or any other key to abort` will be shown on terminal.
-That means compilation was successful. **Don't press 'Y' yet.**
-
-5. [TODO: This step should be an interactive part of the tool.] Open `mappings.json` file in editor of choice. Each key in the file, it contains a list named `NEW_TOKENS_LIST`. If 
-it is not empty, then update the `ros2_name` field for all of the objects in the list. All elements from `NEW_TOKENS_LIST`
-with value for `ros2_name` as `ros2_name??` will be moved to `IRRELEVANT_TOKENS` so that it don't appear in `NEW_TOKENS_LIST` again.
+## Filling the mappings
+- Open `mappings/new_tokens.json` file in editor of choice. 
+- Each key in the file contains a list named. If the list is not empty, then update the `ros2_name` field for all of the 
+objects in the list. All elements from the list with value for `ros2_name` as `ros2_name??` will be moved to `IRRELEVANT_TOKENS` 
+in the file `mapping/filtered_out_tokens.json` so that it don't appear in `NEW_TOKENS_LIST` again.
 Some key categories will also require some additional information which is explained below:
     - `CALL_EXPR`:
         - `node_arg_req`: This field will be inside `node_arg_info`. Change it to `true` if the function needs
@@ -42,15 +47,12 @@ Some key categories will also require some additional information which is expla
         - `member_name_if_true`: Name of the member function of ROS2 Node class if `node_arg_req` was changed to `true`
     - `VAR_DECL`:
         - `to_shared_ptr`: It should be true if the `var_type` is supposed to be `shared_ptr`, `false` otherwise  
+        - `to_be_removed`: It should be true if any var type needs to be removed
         
-    >Note: If there is no change in name from ROS1 to ROS2 but above fields like `node_arg_req` is changed, then change
-    the field `ros2_name` same as `ros1_name`, i.e. do change it from `ros2_name??` otherwise it will get added to the 
-    `IRRELEVANT_TOKENS` 
+>Note: If there is no change in name from ROS1 to ROS2 but above fields like `node_arg_req` is changed, then change
+the field `ros2_name` same as `ros1_name`, i.e. do change it from `ros2_name??` otherwise it will get added to the 
+`IRRELEVANT_TOKENS` 
     
-    >Note: If there is scope resolution included in `ros1_name`(e.g. `ros::ros1_token`), then only change the 
-    `ros1_token` to corresponding `ros2_token`. So `ros2_name` field would look like `ros::ros2_token`. Namespace change
-     will be taken care by `NAMESPACE_REF` category.
-        
-4. `ROS2_OUTPUT_DIR` will have a folder with unique name `currData_currTime`(e.g. 2019-07-15_20_30_55).
-    This folder will contain the `src` folder migrated to ROS2 
-
+>Note: If there is scope resolution included in `ros1_name`(e.g. `ros::ros1_token`), then only change the 
+`ros1_token` to corresponding `ros2_token`. So `ros2_name` field would look like `ros::ros2_token`. Namespace change
+ will be taken care by `NAMESPACE_REF` category.

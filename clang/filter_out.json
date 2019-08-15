@@ -1,11 +1,9 @@
 {
     "VAR_DECL": ["int", "char", "float", "double", "signed", "unsigned", "long", "short", "bool", "int8_t", "uint8_t",
-        "uint16_t", "uint32_t"
-    ],
+        "uint16_t", "uint32_t", "uint64_t"],
     "NAMESPACE_REF": ["std::", "boost::", "__gnu_cxx::", "::testing::"],
     "TYPE_QUALIFIER": ["const", "static", "volatile", "constexpr"],
     "INCLUSION_DIRECTIVE": ["iostream", "vector", "map", "unordered_map", "memory", "algorithm", "iterator", "string",
-        "sstream", "atomic", "mutex", "thread", "list", "chrono", "unordered_set"
-    ],
+        "sstream", "atomic", "mutex", "thread", "list", "chrono", "unordered_set"],
     "ROS_VERSIONS": ["kinetic", "melodic"]
 }

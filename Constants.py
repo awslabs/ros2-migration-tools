@@ -35,7 +35,7 @@ class Constants:
     ROS_1_NAME = "ros1_name"
     ROS_2_NAME = "ros2_name"
     CONFIG_FILE_NAME = "config.json"
-    LIBCLANG_PATH = "LIBCLANG_PATH"
+    LIBCLANG_PATH = "clang"
     COMPILE_DB_DIR = "COMPILE_DB_DIR"
     ROS1_SRC_PATH = "ROS1_SRC_PATH"
     ROS2_OUTPUT_DIR = "ROS2_OUTPUT_DIR"

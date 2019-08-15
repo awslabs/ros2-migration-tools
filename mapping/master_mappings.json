@@ -248,15 +248,6 @@
             "ros2_name": "ros::Publisher",
             "to_shared_ptr": true
         },
-        "ros::ServiceServer": {
-            "node_arg_info": {
-                "node_arg_index": -1,
-                "node_arg_req": false
-            },
-            "ros2_name": "ros::Service",
-            "to_be_removed": false,
-            "to_shared_ptr": true
-        },
         "ros::Subscriber": {
             "node_arg_info": {
                 "node_arg_index": -1,
