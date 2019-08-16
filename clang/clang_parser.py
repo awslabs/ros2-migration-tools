@@ -25,7 +25,7 @@ import re
 
 import clang.cindex as clang
 
-from Constants import AstConstants, Constants, RosConstants
+from Constants import AstConstants, ClangTokenKind, Constants, RosConstants
 from utilities import Utilities
 
 CK = clang.CursorKind
@@ -37,8 +37,25 @@ class CppAstParser(object):
     """
     lib_path = None  # path to folder containing libclang.so
     includes = None  # standard includes folder
-    filter_out = Utilities.read_json_file(os.path.join("clang", Constants.FILTER_OUT_FILE_PATH))
+    filter_out = None
     token_hash = set()
+
+    READABLE_TOKEN_KIND = {
+        ClangTokenKind.CALL_EXPR: AstConstants.CALL_EXPR,
+        ClangTokenKind.CONVERSION_FUNCTION: AstConstants.CONVERSION_FUNCTION,
+        ClangTokenKind.INCLUSION_DIRECTIVE: AstConstants.INCLUSION_DIRECTIVE,
+        ClangTokenKind.MACRO_INSTANTIATION: AstConstants.MACRO_INSTANTIATION,
+        ClangTokenKind.NAMESPACE_REF: AstConstants.NAMESPACE_REF,
+        ClangTokenKind.PARM_DECL: AstConstants.PARM_DECL,
+        ClangTokenKind.VAR_DECL: AstConstants.VAR_DECL,
+        ClangTokenKind.MEMBER_REF_EXPR: AstConstants.MEMBER_REF_EXPR,
+        ClangTokenKind.TYPE_REF: AstConstants.TYPE_REF,
+        ClangTokenKind.DECL_REF_EXPR: AstConstants.DECL_REF_EXPR,
+        ClangTokenKind.FUNCTION_DECL: AstConstants.FUNCTION_DECL,
+        ClangTokenKind.CXX_METHOD: AstConstants.CXX_METHOD,
+        ClangTokenKind.FIELD_DECL: AstConstants.FIELD_DECL,
+        ClangTokenKind.CLASS_DECL: AstConstants.CLASS_DECL
+    }
 
     @classmethod
     def set_library_path(cls, lib_path="/usr/lib/llvm-3.8/lib"):
@@ -47,6 +64,7 @@ class CppAstParser(object):
         :param lib_path: path to folder containing libclang.so
         :return: None
         """
+        cls.filter_out = Utilities.read_json_file(Utilities.get_abs_path(os.path.join("clang", Constants.FILTER_OUT_FILE_PATH)))
         clang.Config.set_library_path(lib_path)
         cls.lib_path = lib_path
 
@@ -94,8 +112,7 @@ class CppAstParser(object):
                 if diagnostic.severity >= clang.Diagnostic.Error:
                     logging.warning(diagnostic.spelling)
 
-    @staticmethod
-    def _cursor_obj(cursor):
+    def _cursor_obj(self, cursor):
         """
         Returns dict containing token information
         :param cursor: clang cursor to get the informations from
@@ -117,6 +134,9 @@ class CppAstParser(object):
         except AttributeError as e:
             pass
         name = repr(cursor.kind)[11:]
+        if name in CppAstParser.READABLE_TOKEN_KIND:
+            name = CppAstParser.READABLE_TOKEN_KIND[name]
+
         spell = cursor.spelling or AstConstants.NO_SPELLING
 
         if spell != AstConstants.NO_SPELLING:
@@ -221,7 +241,6 @@ class CppAstParser(object):
         :param ast_obj: dict of token categories
         :return: None
         """
-
         # check for duplicates
         curr_obj_hash = hash(json.dumps(curr_obj, sort_keys=True))
         if curr_obj_hash in CppAstParser.token_hash:

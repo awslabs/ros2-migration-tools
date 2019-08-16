@@ -98,12 +98,12 @@ class TestCPPSourceCodePorterTalker(unittest.TestCase):
 # file paths as mentioned in the `ast_dump_lex_node.json` file, will not be used for file reading purpose
 # as the path is system specific
 LEX_NODE_FILE_LIST = [
-    u'/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_lex_node/src/lex-ros1/lex_node/src/main.cpp',
-    u'/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_lex_node/src/lex-ros1/lex_node/src/lex_node.cpp',
-    u'/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_lex_node/src/lex-ros1/lex_node/include/lex_node/lex_node.h',
-    u'/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_lex_node/src/lex-ros1/lex_node/src/lex_param_helper.cpp',
-    u'/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_lex_node/src/lex-ros1/lex_node/include/lex_node/lex_configuration.h',
-    u'/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_lex_node/src/lex-ros1/lex_node/include/lex_node/lex_param_helper.h'
+    u'/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_lex_node/lex_node/src/main.cpp',
+    u'/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_lex_node/lex_node/src/lex_node.cpp',
+    u'/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_lex_node/lex_node/include/lex_node/lex_node.h',
+    u'/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_lex_node/lex_node/src/lex_param_helper.cpp',
+    u'/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_lex_node/lex_node/include/lex_node/lex_configuration.h',
+    u'/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_lex_node/lex_node/include/lex_node/lex_param_helper.h'
 ]
 
 
@@ -169,7 +169,7 @@ class TestCPPSourceCodePorterLexNodeLexNodeCPP(unittest.TestCase):
         source = 'bool LexNode::LexServerCallback(lex_common_msgs::AudioTextConversationRequest & request,\n' \
                  'lex_common_msgs::AudioTextConversationResponse & response)'
 
-        result = 'bool LexNode::LexServerCallback(std::shared_ptr<lex_common_msgs::srv::AudioTextConversation::Request> & request,\n' \
+        result = 'bool LexNode::LexServerCallback(std::shared_ptr<lex_common_msgs::srv::AudioTextConversation::Request> request,\n' \
                  'lex_common_msgs::AudioTextConversationResponse & response)'
 
         self.assertEqual(self.cpp_porter.rule_replace_parm_decl(source, 199,

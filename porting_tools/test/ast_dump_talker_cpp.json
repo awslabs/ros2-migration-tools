@@ -1,222 +1,4 @@
 {
-    "BINARY_OPERATOR": [],
-    "CALL_EXPR": [
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/ros/rate.h",
-            "kind": "CALL_EXPR",
-            "line": 31,
-            "line_tokens": [
-                "loop_rate",
-                ".",
-                "sleep",
-                "(",
-                ")"
-            ],
-            "name": "sleep",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 22,
-            "token_start_col": 5,
-            "var_type": "bool"
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/ros/init.h",
-            "kind": "CALL_EXPR",
-            "line": 29,
-            "line_tokens": [
-                "ros",
-                "::",
-                "spinOnce",
-                "(",
-                ")"
-            ],
-            "name": "spinOnce",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 20,
-            "token_start_col": 5,
-            "var_type": "void"
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/ros/publisher.h",
-            "kind": "CALL_EXPR",
-            "line": 27,
-            "line_tokens": [
-                "chatter_pub",
-                ".",
-                "publish",
-                "(",
-                "msg",
-                ")"
-            ],
-            "name": "publish",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 29,
-            "token_start_col": 5,
-            "var_type": "void"
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/ros/console.h",
-            "kind": "CALL_EXPR",
-            "line": 25,
-            "line_tokens": [],
-            "name": "print",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 39,
-            "token_start_col": 5,
-            "var_type": "void"
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/ros/console.h",
-            "kind": "CALL_EXPR",
-            "line": 25,
-            "line_tokens": [],
-            "name": "checkLogLocationEnabled",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 39,
-            "token_start_col": 5,
-            "var_type": "void"
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/ros/console.h",
-            "kind": "CALL_EXPR",
-            "line": 25,
-            "line_tokens": [],
-            "name": "setLogLocationLevel",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 39,
-            "token_start_col": 5,
-            "var_type": "void"
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/ros/console.h",
-            "kind": "CALL_EXPR",
-            "line": 25,
-            "line_tokens": [],
-            "name": "initializeLogLocation",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 39,
-            "token_start_col": 5,
-            "var_type": "void"
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/ros/console.h",
-            "kind": "CALL_EXPR",
-            "line": 25,
-            "line_tokens": [],
-            "name": "initialize",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 39,
-            "token_start_col": 5,
-            "var_type": "void"
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/ros/init.h",
-            "kind": "CALL_EXPR",
-            "line": 18,
-            "line_tokens": [
-                "ros",
-                "::",
-                "ok",
-                "(",
-                ")"
-            ],
-            "name": "ok",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 19,
-            "token_start_col": 10,
-            "var_type": "bool"
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/std_msgs/String.h",
-            "kind": "CALL_EXPR",
-            "line": 16,
-            "line_tokens": [
-                "msg"
-            ],
-            "name": "String_",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 23,
-            "token_start_col": 20,
-            "var_type": "std_msgs::String"
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/ros/rate.h",
-            "kind": "CALL_EXPR",
-            "line": 12,
-            "line_tokens": [
-                "loop_rate",
-                "(",
-                "10",
-                ")"
-            ],
-            "name": "Rate",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 26,
-            "token_start_col": 13,
-            "var_type": "ros::Rate"
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/ros/node_handle.h",
-            "kind": "CALL_EXPR",
-            "line": 10,
-            "line_tokens": [
-                "node",
-                ".",
-                "advertise",
-                "<",
-                "std_msgs",
-                "::",
-                "String",
-                ">",
-                "(",
-                "\"chatter\"",
-                ",",
-                "1000",
-                ")"
-            ],
-            "name": "advertise",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 81,
-            "token_start_col": 32,
-            "var_type": "ros::Publisher"
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/ros/node_handle.h",
-            "kind": "CALL_EXPR",
-            "line": 8,
-            "line_tokens": [
-                "node"
-            ],
-            "name": "NodeHandle",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 23,
-            "token_start_col": 19,
-            "var_type": "ros::NodeHandle"
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/ros/init.h",
-            "kind": "CALL_EXPR",
-            "line": 6,
-            "line_tokens": [
-                "ros",
-                "::",
-                "init",
-                "(",
-                "argc",
-                ",",
-                "argv",
-                ",",
-                "\"talker\"",
-                ")"
-            ],
-            "name": "init",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 34,
-            "token_start_col": 3,
-            "var_type": "void"
-        }
-    ],
-    "COMPOUND_STMT": [],
-    "CXX_BOOL_LITERAL_EXPR": [],
     "DECL_REF_EXPR": [
         {
             "declaration_filepath": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
@@ -297,17 +79,6 @@
             "var_type": "::ros::console::LogLocation"
         },
         {
-            "declaration_filepath": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "kind": "DECL_REF_EXPR",
-            "line": 25,
-            "line_tokens": [],
-            "name": "__rosconsole_define_location__loc",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 39,
-            "token_start_col": 5,
-            "var_type": "::ros::console::LogLocation"
-        },
-        {
             "declaration_filepath": "/opt/ros/kinetic/include/ros/console.h",
             "kind": "DECL_REF_EXPR",
             "line": 25,
@@ -330,28 +101,6 @@
             "token_end_col": 5,
             "token_start_col": 5,
             "var_type": "bool"
-        },
-        {
-            "declaration_filepath": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "kind": "DECL_REF_EXPR",
-            "line": 25,
-            "line_tokens": [],
-            "name": "__rosconsole_define_location__loc",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 39,
-            "token_start_col": 5,
-            "var_type": "::ros::console::LogLocation"
-        },
-        {
-            "declaration_filepath": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "kind": "DECL_REF_EXPR",
-            "line": 25,
-            "line_tokens": [],
-            "name": "__rosconsole_define_location__loc",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 39,
-            "token_start_col": 5,
-            "var_type": "::ros::console::LogLocation"
         },
         {
             "declaration_filepath": "/opt/ros/kinetic/include/ros/console.h",
@@ -385,17 +134,6 @@
             "var_type": "ros::console::levels::Level"
         },
         {
-            "declaration_filepath": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "kind": "DECL_REF_EXPR",
-            "line": 25,
-            "line_tokens": [],
-            "name": "__rosconsole_define_location__loc",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 39,
-            "token_start_col": 5,
-            "var_type": "::ros::console::LogLocation"
-        },
-        {
             "declaration_filepath": "/opt/ros/kinetic/include/ros/console.h",
             "kind": "DECL_REF_EXPR",
             "line": 25,
@@ -407,26 +145,6 @@
             "var_type": "void (ros::console::LogLocation *, ros::console::Level)"
         },
         {
-            "declaration_filepath": "/opt/ros/kinetic/include/ros/console_backend.h",
-            "kind": "DECL_REF_EXPR",
-            "line": 25,
-            "line_tokens": [
-                "::",
-                "ros",
-                "::",
-                "console",
-                "::",
-                "levels",
-                "::",
-                "Info"
-            ],
-            "name": "Info",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 5,
-            "token_start_col": 5,
-            "var_type": "ros::console::levels::Level"
-        },
-        {
             "declaration_filepath": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
             "kind": "DECL_REF_EXPR",
             "line": 25,
@@ -436,37 +154,6 @@
             "name": "__rosconsole_define_location__loc",
             "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
             "token_end_col": 5,
-            "token_start_col": 5,
-            "var_type": "::ros::console::LogLocation"
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/ros/console_backend.h",
-            "kind": "DECL_REF_EXPR",
-            "line": 25,
-            "line_tokens": [
-                "::",
-                "ros",
-                "::",
-                "console",
-                "::",
-                "levels",
-                "::",
-                "Info"
-            ],
-            "name": "Info",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 5,
-            "token_start_col": 5,
-            "var_type": "ros::console::levels::Level"
-        },
-        {
-            "declaration_filepath": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "kind": "DECL_REF_EXPR",
-            "line": 25,
-            "line_tokens": [],
-            "name": "__rosconsole_define_location__loc",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 39,
             "token_start_col": 5,
             "var_type": "::ros::console::LogLocation"
         },
@@ -480,19 +167,6 @@
             "token_end_col": 39,
             "token_start_col": 5,
             "var_type": "void (ros::console::LogLocation *, const std::string &, ros::console::Level)"
-        },
-        {
-            "declaration_filepath": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "kind": "DECL_REF_EXPR",
-            "line": 25,
-            "line_tokens": [
-                "__rosconsole_define_location__loc"
-            ],
-            "name": "__rosconsole_define_location__loc",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 5,
-            "token_start_col": 5,
-            "var_type": "::ros::console::LogLocation"
         },
         {
             "declaration_filepath": "/opt/ros/kinetic/include/ros/console_backend.h",
@@ -656,8 +330,221 @@
             "var_type": "void (int &, char **, const std::string &, uint32_t)"
         }
     ],
-    "DECL_STMT": [],
-    "DO_STMT": [],
+    "FUNCTION_CALL": [
+        {
+            "declaration_filepath": "/opt/ros/kinetic/include/ros/rate.h",
+            "kind": "FUNCTION_CALL",
+            "line": 31,
+            "line_tokens": [
+                "loop_rate",
+                ".",
+                "sleep",
+                "(",
+                ")"
+            ],
+            "name": "sleep",
+            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
+            "token_end_col": 22,
+            "token_start_col": 5,
+            "var_type": "bool"
+        },
+        {
+            "declaration_filepath": "/opt/ros/kinetic/include/ros/init.h",
+            "kind": "FUNCTION_CALL",
+            "line": 29,
+            "line_tokens": [
+                "ros",
+                "::",
+                "spinOnce",
+                "(",
+                ")"
+            ],
+            "name": "spinOnce",
+            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
+            "token_end_col": 20,
+            "token_start_col": 5,
+            "var_type": "void"
+        },
+        {
+            "declaration_filepath": "/opt/ros/kinetic/include/ros/publisher.h",
+            "kind": "FUNCTION_CALL",
+            "line": 27,
+            "line_tokens": [
+                "chatter_pub",
+                ".",
+                "publish",
+                "(",
+                "msg",
+                ")"
+            ],
+            "name": "publish",
+            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
+            "token_end_col": 29,
+            "token_start_col": 5,
+            "var_type": "void"
+        },
+        {
+            "declaration_filepath": "/opt/ros/kinetic/include/ros/console.h",
+            "kind": "FUNCTION_CALL",
+            "line": 25,
+            "line_tokens": [],
+            "name": "print",
+            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
+            "token_end_col": 39,
+            "token_start_col": 5,
+            "var_type": "void"
+        },
+        {
+            "declaration_filepath": "/opt/ros/kinetic/include/ros/console.h",
+            "kind": "FUNCTION_CALL",
+            "line": 25,
+            "line_tokens": [],
+            "name": "checkLogLocationEnabled",
+            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
+            "token_end_col": 39,
+            "token_start_col": 5,
+            "var_type": "void"
+        },
+        {
+            "declaration_filepath": "/opt/ros/kinetic/include/ros/console.h",
+            "kind": "FUNCTION_CALL",
+            "line": 25,
+            "line_tokens": [],
+            "name": "setLogLocationLevel",
+            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
+            "token_end_col": 39,
+            "token_start_col": 5,
+            "var_type": "void"
+        },
+        {
+            "declaration_filepath": "/opt/ros/kinetic/include/ros/console.h",
+            "kind": "FUNCTION_CALL",
+            "line": 25,
+            "line_tokens": [],
+            "name": "initializeLogLocation",
+            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
+            "token_end_col": 39,
+            "token_start_col": 5,
+            "var_type": "void"
+        },
+        {
+            "declaration_filepath": "/opt/ros/kinetic/include/ros/console.h",
+            "kind": "FUNCTION_CALL",
+            "line": 25,
+            "line_tokens": [],
+            "name": "initialize",
+            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
+            "token_end_col": 39,
+            "token_start_col": 5,
+            "var_type": "void"
+        },
+        {
+            "declaration_filepath": "/opt/ros/kinetic/include/ros/init.h",
+            "kind": "FUNCTION_CALL",
+            "line": 18,
+            "line_tokens": [
+                "ros",
+                "::",
+                "ok",
+                "(",
+                ")"
+            ],
+            "name": "ok",
+            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
+            "token_end_col": 19,
+            "token_start_col": 10,
+            "var_type": "bool"
+        },
+        {
+            "declaration_filepath": "/opt/ros/kinetic/include/std_msgs/String.h",
+            "kind": "FUNCTION_CALL",
+            "line": 16,
+            "line_tokens": [
+                "msg"
+            ],
+            "name": "String_",
+            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
+            "token_end_col": 23,
+            "token_start_col": 20,
+            "var_type": "std_msgs::String"
+        },
+        {
+            "declaration_filepath": "/opt/ros/kinetic/include/ros/rate.h",
+            "kind": "FUNCTION_CALL",
+            "line": 12,
+            "line_tokens": [
+                "loop_rate",
+                "(",
+                "10",
+                ")"
+            ],
+            "name": "Rate",
+            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
+            "token_end_col": 26,
+            "token_start_col": 13,
+            "var_type": "ros::Rate"
+        },
+        {
+            "declaration_filepath": "/opt/ros/kinetic/include/ros/node_handle.h",
+            "kind": "FUNCTION_CALL",
+            "line": 10,
+            "line_tokens": [
+                "node",
+                ".",
+                "advertise",
+                "<",
+                "std_msgs",
+                "::",
+                "String",
+                ">",
+                "(",
+                "\"chatter\"",
+                ",",
+                "1000",
+                ")"
+            ],
+            "name": "advertise",
+            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
+            "token_end_col": 81,
+            "token_start_col": 32,
+            "var_type": "ros::Publisher"
+        },
+        {
+            "declaration_filepath": "/opt/ros/kinetic/include/ros/node_handle.h",
+            "kind": "FUNCTION_CALL",
+            "line": 8,
+            "line_tokens": [
+                "node"
+            ],
+            "name": "NodeHandle",
+            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
+            "token_end_col": 23,
+            "token_start_col": 19,
+            "var_type": "ros::NodeHandle"
+        },
+        {
+            "declaration_filepath": "/opt/ros/kinetic/include/ros/init.h",
+            "kind": "FUNCTION_CALL",
+            "line": 6,
+            "line_tokens": [
+                "ros",
+                "::",
+                "init",
+                "(",
+                "argc",
+                ",",
+                "argv",
+                ",",
+                "\"talker\"",
+                ")"
+            ],
+            "name": "init",
+            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
+            "token_end_col": 34,
+            "token_start_col": 3,
+            "var_type": "void"
+        }
+    ],
     "FUNCTION_DECL": [
         {
             "declaration_filepath": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
@@ -805,28 +692,10 @@
             "var_type": "int (int, char **)"
         }
     ],
-    "IF_STMT": [],
-    "INCLUSION_DIRECTIVE": [
+    "HEADER_FILE": [
         {
             "declaration_filepath": "",
-            "kind": "INCLUSION_DIRECTIVE",
-            "line": 1,
-            "line_tokens": [
-                "#",
-                "include",
-                "<",
-                "sstream",
-                ">"
-            ],
-            "name": "sstream",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 19,
-            "token_start_col": 1,
-            "var_type": ""
-        },
-        {
-            "declaration_filepath": "",
-            "kind": "INCLUSION_DIRECTIVE",
+            "kind": "HEADER_FILE",
             "line": 2,
             "line_tokens": [
                 "#",
@@ -841,7 +710,7 @@
         },
         {
             "declaration_filepath": "",
-            "kind": "INCLUSION_DIRECTIVE",
+            "kind": "HEADER_FILE",
             "line": 3,
             "line_tokens": [
                 "#",
@@ -855,12 +724,10 @@
             "var_type": ""
         }
     ],
-    "INIT_LIST_EXPR": [],
-    "INTEGER_LITERAL": [],
-    "MACRO_INSTANTIATION": [
+    "MACRO_DEFINITION": [
         {
             "declaration_filepath": "/opt/ros/kinetic/include/rosconsole/macros_generated.h",
-            "kind": "MACRO_INSTANTIATION",
+            "kind": "MACRO_DEFINITION",
             "line": 25,
             "line_tokens": [
                 "ROS_INFO",
@@ -1028,10 +895,10 @@
             "var_type": "<bound member function type>"
         }
     ],
-    "NAMESPACE_REF": [
+    "NAMESPACE": [
         {
             "declaration_filepath": "/opt/ros/kinetic/include/std_msgs/String.h",
-            "kind": "NAMESPACE_REF",
+            "kind": "NAMESPACE",
             "line": 29,
             "line_tokens": [
                 "ros"
@@ -1044,7 +911,7 @@
         },
         {
             "declaration_filepath": "/opt/ros/kinetic/include/ros/console.h",
-            "kind": "NAMESPACE_REF",
+            "kind": "NAMESPACE",
             "line": 25,
             "line_tokens": [],
             "name": "console",
@@ -1055,7 +922,7 @@
         },
         {
             "declaration_filepath": "/opt/ros/kinetic/include/std_msgs/String.h",
-            "kind": "NAMESPACE_REF",
+            "kind": "NAMESPACE",
             "line": 25,
             "line_tokens": [],
             "name": "ros",
@@ -1066,7 +933,7 @@
         },
         {
             "declaration_filepath": "/opt/ros/kinetic/include/ros/console_backend.h",
-            "kind": "NAMESPACE_REF",
+            "kind": "NAMESPACE",
             "line": 25,
             "line_tokens": [
                 "levels"
@@ -1079,7 +946,7 @@
         },
         {
             "declaration_filepath": "/opt/ros/kinetic/include/ros/console.h",
-            "kind": "NAMESPACE_REF",
+            "kind": "NAMESPACE",
             "line": 25,
             "line_tokens": [
                 "console"
@@ -1092,7 +959,7 @@
         },
         {
             "declaration_filepath": "/opt/ros/kinetic/include/std_msgs/String.h",
-            "kind": "NAMESPACE_REF",
+            "kind": "NAMESPACE",
             "line": 25,
             "line_tokens": [
                 "ros"
@@ -1105,85 +972,7 @@
         },
         {
             "declaration_filepath": "/opt/ros/kinetic/include/ros/console_backend.h",
-            "kind": "NAMESPACE_REF",
-            "line": 25,
-            "line_tokens": [
-                "levels"
-            ],
-            "name": "levels",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 5,
-            "token_start_col": 5,
-            "var_type": ""
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/ros/console.h",
-            "kind": "NAMESPACE_REF",
-            "line": 25,
-            "line_tokens": [
-                "console"
-            ],
-            "name": "console",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 5,
-            "token_start_col": 5,
-            "var_type": ""
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/std_msgs/String.h",
-            "kind": "NAMESPACE_REF",
-            "line": 25,
-            "line_tokens": [
-                "ros"
-            ],
-            "name": "ros",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 5,
-            "token_start_col": 5,
-            "var_type": ""
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/ros/console_backend.h",
-            "kind": "NAMESPACE_REF",
-            "line": 25,
-            "line_tokens": [
-                "levels"
-            ],
-            "name": "levels",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 5,
-            "token_start_col": 5,
-            "var_type": ""
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/ros/console.h",
-            "kind": "NAMESPACE_REF",
-            "line": 25,
-            "line_tokens": [
-                "console"
-            ],
-            "name": "console",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 5,
-            "token_start_col": 5,
-            "var_type": ""
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/std_msgs/String.h",
-            "kind": "NAMESPACE_REF",
-            "line": 25,
-            "line_tokens": [
-                "ros"
-            ],
-            "name": "ros",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 5,
-            "token_start_col": 5,
-            "var_type": ""
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/ros/console_backend.h",
-            "kind": "NAMESPACE_REF",
+            "kind": "NAMESPACE",
             "line": 25,
             "line_tokens": [],
             "name": "levels",
@@ -1193,100 +982,8 @@
             "var_type": ""
         },
         {
-            "declaration_filepath": "/opt/ros/kinetic/include/ros/console.h",
-            "kind": "NAMESPACE_REF",
-            "line": 25,
-            "line_tokens": [],
-            "name": "console",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 39,
-            "token_start_col": 5,
-            "var_type": ""
-        },
-        {
             "declaration_filepath": "/opt/ros/kinetic/include/std_msgs/String.h",
-            "kind": "NAMESPACE_REF",
-            "line": 25,
-            "line_tokens": [],
-            "name": "ros",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 39,
-            "token_start_col": 5,
-            "var_type": ""
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/ros/console.h",
-            "kind": "NAMESPACE_REF",
-            "line": 25,
-            "line_tokens": [],
-            "name": "console",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 39,
-            "token_start_col": 5,
-            "var_type": ""
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/std_msgs/String.h",
-            "kind": "NAMESPACE_REF",
-            "line": 25,
-            "line_tokens": [],
-            "name": "ros",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 39,
-            "token_start_col": 5,
-            "var_type": ""
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/ros/console.h",
-            "kind": "NAMESPACE_REF",
-            "line": 25,
-            "line_tokens": [],
-            "name": "console",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 39,
-            "token_start_col": 5,
-            "var_type": ""
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/std_msgs/String.h",
-            "kind": "NAMESPACE_REF",
-            "line": 25,
-            "line_tokens": [],
-            "name": "ros",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 39,
-            "token_start_col": 5,
-            "var_type": ""
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/ros/console.h",
-            "kind": "NAMESPACE_REF",
-            "line": 25,
-            "line_tokens": [
-                "console"
-            ],
-            "name": "console",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 5,
-            "token_start_col": 5,
-            "var_type": ""
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/std_msgs/String.h",
-            "kind": "NAMESPACE_REF",
-            "line": 25,
-            "line_tokens": [
-                "ros"
-            ],
-            "name": "ros",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 5,
-            "token_start_col": 5,
-            "var_type": ""
-        },
-        {
-            "declaration_filepath": "/opt/ros/kinetic/include/std_msgs/String.h",
-            "kind": "NAMESPACE_REF",
+            "kind": "NAMESPACE",
             "line": 18,
             "line_tokens": [
                 "ros"
@@ -1299,7 +996,7 @@
         },
         {
             "declaration_filepath": "/opt/ros/kinetic/include/std_msgs/String.h",
-            "kind": "NAMESPACE_REF",
+            "kind": "NAMESPACE",
             "line": 16,
             "line_tokens": [
                 "std_msgs"
@@ -1312,7 +1009,7 @@
         },
         {
             "declaration_filepath": "/opt/ros/kinetic/include/std_msgs/String.h",
-            "kind": "NAMESPACE_REF",
+            "kind": "NAMESPACE",
             "line": 12,
             "line_tokens": [
                 "ros"
@@ -1325,7 +1022,7 @@
         },
         {
             "declaration_filepath": "/opt/ros/kinetic/include/std_msgs/String.h",
-            "kind": "NAMESPACE_REF",
+            "kind": "NAMESPACE",
             "line": 10,
             "line_tokens": [
                 "std_msgs"
@@ -1338,7 +1035,7 @@
         },
         {
             "declaration_filepath": "/opt/ros/kinetic/include/std_msgs/String.h",
-            "kind": "NAMESPACE_REF",
+            "kind": "NAMESPACE",
             "line": 10,
             "line_tokens": [
                 "ros"
@@ -1351,7 +1048,7 @@
         },
         {
             "declaration_filepath": "/opt/ros/kinetic/include/std_msgs/String.h",
-            "kind": "NAMESPACE_REF",
+            "kind": "NAMESPACE",
             "line": 8,
             "line_tokens": [
                 "ros"
@@ -1364,7 +1061,7 @@
         },
         {
             "declaration_filepath": "/opt/ros/kinetic/include/std_msgs/String.h",
-            "kind": "NAMESPACE_REF",
+            "kind": "NAMESPACE",
             "line": 6,
             "line_tokens": [
                 "ros"
@@ -1376,41 +1073,6 @@
             "var_type": ""
         }
     ],
-    "NULL_STMT": [],
-    "PAREN_EXPR": [],
-    "PARM_DECL": [
-        {
-            "declaration_filepath": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "kind": "PARM_DECL",
-            "line": 4,
-            "line_tokens": [
-                "char",
-                "*",
-                "*",
-                "argv"
-            ],
-            "name": "argv",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 31,
-            "token_start_col": 20,
-            "var_type": "char"
-        },
-        {
-            "declaration_filepath": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "kind": "PARM_DECL",
-            "line": 4,
-            "line_tokens": [
-                "int",
-                "argc"
-            ],
-            "name": "argc",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 18,
-            "token_start_col": 10,
-            "var_type": "int"
-        }
-    ],
-    "RETURN_STMT": [],
     "STRING_LITERAL": [
         {
             "declaration_filepath": "",
@@ -1576,7 +1238,6 @@
             "var_type": "ros::NodeHandle"
         }
     ],
-    "UNARY_OPERATOR": [],
     "UNEXPOSED_EXPR": [
         {
             "declaration_filepath": "/opt/ros/kinetic/include/ros/init.h",
@@ -1875,21 +1536,10 @@
             "var_type": "void (*)(int &, char **, const std::string &, uint32_t)"
         }
     ],
-    "VAR_DECL": [
+    "VARIABLE_TYPE": [
         {
             "declaration_filepath": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "kind": "VAR_DECL",
-            "line": 25,
-            "line_tokens": [],
-            "name": "__rosconsole_define_location__enabled",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 39,
-            "token_start_col": 5,
-            "var_type": "bool"
-        },
-        {
-            "declaration_filepath": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "kind": "VAR_DECL",
+            "kind": "VARIABLE_TYPE",
             "line": 25,
             "line_tokens": [],
             "name": "__rosconsole_define_location__loc",
@@ -1900,23 +1550,7 @@
         },
         {
             "declaration_filepath": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "kind": "VAR_DECL",
-            "line": 20,
-            "line_tokens": [
-                "std",
-                "::",
-                "stringstream",
-                "ss"
-            ],
-            "name": "ss",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 25,
-            "token_start_col": 5,
-            "var_type": "std::stringstream"
-        },
-        {
-            "declaration_filepath": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "kind": "VAR_DECL",
+            "kind": "VARIABLE_TYPE",
             "line": 16,
             "line_tokens": [
                 "std_msgs",
@@ -1932,23 +1566,7 @@
         },
         {
             "declaration_filepath": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "kind": "VAR_DECL",
-            "line": 14,
-            "line_tokens": [
-                "int",
-                "count",
-                "=",
-                "0"
-            ],
-            "name": "count",
-            "src_file_path": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "token_end_col": 16,
-            "token_start_col": 3,
-            "var_type": "int"
-        },
-        {
-            "declaration_filepath": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "kind": "VAR_DECL",
+            "kind": "VARIABLE_TYPE",
             "line": 12,
             "line_tokens": [
                 "ros",
@@ -1967,7 +1585,7 @@
         },
         {
             "declaration_filepath": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "kind": "VAR_DECL",
+            "kind": "VARIABLE_TYPE",
             "line": 10,
             "line_tokens": [
                 "ros",
@@ -1997,7 +1615,7 @@
         },
         {
             "declaration_filepath": "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp",
-            "kind": "VAR_DECL",
+            "kind": "VARIABLE_TYPE",
             "line": 8,
             "line_tokens": [
                 "ros",
@@ -2011,6 +1629,5 @@
             "token_start_col": 3,
             "var_type": "ros::NodeHandle"
         }
-    ],
-    "WHILE_STMT": []
+    ]
 }

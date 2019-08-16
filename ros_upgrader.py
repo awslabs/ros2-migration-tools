@@ -3,6 +3,7 @@ import copy
 import fnmatch
 import logging
 import os
+import sys
 import xml.etree.ElementTree as etree
 
 from clang.clang_parser import CppAstParser
@@ -15,12 +16,16 @@ from utilities import Utilities
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('-c', '--compile_db_paths', nargs='+',
-                    help='Path to folder containing compile_commands.json file. Can specify multiple paths',
-                    required=True)
+required_args = parser.add_argument_group('required arguments')
 
-parser.add_argument('-s', '--src_path', help='Path to the ROS1 package to port', required=True)
-parser.add_argument('-o', '--output_path', help='Output directory where the ported files will exist', default='output')
+required_args.add_argument('-c', '--compile_db_path', help='Path to compile_commands.json file. It should be inside build '
+                                                     'folder of ROS1 package', required=True)
+
+required_args.add_argument('-p', '--package_xml_path', help='Path to package.xml file of ROS1 package to port', required=True)
+
+parser.add_argument('-o', '--output_folder', help='Output directory where the ported files will exist',
+                    default=None)
+
 parser.add_argument('-m', '--mapping_file', help='Mapping file to which filled mappings will be added',
                     default=MappingConstants.MASTER_MAPPING_FILE_NAME)
 
@@ -46,16 +51,16 @@ class RosUpgrader:
 
     # path to the folder containing "compile_commands.json" file, will be generated using cmake flag
     # "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-    COMPILE_JSON_LIST = args.compile_db_paths
+    COMPILE_JSON_PATH = Utilities.get_parent_dir(Utilities.get_abs_path(args.compile_db_path))
 
     # folder to upgrade
-    SRC_PATH_TO_UPGRADE = args.src_path
+    SRC_PATH_TO_UPGRADE = Utilities.get_parent_dir(Utilities.get_abs_path(args.package_xml_path))
 
     # mappings file name to which filled mappings will be added
     MAPPING_FILE_NAME = args.mapping_file
 
     # output folder for the ported files
-    OUTPUT_PATH = None
+    OUTPUT_PATH = Utilities.get_abs_path(args.output_folder) if args.output_folder is not None else None
 
     # AST dict. Keys will be line numbers. Values will be dict with TOKEN_TYPES as keys and values will be the tokens
     AST_LINE_BY_LINE = {}
@@ -66,18 +71,16 @@ class RosUpgrader:
     }
 
     # dict containing list of filtered out token ids
-    irrelevant_tokens = Utilities.read_json_file(os.path.join(MappingConstants.MAPPING_FOLDER,
-                                                              MappingConstants.FILTERED_OUT_FILE_NAME))
+    irrelevant_tokens = None
 
     # dict containing consolidated mappings of all valid .json files in `mappings` folder
-    consolidated_mapping = Utilities.get_consolidated_mapping()
+    consolidated_mapping = None
 
     # flag to check if new mapping has been added to `new_tokens.json`
     new_mappings_added = False
 
     # template file for filled mappings
-    mapping_template = Utilities.read_json_file(os.path.join(MappingConstants.MAPPING_FOLDER,
-                                                             MappingConstants.MAPPING_TEMPLATE_FILE_NAME))
+    mapping_template = None
 
     # list containing src files to be migrated
     src_file_list = []
@@ -88,13 +91,25 @@ class RosUpgrader:
         Initializes CppAstParser and Clang. Stores various config paths to be used later
         :return: None
         """
+
+        os.chdir(os.path.dirname(Utilities.get_abs_path(sys.argv[0])))
+
         current_run_id = Utilities.get_uniquie_id()
         logging.basicConfig(filename=os.path.join('logs', 'ros_upgrader_' + current_run_id + '.log'),
                             filemode='w',
                             format='%(name)s - %(levelname)s - %(message)s',
                             level=logging.DEBUG)
 
-        RosUpgrader.OUTPUT_PATH = os.path.join(Utilities.get_abs_path(args.output_path), Utilities.get_uniquie_id())
+        RosUpgrader.OUTPUT_PATH = RosUpgrader.OUTPUT_PATH if RosUpgrader.OUTPUT_PATH is not None \
+            else os.path.join(Utilities.get_abs_path(Constants.DEFAULT_OUTPUT_FOLDER), Utilities.get_uniquie_id())
+
+        RosUpgrader.irrelevant_tokens = Utilities.read_json_file(os.path.join(MappingConstants.MAPPING_FOLDER,
+                                                                              MappingConstants.FILTERED_OUT_FILE_NAME))
+
+        RosUpgrader.consolidated_mapping = Utilities.get_consolidated_mapping()
+
+        RosUpgrader.mapping_template = Utilities.read_json_file(os.path.join(MappingConstants.MAPPING_FOLDER,
+                                                                MappingConstants.MAPPING_TEMPLATE_FILE_NAME))
 
         CppAstParser.set_library_path(Utilities.get_abs_path(Constants.LIBCLANG_PATH))
         CppAstParser.set_standard_includes(os.path.join(Utilities.get_abs_path(Constants.LIBCLANG_PATH), "include"))
@@ -236,9 +251,11 @@ class RosUpgrader:
         added as new mapping
         :return: None
         """
+        print("\nCreating AST...", end='')
         ast_dict = RosUpgrader.get_ast_as_json(compile_db_path)
         Utilities.merge_ast_dict(RosUpgrader.AST_DICT[AstConstants.NON_UNIT_TEST], ast_dict[AstConstants.NON_UNIT_TEST])
         Utilities.merge_ast_dict(RosUpgrader.AST_DICT[AstConstants.UNIT_TEST], ast_dict[AstConstants.UNIT_TEST])
+        print("COMPLETE")
 
         Utilities.merge_ast_line_dict(RosUpgrader.AST_LINE_BY_LINE,
                                       Utilities.store_ast_line_by_line(RosUpgrader.AST_DICT[AstConstants.NON_UNIT_TEST]))
@@ -247,6 +264,7 @@ class RosUpgrader:
 
         irrelevant_tokens = set(RosUpgrader.irrelevant_tokens[MappingConstants.IRRELEVANT_TOKENS])
 
+        print("\nAdding unknown tokens to `new_tokens.json`...", end='')
         for token_type in Constants.TOKEN_TYPES:
             for ast_category in RosUpgrader.AST_DICT:
                 if token_type in RosUpgrader.AST_DICT[ast_category]:
@@ -269,6 +287,7 @@ class RosUpgrader:
                         else:
                             if token_type == AstConstants.USING_DIRECTIVE:
                                 pass
+        print("COMPLETE")
 
     @staticmethod
     def get_output_filepath(file_path):
@@ -361,29 +380,52 @@ class RosUpgrader:
         return False
 
     @staticmethod
-    def start_upgrade(new_mappings):
+    def start_upgrade():
         """
         Calls functions required for the upgrade process
-        :param new_mappings: new mappings json to be filled by user
         :return: None
         """
+        print("\nConverting cmake files...", end='')
         RosUpgrader.convert_all_cmake()
+        print("COMPLETE")
+
+        print("\nConverting package.xml files...", end=''),
         RosUpgrader.convert_all_package_xml()
+        print("COMPLETE")
+
+        new_mappings = Utilities.get_new_tokens_template()
+        already_added_mappings = {}
+
+        RosUpgrader.add_new_mappings(RosUpgrader.COMPILE_JSON_PATH, new_mappings, already_added_mappings)
+
+        if is_debugging():
+            Utilities.write_as_json("ast_dump_" + AstConstants.NON_UNIT_TEST + ".json",
+                                    RosUpgrader.AST_DICT[AstConstants.NON_UNIT_TEST])
+            Utilities.write_as_json("ast_dump_" + AstConstants.UNIT_TEST + ".json",
+                                    RosUpgrader.AST_DICT[AstConstants.UNIT_TEST])
 
         RosUpgrader.new_mappings_added = RosUpgrader.check_if_new_mappings_added(new_mappings)
 
         if RosUpgrader.new_mappings_added:
+
             Utilities.write_as_json(os.path.join(MappingConstants.MAPPING_FOLDER, MappingConstants.NEW_TOKENS_FILE_NAME),
                                     new_mappings)
-            prompt = str(input("Open mappings/new_tokens.json and fill the mappings. "
+            prompt = str(input("Open `mappings/new_tokens.json` and fill the mappings. "
                                "Press 'Y' to continue or any other key to abort: "))
             if prompt == 'Y':
+                print("\nAdding the filled mappings to: " + RosUpgrader.MAPPING_FILE_NAME)
+                print("\nAdding the unchanged tokens from `new_tokens.json` to `filetered_out_tokens.json`")
                 RosUpgrader.add_filled_mappings()
+
+                print("\nMigrating source files...", end=''),
                 RosUpgrader.convert_all_source_files()
+                print("COMPLETE")
             else:
                 print("Aborting...")
         else:
+            print("\nNo new tokens added.\nMigrating source files...", end='')
             RosUpgrader.convert_all_source_files()
+            print("COMPLETE")
 
     def __init__(self):
         pass
@@ -396,19 +438,10 @@ def is_debugging():
 def main():
     RosUpgrader.init()
 
-    new_mappings = Utilities.get_new_tokens_template()
-
-    already_added_mappings = {}
-
-    for compile_json in RosUpgrader.COMPILE_JSON_LIST:
-        RosUpgrader.add_new_mappings(compile_json, new_mappings, already_added_mappings)
-
-    if is_debugging():
-        Utilities.write_as_json("ast_dump_" + AstConstants.NON_UNIT_TEST + ".json",
-                                RosUpgrader.AST_DICT[AstConstants.NON_UNIT_TEST])
-        Utilities.write_as_json("ast_dump_" + AstConstants.UNIT_TEST + ".json",
-                                RosUpgrader.AST_DICT[AstConstants.UNIT_TEST])
-    RosUpgrader.start_upgrade(new_mappings)
+    print("\nMigration started...")
+    RosUpgrader.start_upgrade()
+    print("\nMigration Complete.\n\nOutput Folder is: " + RosUpgrader.OUTPUT_PATH)
+    print("\nDiff file: " + RosUpgrader.OUTPUT_PATH + "/migration_diff.txt\n")
 
 
 if __name__ == '__main__':

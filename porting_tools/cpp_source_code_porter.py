@@ -13,6 +13,7 @@
 
 """ A class and method for porting ROS1 source code to ROS2 """
 import logging
+import os
 import re
 
 from clang.clang_parser import CppAstParser
@@ -49,6 +50,7 @@ class CPPSourceCodePorter:
             RosConstants.SERVICE_SERVER: self.get_ros_service_template,
             RosConstants.SUBSCRIBE: self.get_ros_subscribe_template
         }
+        self.filter_out = Utilities.read_json_file(Utilities.get_abs_path(os.path.join("clang", Constants.FILTER_OUT_FILE_PATH)))
 
     def port(self, source, mapping, ast):
         """
@@ -1082,7 +1084,7 @@ class CPPSourceCodePorter:
                         for arg in raw_arg_list:
 
                             # removing "const", "static" etc from beginning
-                            for qualifier in CppAstParser.filter_out[AstConstants.TYPE_QUALIFIER]:
+                            for qualifier in self.filter_out[AstConstants.TYPE_QUALIFIER]:
                                 pattern = qualifier + " "
                                 if arg.startswith(pattern):
                                     arg = arg[len(pattern):]

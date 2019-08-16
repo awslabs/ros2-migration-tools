@@ -1,16 +1,16 @@
 {
-    "CALL_EXPR": {
+    "FUNCTION_CALL": {
     },
-    "CONVERSION_FUNCTION": {
+    "TYPECAST_OPERATOR": {
     },
-    "INCLUSION_DIRECTIVE": {
+    "HEADER_FILE": {
     },
-    "MACRO_INSTANTIATION": {
+    "MACRO_DEFINITION": {
     },
-    "NAMESPACE_REF": {
+    "NAMESPACE": {
     },
-    "PARM_DECL": {
+    "FUNCTION_PARAMETER": {
     },
-    "VAR_DECL": {
+    "VARIABLE_TYPE": {
     }
 }
