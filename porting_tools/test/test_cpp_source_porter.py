@@ -19,7 +19,7 @@ class TestCPPSourceCodePorterTalker(unittest.TestCase):
 
         # file_path as mentioned in the `ast_dump_talker_cpp.json` file, will not be used for file reading purpose
         # as the path is system specific
-        cls.file_path_in_ast = "/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_talker/src/talker/talker.cpp"
+        cls.file_path_in_ast = "src/talker/talker.cpp"
         cls.cpp_porter = CPPSourceCodePorter(ast_dict, cls.file_path_in_ast)
 
     @classmethod
@@ -98,12 +98,12 @@ class TestCPPSourceCodePorterTalker(unittest.TestCase):
 # file paths as mentioned in the `ast_dump_lex_node.json` file, will not be used for file reading purpose
 # as the path is system specific
 LEX_NODE_FILE_LIST = [
-    u'/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_lex_node/lex_node/src/main.cpp',
-    u'/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_lex_node/lex_node/src/lex_node.cpp',
-    u'/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_lex_node/lex_node/include/lex_node/lex_node.h',
-    u'/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_lex_node/lex_node/src/lex_param_helper.cpp',
-    u'/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_lex_node/lex_node/include/lex_node/lex_configuration.h',
-    u'/opt/amanrja/Documents/ROS_2/upgraded_from_ros1/debug_lex_node/lex_node/include/lex_node/lex_param_helper.h'
+    u'src/main.cpp',
+    u'src/lex_node.cpp',
+    u'include/lex_node/lex_node.h',
+    u'src/lex_param_helper.cpp',
+    u'include/lex_node/lex_configuration.h',
+    u'include/lex_node/lex_param_helper.h'
 ]
 
 

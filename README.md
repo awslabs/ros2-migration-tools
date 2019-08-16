@@ -3,7 +3,8 @@
 This package contains tools to migrate a ROS1 package to ROS2 package. The "CMakeLists.txt" and "package.xml" migration 
 tools from [ros2-migration-tools](https://github.com/awslabs/ros2-migration-tools/tree/master/ros2_migration/porting_tools) 
 have been taken as it is. CPP source code migration uses [libclang8](http://releases.llvm.org/download.html) and its 
-corresponding [python bindings](https://github.com/llvm-mirror/clang/tree/release_80/bindings/python).
+corresponding [python bindings](https://github.com/llvm-mirror/clang/tree/release_80/bindings/python). The main script 
+for migration is `B9ROSMigrationTools/ros_upgrader.py`
 
 ## Pre-requisites
 1. ROS1(kinetic) system
@@ -14,17 +15,15 @@ corresponding [python bindings](https://github.com/llvm-mirror/clang/tree/releas
 1. On the ROS1(kinetic) system, clone `B9ROSMigrationTools` repository:
 
     `git clone https://code.amazon.com/packages/B9ROSMigrationTools/trees/mainline`
-    
-2. The main script for migration is `B9ROSMigrationTools/ros_upgrader.py`
    
-3. Clone the ROS1 package which you want to port. Lets say the package cloned is `ROS1_Package`. One required argument 
+2. Clone the ROS1 package which you want to port. Lets say the package cloned is `ROS1_Package`. One required argument 
 for `B9ROSMigrationTools/ros_upgrader.py` is path to the `package.xml` file of the `ROS1_Package`
   
-4. Build the `LexNode`(ROS1 package) with `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`
+3. Build the `ROS1_Package`(ROS1 package) with `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`
 
     `colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON`
     
-5. Building the `LexNode` with `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON` must have created a `compile_commands.json` file 
+4. Building the `ROS1_Package` with `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON` must have created a `compile_commands.json` file 
 inside `build/ROS1_Package` if the build was successful. This path will be second required argument for `B9ROSMigrationTools/ros_upgrader.py` script
 
 ## Usage
@@ -88,5 +87,5 @@ the field `ros2_name` same as `ros1_name`, i.e. do change it from `ros2_name??` 
 `IRRELEVANT_TOKENS` 
     
 >Note: If there is scope resolution included in `ros1_name`(e.g. `ros::ros1_token`), then only change the 
-`ros1_token` to corresponding `ros2_token`. So `ros2_name` field would look like `ros::ros2_token`. Namespace change
- will be taken care by `NAMESPACE_REF` category.
+`ros1_token` to corresponding `ros2_token`. So `ros2_name` field would look like `ros::ros2_token` and not like `rclcpp::ros2_token`.
+ Namespace change will be taken care by `NAMESPACE` category.
