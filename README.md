@@ -9,22 +9,38 @@ for migration is `B9ROSMigrationTools/ros_upgrader.py`
 ## Pre-requisites
 1. ROS1(kinetic) system
 2. Python-3.5 or higher
-3. parse-cmake: Install using `pip3 install parse_cmake` 
+3. parse-cmake: Install using `pip3 install parse_cmake`
 
 ## Setup
 1. On the ROS1(kinetic) system, clone `B9ROSMigrationTools` repository:
 
     `git clone https://code.amazon.com/packages/B9ROSMigrationTools/trees/mainline`
+    
+2. Download and copy `libclang` files. See [Setup libclang](#setup-libclang) section for more details
    
-2. Clone the ROS1 package which you want to port. Lets say the package cloned is `ROS1_Package`. One required argument 
+3. Clone the ROS1 package which you want to port. Lets say the package cloned is `ROS1_Package`. One required argument 
 for `B9ROSMigrationTools/ros_upgrader.py` is path to the `package.xml` file of the `ROS1_Package`
   
-3. Build the `ROS1_Package`(ROS1 package) with `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`
+4. Build the `ROS1_Package`(ROS1 package) with `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`
 
     `colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON`
     
-4. Building the `ROS1_Package` with `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON` must have created a `compile_commands.json` file 
+5. Building the `ROS1_Package` with `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON` must have created a `compile_commands.json` file 
 inside `build/ROS1_Package` if the build was successful. This path will be second required argument for `B9ROSMigrationTools/ros_upgrader.py` script
+
+## Setup libclang
+1. Download the `LLVM 8.0.0` `Pre-Build Binaries` for your version of linux from [llvm download page](http://releases.llvm.org/download.html).
+For e.g., I used Ubuntu 16.06, so I downloaded [Ubuntu 16.04 (.sig)](http://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz)
+from `Download LLVM 8.0.0` section and `Pre-Built Binaries:` subsection.
+
+2. Extract the binaries
+
+3. Copy the symlink `libclang.so` and lib file `libclang.so.8` from `lib` folder of the extracted folder to `B9ROSMigrationTools\clang` folder
+
+    `clang+llvm-3.9.1-x86_64-linux-gnu-ubuntu-16.04/lib/libclang.so` to `B9ROSMigrationTools\clang`
+    
+    `clang+llvm-3.9.1-x86_64-linux-gnu-ubuntu-16.04/lib/libclang.so.8` to `B9ROSMigrationTools\clang`
+
 
 ## Usage
 1. `cd` to `B9ROSMigrationTools`.
