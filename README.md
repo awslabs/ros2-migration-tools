@@ -18,15 +18,18 @@ for migration is `ROSMigrationTool/ros_upgrader.py`
     
 2. Download and copy `libclang` files. See [Setup libclang](#setup-libclang) section for more details
    
-3. Clone the ROS1 package which you want to port. Lets say the package cloned is `ROS1_Package`. One required argument 
-for `ROSMigrationTool/ros_upgrader.py` is path to the `package.xml` file of the `ROS1_Package`
+3. Clone the ROS1 package which you want to port. Lets say the package cloned is `ROS1_Package`. `ROSMigrationTool/ros_upgrader.py`
+will need path to `package.xml` which can be provided either using environment variable `ROS1_PACKAGE_PATH` or using `--package_xml_path`
+argument of `ROSMigrationTool/ros_upgrader.py`
+    
+    `export ROS1_PACKAGE_PATH=ROS1_Package/package.xml`
   
 4. Build the `ROS1_Package`(ROS1 package) with `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`
 
     `colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON`
     
 5. Building the `ROS1_Package` with `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON` must have created a `compile_commands.json` file 
-inside `build/ROS1_Package` if the build was successful. This path will be second required argument for `ROSMigrationTool/ros_upgrader.py` script
+inside `build/ROS1_Package` if the build was successful. This path will be mandatory argument for `ROSMigrationTool/ros_upgrader.py` script
 
 ## Setup libclang
 1. Download the `LLVM 8.0.0` `Pre-Build Binaries` for your version of linux from [llvm download page](http://releases.llvm.org/download.html).
@@ -35,11 +38,11 @@ from `Download LLVM 8.0.0` section and `Pre-Built Binaries:` subsection.
 
 2. Extract the binaries
 
-3. Copy the symlink `libclang.so` and lib file `libclang.so.8` from `lib` folder of the extracted folder to `ROSMigrationTool\clang` folder
+3. Copy the symlink `libclang.so` and lib file `libclang.so.8` from `lib` folder of the extracted folder to `ROSMigrationTool/clang` folder
 
-    `clang+llvm-3.9.1-x86_64-linux-gnu-ubuntu-16.04/lib/libclang.so` to `ROSMigrationTool\clang`
+    `clang+llvm-3.9.1-x86_64-linux-gnu-ubuntu-16.04/lib/libclang.so` to `ROSMigrationTool/clang`
     
-    `clang+llvm-3.9.1-x86_64-linux-gnu-ubuntu-16.04/lib/libclang.so.8` to `ROSMigrationTool\clang`
+    `clang+llvm-3.9.1-x86_64-linux-gnu-ubuntu-16.04/lib/libclang.so.8` to `ROSMigrationTool/clang`
 
 
 ## Usage
@@ -47,13 +50,21 @@ from `Download LLVM 8.0.0` section and `Pre-Built Binaries:` subsection.
 
 2. run `ros_upgrader.py` script with following arguments.
     - `-c` or `--compile_db_path`(Required): this is path to the `compile_commands.json` file
-    - `-p` or `--package_xml_path`(Required): this is path to the `package.xml` file
+    - `-p` or `--package_xml_path`(optional): this is path to the `package.xml` file
+    - `-m` or `--mapping_file`(optional): this is name of the file to which filled mappings will be written to
+    - `-f` or `--filter_out_file`(optional): this is name of the file to which unfilled tokens will be written to
     - `-o` or `--output_folder`(optional): output directory where the ported package will copied
-    - `-d` or `--debug`(optional): add this flag if you want to dump the Abstract Syntax Tree created 
+    - `-d` or `--debug`(optional): add this flag if you want to dump the Abstract Syntax Tree created
 
+    `export ROS1_PACKAGE_PATH=ROS1_Package/package.xml
+    ros_upgrader.py -c ROS1_Package/build/ROS1_Package/compile_commands.json`
+    
+    or 
+    
     `ros_upgrader.py -c ROS1_Package/build/ROS1_Package/compile_commands.json -p ROS1_Package/package.xml`
     
-    >Note: Paths can also be relative to the `ros_upgrader.py` package
+    >Note: Paths can also be relative to the `ros_upgrader.py` package. 
+    `ROS1_Package/package.xml` must be provided by one of the two ways explained.
 
 3. One of the following can happen now:
     - If there are no new tokens encountered in the ROS1 package, then it will just finish running 
@@ -63,8 +74,8 @@ from `Download LLVM 8.0.0` section and `Pre-Built Binaries:` subsection.
     on for more details about the mappings
         
 3. Default output folder is a folder named `output` inside the `ROSMigrationTool` or the output folder will be the folder
-    which you specified with `-o` or `--output_folder` argumnet. This folder, either default or custom, will have a folder 
-    with unique name `currData_currTime`(e.g. 2019-07-15_20_30_55). This folder will contain the package migrated to ROS2 
+    which you specified with `-o` or `--output_folder` argument. The default folder will have a folder 
+    with unique name `currData_currTime`(e.g. 2019-07-15_20_30_55). This output folder will contain the package migrated to ROS2 
 
 ## Filling the mappings
 - Open `mapping/new_tokens.json` file in editor of choice. 
@@ -77,10 +88,15 @@ from `Download LLVM 8.0.0` section and `Pre-Built Binaries:` subsection.
     - `FUNCTION_PARAMETER`: Parameters of functions declared in `ROS1_Package`
     - `VARIABLE_TYPE`: Variable types used in `ROS1_Package`
 
-- If the list is not empty, then update the `ros2_name` field for each of of the objects in the list. 
+- If the list is not empty, then update the `ros2_name` field for each of of the objects in the list. These can be left
+unchanged if no change is required for them in ROS2
 
-- All elements from the list with value for `ros2_name` as `ros2_name??` will be moved to `IRRELEVANT_TOKENS` 
-in the file `mapping/filtered_out_tokens.json` so that it don't appear in `NEW_TOKENS_LIST` again.
+- All the elements from the list whose value for `ros2_name` was modified, will be moved to the file with name provided 
+using `--mapping_file` inside `ROSMigrationTool/mapping` folder. Default file name is `master_mappings.json`.
+
+- All elements from the list with value for `ros2_name` unchanged, i.e. `ros2_name??`, will be moved to `IRRELEVANT_TOKENS` 
+in the file with name provided using `--filer_out_file` inside `ROSMigrationTool/token_filers` folder. 
+Default file name is `filtered_out_tokens.json`. These elements will not appear in `NEW_TOKENS_LIST` again. 
 
 - Some key categories will also require some additional information which is explained below:
     - `FUNCTION_CALL`:
