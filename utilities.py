@@ -482,6 +482,21 @@ class Utilities:
         return consolidated_mapping
 
     @staticmethod
+    def get_consolidated_token_filters():
+        """
+        Reads all the .json files in the `token_filter` folder and created a consolidated list of `IRRELEVANT_TOKENS`
+        :return: list
+        """
+        file_list = Utilities.get_all_files_of_extension(MappingConstants.TOKEN_FILTERS_FOLDER, ".json")
+
+        consolidated_filter_tokens = []
+        for file_path in file_list:
+            curr_tokens = Utilities.read_json_file(file_path)
+            consolidated_filter_tokens.extend(curr_tokens[MappingConstants.IRRELEVANT_TOKENS])
+
+        return consolidated_filter_tokens
+
+    @staticmethod
     def get_new_tokens_template():
         """
         Returns a template for new tokens file

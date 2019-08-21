@@ -94,6 +94,7 @@ class Constants:
     FILTER_OUT_FILE_PATH = "filter_out.json"
     UNKNOWN_TEMPLATE = "unknown_template"
     DEFAULT_OUTPUT_FOLDER = "output"
+    ROS1_PACKAGE_PATH = "ROS1_PACKAGE_PATH"
 
 
 class RosConstants:
@@ -128,6 +129,7 @@ class MappingConstants:
         FILTERED_OUT_FILE_NAME
     ]
     IRRELEVANT_TOKENS = "IRRELEVANT_TOKENS"
+    TOKEN_FILTERS_FOLDER = "token_filters"
 
 
 class ClangTokenKind:

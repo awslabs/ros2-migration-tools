@@ -1,10 +1,10 @@
-# B9ROSMigrationTools
+# ROSMigrationTool
 
 This package contains tools to migrate a ROS1 package to ROS2 package. The "CMakeLists.txt" and "package.xml" migration 
 tools from [ros2-migration-tools](https://github.com/awslabs/ros2-migration-tools/tree/master/ros2_migration/porting_tools) 
 have been taken as it is. CPP source code migration uses [libclang8](http://releases.llvm.org/download.html) and its 
 corresponding [python bindings](https://github.com/llvm-mirror/clang/tree/release_80/bindings/python). The main script 
-for migration is `B9ROSMigrationTools/ros_upgrader.py`
+for migration is `ROSMigrationTool/ros_upgrader.py`
 
 ## Pre-requisites
 1. ROS1(kinetic) system
@@ -12,21 +12,21 @@ for migration is `B9ROSMigrationTools/ros_upgrader.py`
 3. parse-cmake: Install using `pip3 install parse_cmake`
 
 ## Setup
-1. On the ROS1(kinetic) system, clone `B9ROSMigrationTools` repository:
+1. On the ROS1(kinetic) system, clone `ROSMigrationTool` repository:
 
-    `git clone https://code.amazon.com/packages/B9ROSMigrationTools/trees/mainline`
+    `git clone https://code.amazon.com/packages/ROSMigrationTool/trees/mainline`
     
 2. Download and copy `libclang` files. See [Setup libclang](#setup-libclang) section for more details
    
 3. Clone the ROS1 package which you want to port. Lets say the package cloned is `ROS1_Package`. One required argument 
-for `B9ROSMigrationTools/ros_upgrader.py` is path to the `package.xml` file of the `ROS1_Package`
+for `ROSMigrationTool/ros_upgrader.py` is path to the `package.xml` file of the `ROS1_Package`
   
 4. Build the `ROS1_Package`(ROS1 package) with `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`
 
     `colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON`
     
 5. Building the `ROS1_Package` with `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON` must have created a `compile_commands.json` file 
-inside `build/ROS1_Package` if the build was successful. This path will be second required argument for `B9ROSMigrationTools/ros_upgrader.py` script
+inside `build/ROS1_Package` if the build was successful. This path will be second required argument for `ROSMigrationTool/ros_upgrader.py` script
 
 ## Setup libclang
 1. Download the `LLVM 8.0.0` `Pre-Build Binaries` for your version of linux from [llvm download page](http://releases.llvm.org/download.html).
@@ -35,15 +35,15 @@ from `Download LLVM 8.0.0` section and `Pre-Built Binaries:` subsection.
 
 2. Extract the binaries
 
-3. Copy the symlink `libclang.so` and lib file `libclang.so.8` from `lib` folder of the extracted folder to `B9ROSMigrationTools\clang` folder
+3. Copy the symlink `libclang.so` and lib file `libclang.so.8` from `lib` folder of the extracted folder to `ROSMigrationTool\clang` folder
 
-    `clang+llvm-3.9.1-x86_64-linux-gnu-ubuntu-16.04/lib/libclang.so` to `B9ROSMigrationTools\clang`
+    `clang+llvm-3.9.1-x86_64-linux-gnu-ubuntu-16.04/lib/libclang.so` to `ROSMigrationTool\clang`
     
-    `clang+llvm-3.9.1-x86_64-linux-gnu-ubuntu-16.04/lib/libclang.so.8` to `B9ROSMigrationTools\clang`
+    `clang+llvm-3.9.1-x86_64-linux-gnu-ubuntu-16.04/lib/libclang.so.8` to `ROSMigrationTool\clang`
 
 
 ## Usage
-1. `cd` to `B9ROSMigrationTools`.
+1. `cd` to `ROSMigrationTool`.
 
 2. run `ros_upgrader.py` script with following arguments.
     - `-c` or `--compile_db_path`(Required): this is path to the `compile_commands.json` file
@@ -62,7 +62,7 @@ from `Download LLVM 8.0.0` section and `Pre-Built Binaries:` subsection.
     will be shown on terminal. **Don't press 'Y' yet.** See the [Filling the mappings](##filling-the-mappings) section 
     on for more details about the mappings
         
-3. Default output folder is a folder named `output` inside the `B9ROSMigrationTools` or the output folder will be the folder
+3. Default output folder is a folder named `output` inside the `ROSMigrationTool` or the output folder will be the folder
     which you specified with `-o` or `--output_folder` argumnet. This folder, either default or custom, will have a folder 
     with unique name `currData_currTime`(e.g. 2019-07-15_20_30_55). This folder will contain the package migrated to ROS2 
 
