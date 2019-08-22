@@ -116,6 +116,9 @@ class RosUpgrader:
         # directory
         os.chdir(os.path.dirname(Utilities.get_abs_path(sys.argv[0])))
 
+        if not os.path.exists("logs"):
+            os.makedirs("logs")
+
         current_run_id = Utilities.get_uniquie_id()
         logging.basicConfig(filename=os.path.join('logs', 'ros_upgrader_' + current_run_id + '.log'),
                             filemode='w',
