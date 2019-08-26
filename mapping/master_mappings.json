@@ -1,0 +1,313 @@
+{
+    "FUNCTION_CALL": {
+        "advertise": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "create_publisher"
+        },
+        "advertiseService": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "create_service"
+        },
+        "createTimer": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "create_wall_timer"
+        },
+        "getNamespace": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "get_namespace"
+        },
+        "spin": {
+            "node_arg_info": {
+                "node_arg_index": 0,
+                "node_arg_req": true
+            },
+            "ros2_name": "spin"
+        },
+        "spinOnce": {
+            "node_arg_info": {
+                "node_arg_index": 0,
+                "node_arg_req": true
+            },
+            "ros2_name": "spin_some"
+        },
+        "subscribe": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "create_subscription"
+        }
+    },
+    "FUNCTION_PARAMETER": {
+        "kinesis_video_msgs::KinesisImageMetadata::ConstPtr &": {
+            "ros2_name": "kinesis_video_msgs::KinesisImageMetadata::SharedPtr &",
+            "to_be_removed": false,
+            "to_shared_ptr": false
+        },
+        "kinesis_video_msgs::KinesisVideoFrame::ConstPtr &": {
+            "ros2_name": "kinesis_video_msgs::KinesisVideoFrame::SharedPtr &",
+            "to_be_removed": false,
+            "to_shared_ptr": false
+        },
+        "lex_common_msgs::AudioTextConversationRequest": {
+            "ros2_name": "std::shared_ptr<lex_common_msgs::srv::AudioTextConversation::Request>",
+            "to_shared_ptr": true
+        },
+        "lex_common_msgs::AudioTextConversationRequest &": {
+            "ros2_name": "std::shared_ptr<lex_common_msgs::srv::AudioTextConversation::Request>",
+            "to_be_removed": false,
+            "to_shared_ptr": false
+        },
+        "lex_common_msgs::AudioTextConversationResponse": {
+            "ros2_name": "std::shared_ptr<lex_common_msgs::srv::AudioTextConversation::Response>",
+            "to_shared_ptr": true
+        },
+        "lex_common_msgs::AudioTextConversationResponse &": {
+            "ros2_name": "std::shared_ptr<lex_common_msgs::srv::AudioTextConversation::Response>",
+            "to_be_removed": false,
+            "to_shared_ptr": false
+        },
+        "ros::NodeHandle": {
+            "ros2_name": "std::shared_ptr<ros::Node>",
+            "to_shared_ptr": true
+        },
+        "ros::NodeHandle &": {
+            "ros2_name": "std::shared_ptr<rclcpp::Node>",
+            "to_be_removed": false,
+            "to_shared_ptr": false
+        },
+        "ros::Publisher &": {
+            "ros2_name": "std::shared_ptr<rclcpp::Publisher>",
+            "to_be_removed": false,
+            "to_shared_ptr": false
+        },
+        "ros::Subscriber": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "std::shared_ptr<rclcpp::Subscription<unknown_template>>",
+            "to_shared_ptr": true
+        },
+        "ros::Subscriber &": {
+            "ros2_name": "std::shared_ptr<rclcpp::Subscription>",
+            "to_be_removed": false,
+            "to_shared_ptr": false
+        },
+        "rosgraph_msgs::Log": {
+            "ros2_name": "rcl_interfaces::msg::Log",
+            "to_be_removed": false,
+            "to_shared_ptr": true
+        },
+        "rosgraph_msgs::Log::ConstPtr": {
+            "ros2_name": "rosgraph_msgs::Log::SharedPtr",
+            "to_be_removed": false,
+            "to_shared_ptr": false
+        },
+        "rosgraph_msgs::Log::ConstPtr &": {
+            "ros2_name": "rcl_interfaces::msg::Log::SharedPtr &",
+            "to_be_removed": false,
+            "to_shared_ptr": false
+        }
+    },
+    "HEADER_FILE": {
+        "aws_ros1_common/sdk_utils/logging/aws_ros_logger.h": {
+            "ros2_name": "aws_ros2_common/sdk_utils/logging/aws_ros_logger.h"
+        },
+        "aws_ros1_common/sdk_utils/ros1_node_parameter_reader.h": {
+            "ros2_name": "aws_ros2_common/sdk_utils/ros2_node_parameter_reader.h"
+        },
+        "lex_common_msgs/AudioTextConversation.h": {
+            "ros2_name": "lex_common_msgs/srv/audio_text_conversation.hpp"
+        },
+        "lex_common_msgs/AudioTextConversationRequest.h": {
+            "ros2_name": "lex_common_msgs/srv/audio_text_conversation.hpp"
+        },
+        "lex_common_msgs/AudioTextConversationResponse.h": {
+            "ros2_name": "lex_common_msgs/srv/audio_text_conversation.hpp"
+        },
+        "lex_common_msgs/KeyValue.h": {
+            "ros2_name": "lex_common_msgs/msg/key_value.hpp"
+        },
+        "ros/ros.h": {
+            "ros2_name": "rclcpp/rclcpp.hpp"
+        },
+        "ros/spinner.h": {
+            "ros2_name": "rclcpp/rclcpp.hpp"
+        },
+        "rosgraph_msgs/Log.h": {
+            "ros2_name": "rcl_interfaces/msg/log.hpp"
+        },
+        "std_msgs/String.h": {
+            "ros2_name": "std_msgs/msg/string.hpp"
+        }
+    },
+    "MACRO_DEFINITION": {
+        "ROS_INFO": {
+            "node_arg_info": {
+                "member_name_if_true": "get_logger",
+                "node_arg_index": 0,
+                "node_arg_req": true
+            },
+            "ros2_name": "RCLCPP_INFO"
+        }
+    },
+    "NAMESPACE": {
+        "boost": {
+            "ros2_name": "std"
+        },
+        "ros": {
+            "ros2_name": "rclcpp"
+        },
+        "rosgraph_msgs": {
+            "ros2_name": "rcl_interfaces::msg"
+        },
+        "std_msgs": {
+            "ros2_name": "std_msgs::msg"
+        }
+    },
+    "TYPECAST_OPERATOR": {
+        "operator ros::NodeHandle &": {
+            "ros2_name": "operator std::shared_ptr<ros::Node> &"
+        }
+    },
+    "VARIABLE_TYPE": {
+        "Aws::Client::Ros1NodeParameterReader": {
+            "node_arg_info": {
+                "node_arg_index": 0,
+                "node_arg_req": true
+            },
+            "ros2_name": "Aws::Client::Ros2NodeParameterReader",
+            "to_shared_ptr": false
+        },
+        "Aws::Utils::Logging::AWSROSLogger": {
+            "node_arg_info": {
+                "node_arg_index": 1,
+                "node_arg_req": true
+            },
+            "ros2_name": "Aws::Utils::Logging::AWSROSLogger",
+            "to_shared_ptr": false
+        },
+        "lex_common_msgs::AudioTextConversationRequest": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "lex_common_msgs::srv::AudioTextConversation::Request",
+            "to_shared_ptr": true
+        },
+        "lex_common_msgs::AudioTextConversationResponse": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "lex_common_msgs::srv::AudioTextConversation::Response",
+            "to_shared_ptr": true
+        },
+        "lex_common_msgs::KeyValue": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "lex_common_msgs::msg::KeyValue",
+            "to_shared_ptr": false
+        },
+        "ros::Duration": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "std::chrono::duration",
+            "to_shared_ptr": false
+        },
+        "ros::NodeHandle": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "ros::Node",
+            "to_shared_ptr": true
+        },
+        "ros::Publisher": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "ros::Publisher",
+            "to_shared_ptr": true
+        },
+        "ros::ServiceServer": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "ros::Service",
+            "to_be_removed": false,
+            "to_shared_ptr": true
+        },
+        "ros::Subscriber": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "ros::Subscription",
+            "to_shared_ptr": true
+        },
+        "ros::Timer": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "ros::TimerBase",
+            "to_be_removed": false,
+            "to_shared_ptr": true
+        },
+        "ros::TimerEvent": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "",
+            "to_be_removed": true,
+            "to_shared_ptr": false
+        },
+        "rosgraph_msgs::Log": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "rcl_interfaces::msg::Log",
+            "to_be_removed": false,
+            "to_shared_ptr": true
+        },
+        "rosgraph_msgs::Log::ConstPtr": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "rcl_interfaces::msg::Log::SharedPtr",
+            "to_be_removed": false,
+            "to_shared_ptr": false
+        },
+        "std_msgs::String": {
+            "node_arg_info": {
+                "node_arg_index": -1,
+                "node_arg_req": false
+            },
+            "ros2_name": "std_msgs::String",
+            "to_shared_ptr": true
+        }
+    }
+}
