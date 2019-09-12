@@ -76,14 +76,14 @@ if the build was successful. This path will be mandatory argument for `ros2-migr
     - `-o` or `--output_folder` (optional): output directory where the ported package will copied
     - `-d` or `--debug` (optional): add this flag if you want to dump the Abstract Syntax Tree created
 
-For example,
+    For example,
 
     ```
     export ROS1_PACKAGE_PATH=ROS1_Package/package.xml
     ros_upgrader.py -c ROS1_Package/build/ROS1_Package/compile_commands.json
     ```
 
-or
+    or
 
     ```
     ros_upgrader.py -c ROS1_Package/build/ROS1_Package/compile_commands.json -p ROS1_Package/package.xml
