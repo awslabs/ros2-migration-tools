@@ -1,7 +1,0 @@
-packages:
-  catkin: {detail: ament, status: Replaced}
-  cmake_modules: {detail: 'https://github.com/bponsler/cmake_modules/tree/ros2-devel',
-    status: in release}
-  gencpp: {detail: rosidl_generator_cpp, status: Replaced}
-  genmsg: {detail: rosidl, status: Replaced}
-  genpy: {detail: rosidl_generator_py, status: Replaced}

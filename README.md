@@ -1,165 +1,149 @@
 # ROS2 Migration Tools
+This repo contains a set of tools for migrating a ROS1 package to a ROS2 package.
+The C++ source code migration uses [libclang8](http://releases.llvm.org/download.html) and its corresponding [python bindings](https://github.com/llvm-mirror/clang/tree/release_80/bindings/python).
+The main script for migration is `ros_upgrader.py`
 
-This package contains tool to simplify migrating a package from ROS1 to ROS2. This package contains 3 tools: `docker_setup` for launching a docker container that has ROS2 and ROS1 installed, `check_deps` to check which dependencies have already been migrated to ROS2, and `porting_tools` which contain scripts to make some automatic changes to source code and build files and warn about manual changes.
 
-Note: Any of the tools can be run with the `--help` option for the full list of options.
+## Components of a ROS Package
 
-## Setup
-### Docker
-Install docker https://docs.docker.com/install/
-
-### Folder Structure
- 1. Create a new directory : `mkdir ros_migration_ws/src -p`
- 2. Initialize a Catkin workspace: `cd ros_migration_ws/src ; catkin_init_workspace`
- 2.	Fetch the package to be migrated into `ros_migration_ws/src/`
- 3.	Clone this repo into `ros_migration_ws/ros2_migration_tools`
-
-#### Install ros2_migration Python libraries
-In `ros_migration_ws/ros2_migration_tools` run `pip3 install -e .`
-
-## Checking Dependencies
-From `ros_migration_ws/` run `python3 ../ros2_migration_tool.py check-deps <ros_package>`
-
-If any dependencies haven't been migrated do those first
-
-## Migrating a Package
-
-### CMakeLists.txt and package.xml
-1.	Run `python3 ros2_migration_tool.py catkin-to-ament --package-path <path/to/package/src>` (Note: by default this will overwrite your files!)
-1.	Check the output to make sure the files were migrated successfully, note that comments may get messed up
-
-Warning: Running the tool multiple times on the same file may result in duplicated lines
+### `CMakeLists.txt` and `package.xml`
+This set of tools supports the migration of `CMakeLists.txt` and `package.xml` files.
 
 ### Source Code
- 1.	Run `python3 ros2_migration_tool.py port-cpp --src <path/to/ros1.cpp> --dst <path/to/ros2.cpp>`
- 1.	Use `port-python` for python files
-
-This will make some simple changes to the source code and produce warning for sections of code that may need to be changed. These warnings are not complete so even if no more warnings are generated the source code may still need changes
-
-Source files cannot be completed migrated automatically and will also print warnings for lines that may need to be changed. These tools are incomplete. See the README in `porting_tools/` for how they can be extended.
-
+This set of tools supports the migration of C++ source codes.
 
 ### msg/srv files
-The tool doesn't handle any changes to message or service declarations.
+This set of tools does not handle any changes to message or service declarations.
 
-See [here](MISSINGLINK) for information on interfaces (messages and services) in ROS2. In particular note the section on field names: they must be be only lowercase and cannot end in underscores.
-
-### launch files
-In ROS2 launch files are python scripts not xml files.
-
-Information about the ROS launch system can be found [here](https://github.com/ros2/ros2/wiki/Launch-system) and [here](https://github.com/bponsler/ros2-support/blob/master/tutorials/ros2-launch.md). Examples of launch files in ros2 can be found [here](https://github.com/ros2/launch)
-
-### Docker container
-Launch the docker container: `python3 ros2_migration_tool.py launch_docker --src-volume . --dst-dir /workspace`
-
-## Specifying ROS installations
-
-By default the docker setup uses ROS2 bouncy and ROS1 Melodic. ROS1 releases were tied
-to an ubuntu release (for melodic 18.04) and ROS1 installations were only available for that release (you could also install from source). The ROS2 bouncy image used by default uses ubuntu 18.04 so melodic is used as the ROS1 release. If you want to use another version of ROS2 (using the `--tag` option) make sure to specify the appropriate ROS1 version (using the `--ros1-version` option). For example if you wanted to use ROS2 ardent (which comes with ubuntu 16.04) the appropriate ROS1 version would be kinetic and you would run the command:
-
-`python3 ros2_migration_tool.py --tag:ardent-ros-base --ros1-version kinetic`
-
-If you don't care about running the package in ROS1 then the ROS1 version shouldn't matter too much since it is only used for checking dependencies.
+### Launch files
+This set of tools currently does not support migrating ROS1 launch files to ROS2 launch files.
 
 
+## Pre-requisites
 
-## Reference:
-
-The migration tool is not able to do a complete migration itself. Please add or modify rules and warnings to improve it. Instructions for contributing can be found in porting_tools/README.md.
-
-In general: follow the instructions for migration available at : https://github.com/ros2/ros2/wiki/Migration-Guide
-
-Also look at these packages for example migrations:
-
-•	For messages: [turtlebot3_msgs](https://github.com/ROBOTIS-GIT/turtlebot3_msgs/pull/12/commits/437c5efdc5c6f013f270ca45faa985f3b5f7aaf2)
-
-•	Some example nodes: [turtlebot3_nodes](https://github.com/ROBOTIS-GIT/turtlebot3/tree/ros2/turtlebot3_node/src)
+1. ROS1 system
+2. Python-3.5 or higher
+3. parse-cmake: Install using `pip3 install parse_cmake`
 
 
-### CMakeLists.txt Changes
+## Setup the Migration Tool
 
-These are the changes made by the migration tool to the CMakeLists
-•	Set the Cmake version minimum to 3.5
+1. On the ROS1 system, clone the `ROS2 Migration Tools` repository:
 
-•	Set the C++ standard for compiling to C++14
+    `git clone https://github.com/awslabs/ros2-migration-tools.git`
 
-•	Removes packages that are no longer used in ROS2
+2. Download the `LLVM 8.0.0` `Pre-Built Binaries` for your version of Linux from [llvm download page](http://releases.llvm.org/download.html).
+For example, download [Ubuntu 16.04 (.sig)](http://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz)
+if your machine is running Ubuntu 16.06.
 
-•	Splits up the find_packages command
+3. Extract the downloaded tarball (for example, `tar xvf clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz`).
 
-•	Adds rosidl_default_generators and rosidl_default_runtime instead of message_generation
+4. Copy the `libclang.so.8` shared object and the `libclang.so` symlink from `lib` folder of clang to the `ros2-migration-tools/clang` folder.
+    ```
+    cp -r <extracted directory>/lib/libclang.so <ros2-migration-tools directory>/clang
+    cp -r <extracted directory>/lib/libclang.so.8 <ros2-migration-tools directory>/clang
+    ```
 
-•	Adds ament_cmake as a required package
-
-•	Replaces add_message_files and add_service_files with rosidl_generate_interfaces
-
-•	Replaces renamed commands (list can be found in porting_tools/constants.py)
-
-•	Warns about using CMakeLists for a pure python package
- package.xml Changes
-
-These are the changes made by the migration tool to the package.xml.
-•	Sets format to 3
-
-•	Sets build_tool_dependencies on rmw_implementation and cmake
-
-•	Adds build_depend and exec_depend on rmw_implementation
-
-•	Converts the client library (e.g. roscpp→rclcpp)
-
-•	Adds a tag to export ament_cmake as the build type
-
-•	changes all run_depends to exec_depends
-
-•	Turns all “depends” into build_depend and exec_depend
-
-•	Replaces message generation with build and exec depends on rosidl_default_generators and rosidl_Default_runtime
-
-Changes that need to be done by hand:
-
-•	Any spacing/formatting issues
-
-### C++ Source Code Changes
-
-These changes are made by the migration tool
-•	Replaces many simple patterns (see porting_tools/constants.py CPP_SOURCE_REPLACEMENTS for a complete list), including:
-
-o	simple message creation
-
-o	simple node instantiation
-
-•	Warns on a number of patterns. The warnings are just using simple pattern matching  to look for pieces of code that may need to be changed and so some may be erroneous.
-
-Changes that may need to be done by hand:
-
-•	Anything highlighted by the warnings
-
-•	Node initialization
-
-•	Creating messages and setting message data
-
-•	Ensuring that messages are pass as shared pointers
-
-•	Publishing/Subscribing to topics
-
-•	Any changes to header files
-
-### Python Source Code Changes
-
-The major changes are moving from rospy to rclpy and that ROS2 only supports python3
-
-The rclpy client library is less mature than rclcpp and at the time of writing is lacking some features (like a complete time package or the is_shutdown() function). There is also no centralized documentation on the changes between rospy and rclpy. The source code for rclpy can be found here and rospy documentation can be found here.
-
-Python2 → Python3: Use the 2to3 tool on any python2 source files in the package. Note that there may be some weird results if you use the tool on a python3 file.
-
-Changes that may need to be done by hand:
-
-•	Changing logging
-
-•	Node initialization
-
-•	Exceptions
-
-•	rclpy api differences
+5. Copy the contents of the libclang `include` folder to the `ros2-migration-tools/clang/clang` folder.
+    ```
+    cp -r <extracted directory>/lib/clang/8.0.0/include <ros2-migration-tools directory>/clang/clang
+    ```
 
 
+## Setup the ROS1 Packages
+
+1. Clone the sources of the ROS1 package which you want to port. Lets say the package cloned is named `ROS1_Package`.
+`ros2-migration-tools/ros_upgrader.py` will need path to `package.xml` which can be provided either using environment variable `ROS1_PACKAGE_PATH`
+or using the  `--package_xml_path` argument of `ros2-migration-tools/ros_upgrader.py`
+
+3. Build the `ROS1_Package` ROS1 package with `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`
+
+    `colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON`
+
+5. Building the `ROS1_Package` with `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON` will have created a `compile_commands.json` file inside `build/ROS1_Package`
+if the build was successful. This path will be mandatory argument for `ros2-migration-tools/ros_upgrader.py` script.
+
+
+## Usage
+
+1. `cd` to `ros2-migration-tools`.
+
+2. run `ros_upgrader.py` script with following arguments.
+    - `-c` or `--compile_db_path` (required): this is path to the `compile_commands.json` file
+    - `-p` or `--package_xml_path` (optional): this is path to the `package.xml` file
+    - `-m` or `--mapping_file` (optional): this is name of the file to which filled mappings will be written to
+    - `-f` or `--filter_out_file` (optional): this is name of the file to which unfilled tokens will be written to
+    - `-o` or `--output_folder` (optional): output directory where the ported package will copied
+    - `-d` or `--debug` (optional): add this flag if you want to dump the Abstract Syntax Tree created
+
+    For example,
+
+    ```
+    export ROS1_PACKAGE_PATH=ROS1_Package/package.xml
+    ros_upgrader.py -c ROS1_Package/build/ROS1_Package/compile_commands.json
+    ```
+
+    or
+
+    ```
+    ros_upgrader.py -c ROS1_Package/build/ROS1_Package/compile_commands.json -p ROS1_Package/package.xml
+    ```
+
+*Note: Paths can also be relative to the `ros_upgrader.py` package. `ROS1_Package/package.xml` must be provided by one of the two ways explained.*
+
+3. One of the following can happen now:
+    - If there are no new tokens encountered in the ROS1 package, then it will just finish running
+    - If there are some new tokens encountered, there will be message on terminal saying
+    `Open mapping/new_tokens.json and fill the mappings. Press 'Y' to continue or any other key to abort`
+    will be shown on terminal. **Don't press 'Y' yet.** See the [Filling the mappings](##filling-the-mappings) section
+    on for more details about the mappings
+
+4. Default output folder is a folder named `output` inside the `ros2-migration-tools` or the output folder will be the folder which you specified with `-o` or `--output_folder` argument.
+The default folder will have a folder with unique name *`currData_currTime`* (e.g. `2019-07-15_20_30_55`). This output folder will contain the package migrated to ROS2
+
+
+## Filling the mappings
+
+- Open `mapping/new_tokens.json` file in editor of choice.
+- Each key in the file contains a list. Following are the keys:
+    - `FUNCTION_CALL`: Function calls and constructor calls used in `ROS1_Package`
+    - `TYPECAST_OPERATOR`: Typecast operator functions defined in the `ROS1_Package`
+    - `HEADER_FILE`: Included header files in the `ROS1_Package`
+    - `MACRO_DEFINITION`: Macros used in `ROS1_Package`
+    - `NAMESPACE`: Namespaces used in `ROS1_Package`
+    - `FUNCTION_PARAMETER`: Parameters of functions declared in `ROS1_Package`
+    - `VARIABLE_TYPE`: Variable types used in `ROS1_Package`
+
+- If the list is not empty, then update the `ros2_name` field for each of of the objects in the list. These can be left
+unchanged if no change is required for them in ROS2
+
+- All the elements from the list whose value for `ros2_name` was modified, will be moved to the file with name provided
+using `--mapping_file` inside `ros2-migration-tools/mapping` folder. Default file name is `master_mappings.json`.
+
+- All elements from the list with value for `ros2_name` unchanged, i.e. `ros2_name??`, will be moved to `IRRELEVANT_TOKENS`
+in the file with name provided using `--filer_out_file` inside `ros2-migration-tools/token_filers` folder.
+Default file name is `filtered_out_tokens.json`. These elements will not appear in `NEW_TOKENS_LIST` again.
+
+- Some key categories will also require some additional information which is explained below:
+    - `FUNCTION_CALL`:
+        - `node_arg_req`: This field will be inside `node_arg_info`. Change it to `true` if the function needs
+        `node`(actual var name) as an argument
+        - `node_arg_ind`: Index(0-based) of the `node` argument if `node_arg_req` was changed to `true`
+    - `MACRO_DEFINITION`:
+        - `node_arg_req`: This field will be inside `node_arg_info`. Change it to `true` if the function needs
+        `node` member function as an argument
+        - `node_arg_ind`: Index(0-based) of the `node` argument if `node_arg_req` was changed to `true`
+        - `member_name_if_true`: Name of the member function of ROS2 Node class if `node_arg_req` was changed to `true`
+    - `VARIABLE_TYPE`:
+        - `to_shared_ptr`: It should be true if the `var_type` is supposed to be `shared_ptr`, `false` otherwise
+        - `to_be_removed`: It should be true if any var type needs to be removed
+    - `FUNCTION_PARAMETER`: It may contain `&` or `*`, e.g, `ros::NodeHandle &`. Provide `ros2_name` with exactly what you want
+        to replace it with
+
+*Note: If there is no change in name from ROS1 to ROS2 but above fields like `node_arg_req` is changed, then change
+the field `ros2_name` same as `ros1_name`, i.e. do change it from `ros2_name??` otherwise it will get added to the
+`IRRELEVANT_TOKENS`*
+
+*Note: If there is scope resolution included in `ros1_name`(e.g. `ros::ros1_token`), then only change the
+`ros1_token` to corresponding `ros2_token`. So `ros2_name` field would look like `ros::ros2_token` and not like `rclcpp::ros2_token`.
+ Namespace change will be taken care by `NAMESPACE` category.*

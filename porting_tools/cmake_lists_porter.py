@@ -1,22 +1,21 @@
-# Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#  
+# Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
 # Licensed under the Apache License, Version 2.0 (the "License").
 # You may not use this file except in compliance with the License.
 # A copy of the License is located at
-#  
+#
 #      http://www.apache.org/licenses/LICENSE-2.0
-#  
-# or in the "license" file accompanying this file. This file is distributed 
-# on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
-# express or implied. See the License for the specific language governing 
+#
+# or in the "license" file accompanying this file. This file is distributed
+# on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+# express or implied. See the License for the specific language governing
 # permissions and limitations under the License.
 
 """
 A class for porting CMakeLists from ROS1 to ROS2
 """
 import os.path
-from .constants import CatkinToAmentMigration, ROS1ROS2Packages
-from .utils import get_functions_with
+
 try:
     import parse_cmake.parsing as cmkp
 except ImportError:
@@ -27,6 +26,9 @@ except ImportError:
     print("pip3 install parse_cmake")
     exit(1)
 
+from .constants import CatkinToAmentMigration, ROS1ROS2Packages
+from .utils import get_functions_with
+
 
 def extract_args(item):
     """ Returns the strings from an object created by the cmake parser """
@@ -36,7 +38,11 @@ def extract_args(item):
 
 def commands_with(name, from_cmake):
     """ Returns a list of all cmkp._Command objects from a cmakeLists with the given name. """
-    yield from ((index, command) for (index, command) in enumerate(from_cmake) if (isinstance(command, cmkp._Command) and command.name == name))
+    cmd_list = []
+    #yield from ((index, command) for (index, command) in enumerate(from_cmake) if (isinstance(command, cmkp._Command) and command.name == name))
+    for (index, command) in enumerate(from_cmake):
+        if isinstance(command, cmkp._Command) and command.name == name:
+            yield (index, command)
 
 
 class CMakeListsPorter():
@@ -367,7 +373,7 @@ class CMakeListsPorter():
 
     @staticmethod
     def rule_remove_unused_commands(cmake):
-        """ 
+        """
         Removes commands that aren't necessary in ament.
         The commands to remove are listed in constants.py
         """

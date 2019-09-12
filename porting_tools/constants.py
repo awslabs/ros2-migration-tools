@@ -1,14 +1,14 @@
-# Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#  
+# Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
 # Licensed under the Apache License, Version 2.0 (the "License").
 # You may not use this file except in compliance with the License.
 # A copy of the License is located at
-#  
+#
 #      http://www.apache.org/licenses/LICENSE-2.0
-#  
-# or in the "license" file accompanying this file. This file is distributed 
-# on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
-# express or implied. See the License for the specific language governing 
+#
+# or in the "license" file accompanying this file. This file is distributed
+# on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+# express or implied. See the License for the specific language governing
 # permissions and limitations under the License.
 
 PACKAGE_XML_ELEMENT_ORDER = [
@@ -96,58 +96,6 @@ class ROS1ROS2Packages:
     NO_CMAKE_FIND_PACKAGES = [
         "rosidl_default_runtime",
     ]
-
-
-
-class CPPSourceChanges():
-    #Regexs for replacement strings between ROS1 and ROS2
-    CPP_SOURCE_REPLACEMENTS = {
-        r"ros::Rate" : r"rclcpp::Rate",
-        r"ros::ok" : r"rclcpp::ok",
-        r"ros/ros.h" : r"rclcpp/rclcpp.hpp",
-        #Msgs and srvcs are now stored in a separate folder
-        r"std_msgs/(?!msg/)(.*).h" : r"std_msgs/msg/\1.hpp",
-        r"std_msgs::(?!msg::)(\S*)" : r"std_msgs::msg::\1",
-        #String.h is now string.hpp
-        r"std_msgs/(.*)String(.*)" : r"std_msgs/\1string\2",
-        #Replace the node creation e.g.
-        #ROS1:
-        #   ros::init(argc, argv, "talker");
-        #   ros::NodeHandle n;
-        #ROS2:
-        #   rclcpp::init(argc, argv);
-        #   auto node = rclcpp::Node::make_shared("talker");
-        #Ignores cases where multiple nodes are declared on one line
-        r"ros::init\((.*),(.*),\s*([\S]*)\);([\s\S]*)ros::NodeHandle ([^,\(]*);" : r"rclcpp.init(\1,\2);\4auto \5 = rclcpp::Node::make_shared(\3);",
-        # Replace standard message creation
-        #ROS1:
-        #  std_msgs::String msg;
-        #ROS2:
-        #  auto msg = std::make_shared<std_msgs::msg::String>();
-        #Also works if std_msgs has already been replaced with std_msgs::msgs
-        r"^([\s]*)std_msgs::(msg::)?([\S]*) (.*);" : r"\1auto \4 = std::make_shared<std_msgs::msg::\3>();",
-    }
-
-    #Warnings for replacements that may require changes elsewhere in the code
-    #Pattern:Warning message
-    REPLACEMENT_WARNINGS = {
-    r"(#include .*)h(>|\").*" : "ROS header files should all be .hpp",
-    r"nsec" : "nsec has been replaced with nanosec",
-    }
-
-    #Warnings for boost replacements
-    BOOST_REPLACEMENTS = {
-        r"<boost/shared_ptr.hpp>" : r"<memory>",
-        r"boost::shared_ptr" : r"std::shared_ptr",
-        r"boost::mutex::scoped_lock" : r"std::unique_lock<std::mutex>",
-        r"boost::mutex" : r"std::mutex",
-        r"#include <boost/thread/mutex.hpp>" : r"#include <mutex>",
-        r"#include <boost/unordered_map.hpp>" : r"#include <unorder_map>",
-        r"boost::unordered_map" : r"std::unordered_map",
-        r"#include <boost/function.hpp>" : r"#include <functional>",
-        r"boost::function" : "std::function",
-    }
-
 
 
 
